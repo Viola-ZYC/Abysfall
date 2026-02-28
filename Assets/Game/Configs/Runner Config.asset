@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6786008600da1d846aff3a77fbef7ef3, type: 3}
+  m_Name: Runner Config
+  m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.RunnerConfig
+  maxHealth: 3
+  horizontalSpeed: 6
+  baseGravityScale: 2
+  gravityIncreasePerSecond: 0.04
+  maxGravityScale: 8
+  maxFallSpeed: 16
+  brakeUpwardImpulse: 8
+  resetVerticalVelocity: 1
+  hitStopDuration: 0
+  obstacleSlowMultiplier: 0.4
+  obstacleSlowDuration: 0.5
+  obstacleVelocityDamp: 0.5

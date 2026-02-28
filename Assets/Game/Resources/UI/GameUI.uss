@@ -1,0 +1,332 @@
+.root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.safe-area {
+    flex-grow: 1;
+}
+
+.hud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 24px;
+    flex-direction: column;
+}
+
+.hud-row {
+    width: 100%;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.hud-card {
+    background-color: rgba(6, 6, 8, 0.7);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.65);
+    border-radius: 2px;
+    padding: 10px 16px;
+}
+
+.hud-text {
+    font-size: 32px;
+    color: rgb(245, 245, 245);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+}
+
+.pause-button {
+    height: 58px;
+    min-width: 180px;
+    background-color: rgba(18, 18, 20, 0.98);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.8);
+    border-radius: 2px;
+    color: rgb(245, 245, 245);
+    font-size: 24px;
+    unity-text-align: middle-center;
+    -unity-font-style: bold;
+}
+
+.pause-button:hover {
+    background-color: rgba(255, 60, 80, 0.2);
+    border-color: rgba(255, 90, 100, 1);
+}
+
+.pause-button:active {
+    background-color: rgba(255, 60, 80, 0.35);
+}
+
+.overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition-property: opacity;
+    transition-duration: 0.12s;
+    transition-timing-function: ease-out;
+}
+
+.overlay.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.overlay-card {
+    background-color: rgba(12, 12, 14, 0.95);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.8);
+    border-radius: 2px;
+    padding: 28px 36px;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-card-wide {
+    width: 80%;
+    max-width: 900px;
+}
+
+.overlay-text {
+    font-size: 44px;
+    color: rgb(245, 245, 245);
+    unity-text-align: middle-center;
+    -unity-font-style: bold;
+    letter-spacing: 1.5px;
+}
+
+.overlay-gameover-text {
+    color: rgb(255, 70, 80);
+    margin-bottom: 12px;
+}
+
+.overlay-title {
+    font-size: 36px;
+    color: rgb(245, 245, 245);
+    margin-bottom: 24px;
+    unity-text-align: middle-center;
+    -unity-font-style: bold;
+    letter-spacing: 1.2px;
+}
+
+.choice-list {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.choice-button {
+    height: 84px;
+    margin-top: 12px;
+    background-color: rgba(18, 18, 20, 0.98);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.8);
+    border-radius: 2px;
+    color: rgb(245, 245, 245);
+    font-size: 28px;
+    unity-text-align: middle-center;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    transition-property: background-color, border-color;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+}
+
+.choice-button:hover {
+    background-color: rgba(255, 60, 80, 0.2);
+    border-color: rgba(255, 90, 100, 1);
+}
+
+.choice-button:active {
+    background-color: rgba(255, 60, 80, 0.35);
+}
+
+.character-selection {
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 14px;
+    background-color: rgba(16, 16, 19, 0.9);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.55);
+    border-radius: 2px;
+}
+
+.character-title {
+    font-size: 26px;
+    color: rgb(245, 245, 245);
+    margin-bottom: 10px;
+    unity-text-align: middle-center;
+    -unity-font-style: bold;
+}
+
+.character-row {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.character-nav-button {
+    width: 72px;
+    height: 72px;
+    background-color: rgba(24, 24, 28, 1);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.8);
+    border-radius: 2px;
+    color: rgb(245, 245, 245);
+    font-size: 36px;
+    -unity-font-style: bold;
+    unity-text-align: middle-center;
+}
+
+.character-nav-button:hover {
+    background-color: rgba(255, 60, 80, 0.2);
+}
+
+.character-nav-button:active {
+    background-color: rgba(255, 60, 80, 0.35);
+}
+
+.character-info {
+    flex-grow: 1;
+    margin-left: 12px;
+    margin-right: 12px;
+    align-items: center;
+}
+
+.character-name {
+    font-size: 32px;
+    color: rgb(245, 245, 245);
+    -unity-font-style: bold;
+    unity-text-align: middle-center;
+}
+
+.character-desc {
+    margin-top: 4px;
+    font-size: 18px;
+    color: rgba(230, 230, 230, 0.9);
+    unity-text-align: middle-center;
+}
+
+.menu-list {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.menu-button {
+    height: 84px;
+    margin-top: 12px;
+    background-color: rgba(18, 18, 20, 0.98);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.8);
+    border-radius: 2px;
+    color: rgb(245, 245, 245);
+    font-size: 28px;
+    unity-text-align: middle-center;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    transition-property: background-color, border-color;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+}
+
+.menu-button:hover {
+    background-color: rgba(255, 60, 80, 0.2);
+    border-color: rgba(255, 90, 100, 1);
+}
+
+.menu-button:active {
+    background-color: rgba(255, 60, 80, 0.35);
+}
+
+.menu-button-exit {
+    border-color: rgba(255, 110, 60, 0.9);
+}
+
+.menu-button-secondary {
+    border-color: rgba(130, 130, 140, 0.9);
+}
+
+.menu-continue {
+    display: none;
+}
+
+.menu-hint {
+    margin-top: 16px;
+    font-size: 22px;
+    color: rgba(220, 220, 220, 0.95);
+    unity-text-align: middle-center;
+}
+
+.settings-card {
+    max-width: 760px;
+}
+
+.settings-section {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 14px;
+    background-color: rgba(16, 16, 19, 0.9);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.45);
+    border-radius: 2px;
+}
+
+.settings-row {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settings-label {
+    font-size: 26px;
+    color: rgb(245, 245, 245);
+    -unity-font-style: bold;
+}
+
+.settings-value-label {
+    font-size: 24px;
+    color: rgba(230, 230, 230, 0.95);
+}
+
+.settings-slider {
+    margin-top: 10px;
+    height: 36px;
+}
+
+.settings-dropdown {
+    margin-top: 10px;
+    height: 56px;
+    font-size: 22px;
+    color: rgb(245, 245, 245);
+}
+
+.settings-hint {
+    margin-top: 10px;
+    font-size: 18px;
+    color: rgba(220, 220, 220, 0.92);
+}
+
+.settings-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+}

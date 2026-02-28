@@ -1,0 +1,89 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="mainmenu-root" class="mainmenu-root">
+        <ui:VisualElement name="mainmenu-safe-area" class="mainmenu-safe-area">
+            <ui:VisualElement class="mainmenu-card">
+                <ui:Label name="mainmenu-title-label" class="mainmenu-title" text="ENDLESS ABYSS" />
+                <ui:Label name="mainmenu-subtitle-label" class="mainmenu-subtitle" text="Main Menu" />
+                <ui:Button name="mainmenu-play-button" class="mainmenu-button mainmenu-button-primary" text="Play" />
+                <ui:Button name="mainmenu-leaderboard-button" class="mainmenu-button" text="Leaderboard" />
+                <ui:Button name="mainmenu-collection-button" class="mainmenu-button" text="Collection" />
+                <ui:Button name="mainmenu-achievement-button" class="mainmenu-button" text="Achievements" />
+                <ui:Button name="mainmenu-settings-button" class="mainmenu-button" text="Settings" />
+                <ui:Button name="mainmenu-exit-button" class="mainmenu-button mainmenu-button-exit" text="Exit" />
+                <ui:Label name="mainmenu-hint-label" class="mainmenu-hint" text="" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="mainmenu-collection-overlay" class="mainmenu-overlay">
+                <ui:VisualElement class="mainmenu-collection-card">
+                    <ui:Label class="mainmenu-collection-title" text="Collection" />
+                    <ui:Label name="mainmenu-collection-progress-label" class="mainmenu-collection-progress" text="Unlocked 0/0" />
+                    <ui:ScrollView name="mainmenu-collection-scroll" class="mainmenu-collection-scroll">
+                        <ui:VisualElement name="mainmenu-collection-list" class="mainmenu-collection-list" />
+                    </ui:ScrollView>
+                    <ui:Button name="mainmenu-collection-back-button" class="mainmenu-button" text="Back to Main Interface" />
+                    <ui:Button name="mainmenu-collection-close-button" class="mainmenu-button" text="Close" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="mainmenu-leaderboard-overlay" class="mainmenu-overlay">
+                <ui:VisualElement class="mainmenu-panel-card">
+                    <ui:Label class="mainmenu-panel-title" text="Leaderboard" />
+                    <ui:VisualElement class="mainmenu-info-list">
+                        <ui:Label name="mainmenu-best-score-label" class="mainmenu-info-row" text="Best Score: 0" />
+                        <ui:Label name="mainmenu-last-score-label" class="mainmenu-info-row" text="Last Score: 0" />
+                        <ui:Label name="mainmenu-total-runs-label" class="mainmenu-info-row" text="Total Runs: 0" />
+                        <ui:Label name="mainmenu-average-score-label" class="mainmenu-info-row" text="Average Score: 0" />
+                        <ui:Label name="mainmenu-mode-progress-label" class="mainmenu-info-row" text="Modes: Classic (Unlocked), Hard (Locked), Abyss (Locked)" />
+                        <ui:Label name="mainmenu-top-scores-label" class="mainmenu-info-row mainmenu-info-row-small" text="Top Scores: 0, 0, 0" />
+                    </ui:VisualElement>
+                    <ui:Button name="mainmenu-leaderboard-back-button" class="mainmenu-button" text="Back to Main Interface" />
+                    <ui:Button name="mainmenu-leaderboard-close-button" class="mainmenu-button" text="Close" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="mainmenu-achievement-overlay" class="mainmenu-overlay">
+                <ui:VisualElement class="mainmenu-collection-card">
+                    <ui:Label class="mainmenu-collection-title" text="Achievements" />
+                    <ui:Label name="mainmenu-achievement-progress-label" class="mainmenu-collection-progress" text="Completed 0/0" />
+                    <ui:ScrollView name="mainmenu-achievement-scroll" class="mainmenu-collection-scroll">
+                        <ui:VisualElement name="mainmenu-achievement-list" class="mainmenu-collection-list" />
+                    </ui:ScrollView>
+                    <ui:Button name="mainmenu-achievement-back-button" class="mainmenu-button" text="Back to Main Interface" />
+                    <ui:Button name="mainmenu-achievement-close-button" class="mainmenu-button" text="Close" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="mainmenu-settings-overlay" class="mainmenu-overlay">
+                <ui:VisualElement class="mainmenu-panel-card">
+                    <ui:Label class="mainmenu-panel-title" text="Settings" />
+
+                    <ui:VisualElement class="mainmenu-settings-section">
+                        <ui:VisualElement class="mainmenu-settings-row">
+                            <ui:Label class="mainmenu-settings-label" text="Master Volume" />
+                            <ui:Label name="mainmenu-settings-volume-value-label" class="mainmenu-settings-value" text="100%" />
+                        </ui:VisualElement>
+                        <ui:Slider name="mainmenu-settings-volume-slider" class="mainmenu-settings-slider" low-value="0" high-value="1" value="1" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="mainmenu-settings-section">
+                        <ui:Label class="mainmenu-settings-label" text="Resolution" />
+                        <ui:DropdownField name="mainmenu-settings-resolution-dropdown" class="mainmenu-settings-dropdown" />
+                        <ui:Label name="mainmenu-settings-resolution-hint-label" class="mainmenu-settings-hint" text="Current Resolution: 0 x 0" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="mainmenu-settings-section">
+                        <ui:Label class="mainmenu-settings-label" text="Game Mode" />
+                        <ui:DropdownField name="mainmenu-game-mode-dropdown" class="mainmenu-settings-dropdown" />
+                        <ui:Label name="mainmenu-game-mode-hint-label" class="mainmenu-settings-hint" text="Select a mode." />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="mainmenu-settings-actions">
+                        <ui:Button name="mainmenu-settings-apply-button" class="mainmenu-button" text="Apply and Close" />
+                        <ui:Button name="mainmenu-settings-back-button" class="mainmenu-button" text="Back to Main Interface" />
+                        <ui:Button name="mainmenu-settings-close-button" class="mainmenu-button" text="Cancel" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

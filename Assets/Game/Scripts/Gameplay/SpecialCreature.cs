@@ -4,8 +4,15 @@ namespace EndlessRunner
 {
     public class SpecialCreature : Enemy
     {
+        public enum RewardMode
+        {
+            ReplaceAbility = 0,
+            None = 1
+        }
+
         [SerializeField] private AbilityDefinition ability;
         [SerializeField] private AbilityManager abilityManager;
+        [SerializeField] private RewardMode rewardMode = RewardMode.ReplaceAbility;
 
         private bool consumed;
 
@@ -30,7 +37,10 @@ namespace EndlessRunner
                 abilityManager = FindAnyObjectByType<AbilityManager>();
             }
 
-            abilityManager?.ReplaceAbility(ability);
+            if (rewardMode == RewardMode.ReplaceAbility)
+            {
+                abilityManager?.ReplaceAbility(ability);
+            }
             base.OnHitByAttack();
         }
     }

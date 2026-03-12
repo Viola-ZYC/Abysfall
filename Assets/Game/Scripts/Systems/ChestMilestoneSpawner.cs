@@ -10,10 +10,12 @@ namespace EndlessRunner
         [FormerlySerializedAs("chestPrefab")]
         [SerializeField] private GameObject legacyChestPrefab;
         [SerializeField] private GameObject[] specialCreaturePrefabs;
+        [SerializeField] private GameObject[] padCreaturePrefabs;
         [SerializeField] private GameObject loreCollectiblePrefab;
         [SerializeField] private Camera targetCamera;
         [SerializeField] private RunnerController runner;
         [SerializeField, Min(1)] private int scoreInterval = 100;
+        [SerializeField, Min(1)] private int padScoreInterval = 50;
         [Header("Lore Collectible Milestones")]
         [SerializeField] private bool enableLoreCollectibleMilestones = true;
         [SerializeField] private int[] loreCollectibleMilestones = { 120, 280, 450, 650, 900, 1200 };
@@ -27,11 +29,15 @@ namespace EndlessRunner
         [SerializeField, Range(0.01f, 0.99f)] private float deterministicXCycle = 0.6180339f;
         [SerializeField] private float randomRangeX = 2.5f;
         [SerializeField, Min(1)] private int maxSpawnsPerTick = 3;
+        [SerializeField, Min(1)] private int maxPadSpawnsPerTick = 3;
 
         private int nextScore;
         private int lastScore;
+        private int nextPadScore;
+        private int lastPadScore;
         private int lastProcessedFrame = -1;
         private int spawnedCreatureCount;
+        private int spawnedPadCount;
         private int nextLoreMilestoneIndex;
         private int spawnedLoreCount;
 
@@ -96,7 +102,9 @@ namespace EndlessRunner
         {
             int current = scoreManager != null ? scoreManager.Score : 0;
             lastScore = current;
+            lastPadScore = current;
             spawnedCreatureCount = 0;
+            spawnedPadCount = 0;
             spawnedLoreCount = 0;
             if (scoreInterval <= 0)
             {
@@ -106,6 +114,16 @@ namespace EndlessRunner
             {
                 int bucket = current / scoreInterval;
                 nextScore = (bucket + 1) * scoreInterval;
+            }
+
+            if (padScoreInterval <= 0)
+            {
+                nextPadScore = 0;
+            }
+            else
+            {
+                int padBucket = current / padScoreInterval;
+                nextPadScore = (padBucket + 1) * padScoreInterval;
             }
 
             nextLoreMilestoneIndex = 0;
@@ -154,8 +172,23 @@ namespace EndlessRunner
                 spawnCount++;
             }
 
+            if (score < lastPadScore)
+            {
+                ResetMilestones();
+                lastPadScore = score;
+            }
+
+            int padSpawnCount = 0;
+            while (padScoreInterval > 0 && score >= nextPadScore && padSpawnCount < maxPadSpawnsPerTick)
+            {
+                SpawnPadCreature();
+                nextPadScore += padScoreInterval;
+                padSpawnCount++;
+            }
+
             ProcessLoreMilestones(score);
             lastScore = score;
+            lastPadScore = score;
         }
 
         /// <summary>
@@ -196,6 +229,38 @@ namespace EndlessRunner
             }
 
             spawnedCreatureCount++;
+        }
+
+        private void SpawnPadCreature()
+        {
+            GameObject prefab = GetPadCreaturePrefab();
+            if (prefab == null)
+            {
+                return;
+            }
+
+            ResolveReferences();
+
+            int spawnIndex = spawnedPadCount;
+            float x = GetSpawnX(spawnIndex);
+            if (!TryGetBottomSpawnY(out float bottomY))
+            {
+                return;
+            }
+
+            Vector3 world = new Vector3(x, bottomY - spawnOffsetBelowScreen, 0f);
+            world.x = x;
+
+            if (pool != null)
+            {
+                pool.Get(prefab, world, Quaternion.identity);
+            }
+            else
+            {
+                Instantiate(prefab, world, Quaternion.identity);
+            }
+
+            spawnedPadCount++;
         }
 
         private void ProcessLoreMilestones(int score)
@@ -312,6 +377,17 @@ namespace EndlessRunner
             }
 
             return legacyChestPrefab;
+        }
+
+        private GameObject GetPadCreaturePrefab()
+        {
+            if (padCreaturePrefabs != null && padCreaturePrefabs.Length > 0)
+            {
+                int index = Random.Range(0, padCreaturePrefabs.Length);
+                return padCreaturePrefabs[index];
+            }
+
+            return null;
         }
 
         private bool TryGetBottomSpawnY(out float bottomY)

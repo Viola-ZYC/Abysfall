@@ -16,6 +16,12 @@ MonoBehaviour:
   horizontalSpeed: 6
   baseGravityScale: 2
   gravityIncreasePerSecond: 0.04
+  useScoreBasedGravity: 1
+  gravityScoreThreshold1: 500
+  gravityScoreThreshold2: 2000
+  gravityIncreaseStage1: 0.005
+  gravityIncreaseStage2: 0.01
+  gravityIncreaseStage3: 0.05
   maxGravityScale: 8
   maxFallSpeed: 16
   brakeUpwardImpulse: 8

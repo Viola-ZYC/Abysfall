@@ -9,6 +9,12 @@ namespace EndlessRunner
         public float horizontalSpeed = 6f;
         public float baseGravityScale = 2f;
         public float gravityIncreasePerSecond = 0.12f;
+        public bool useScoreBasedGravity = true;
+        [Min(0)] public int gravityScoreThreshold1 = 500;
+        [Min(0)] public int gravityScoreThreshold2 = 2000;
+        [Min(0f)] public float gravityIncreaseStage1 = 0.005f;
+        [Min(0f)] public float gravityIncreaseStage2 = 0.01f;
+        [Min(0f)] public float gravityIncreaseStage3 = 0.05f;
         public float maxGravityScale = 8f;
         public float maxFallSpeed = 0f;
         public float brakeUpwardImpulse = 8f;

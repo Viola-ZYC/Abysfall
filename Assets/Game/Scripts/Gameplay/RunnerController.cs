@@ -9,6 +9,7 @@ namespace EndlessRunner
         [SerializeField] private RunnerConfig config;
         [SerializeField] private InputRouter input;
         [SerializeField] private HitStopper hitStopper;
+        [SerializeField] private ScoreManager scoreManager;
         [SerializeField] private bool clampHorizontal = true;
         [SerializeField] private float minX = -3f;
         [SerializeField] private float maxX = 3f;
@@ -32,9 +33,14 @@ namespace EndlessRunner
         private float abilityBrakeImpulseBonus = 0f;
         private float abilityHitStopBonus = 0f;
         private int abilityMaxHealthBonus = 0;
+        private Vector2 currentAcceleration;
+        private Vector2 lastVelocitySample;
+        private bool hasVelocitySample;
 
         public int CurrentHealth => currentHealth;
         public int MaxHealth => config != null ? Mathf.Max(1, config.maxHealth + abilityMaxHealthBonus) : Mathf.Max(1, currentHealth);
+        public Vector2 CurrentVelocity => body != null ? body.linearVelocity : Vector2.zero;
+        public Vector2 CurrentAcceleration => currentAcceleration;
         public event Action<int, int> HealthChanged;
 
         private void Awake()
@@ -95,6 +101,7 @@ namespace EndlessRunner
         {
             if (!IsRunning() || config == null)
             {
+                ResetKinematicsSample();
                 return;
             }
 
@@ -102,6 +109,7 @@ namespace EndlessRunner
             ClampHorizontalPosition();
             ClampFallSpeed();
             SweepForObstacles();
+            UpdateKinematicsSample();
         }
 
         public void ResetRunner()
@@ -121,6 +129,7 @@ namespace EndlessRunner
                 body.rotation = initialWorldRotation.eulerAngles.z;
             }
             body.linearVelocity = Vector2.zero;
+            ResetKinematicsSample();
             slowTimer = 0f;
             speedMultiplier = 1f;
             currentHealth = MaxHealth;
@@ -145,17 +154,18 @@ namespace EndlessRunner
 
         private void UpdateGravity()
         {
+            float gravityIncrease = GetGravityIncreasePerSecond();
             float targetMax = config.maxGravityScale;
             if (targetMax > 0f && targetMax > config.baseGravityScale)
             {
                 float normalized = Mathf.InverseLerp(config.baseGravityScale, targetMax, currentGravityScale);
                 float damp = 1f - normalized;
-                currentGravityScale += config.gravityIncreasePerSecond * damp * Time.deltaTime;
+                currentGravityScale += gravityIncrease * damp * Time.deltaTime;
                 currentGravityScale = Mathf.Min(currentGravityScale, targetMax);
             }
             else
             {
-                currentGravityScale += config.gravityIncreasePerSecond * Time.deltaTime;
+                currentGravityScale += gravityIncrease * Time.deltaTime;
                 if (targetMax > 0f)
                 {
                     currentGravityScale = Mathf.Min(currentGravityScale, targetMax);
@@ -163,6 +173,43 @@ namespace EndlessRunner
             }
 
             body.gravityScale = currentGravityScale * Mathf.Max(0.1f, abilityGravityMultiplier);
+        }
+
+        private float GetGravityIncreasePerSecond()
+        {
+            if (config == null)
+            {
+                return 0f;
+            }
+
+            if (!config.useScoreBasedGravity)
+            {
+                return Mathf.Max(0f, config.gravityIncreasePerSecond);
+            }
+
+            int score = 0;
+            if (scoreManager != null)
+            {
+                score = scoreManager.Score;
+            }
+            else if (ScoreManager.Instance != null)
+            {
+                score = ScoreManager.Instance.Score;
+            }
+
+            int threshold1 = Mathf.Max(0, config.gravityScoreThreshold1);
+            int threshold2 = Mathf.Max(threshold1, config.gravityScoreThreshold2);
+            if (score < threshold1)
+            {
+                return Mathf.Max(0f, config.gravityIncreaseStage1);
+            }
+
+            if (score < threshold2)
+            {
+                return Mathf.Max(0f, config.gravityIncreaseStage2);
+            }
+
+            return Mathf.Max(0f, config.gravityIncreaseStage3);
         }
 
         private void UpdateHorizontalMovement()
@@ -377,10 +424,43 @@ namespace EndlessRunner
             }
 
             body.simulated = enabled;
+            if (!enabled)
+            {
+                ResetKinematicsSample();
+            }
+
             if (enabled)
             {
                 body.constraints |= RigidbodyConstraints2D.FreezeRotation;
             }
+        }
+
+        private void UpdateKinematicsSample()
+        {
+            if (body == null)
+            {
+                return;
+            }
+
+            Vector2 velocity = body.linearVelocity;
+            if (hasVelocitySample && Time.fixedDeltaTime > Mathf.Epsilon)
+            {
+                currentAcceleration = (velocity - lastVelocitySample) / Time.fixedDeltaTime;
+            }
+            else
+            {
+                currentAcceleration = Vector2.zero;
+            }
+
+            lastVelocitySample = velocity;
+            hasVelocitySample = true;
+        }
+
+        private void ResetKinematicsSample()
+        {
+            currentAcceleration = Vector2.zero;
+            lastVelocitySample = body != null ? body.linearVelocity : Vector2.zero;
+            hasVelocitySample = false;
         }
 
         private void ApplyDamage(int amount)

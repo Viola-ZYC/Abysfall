@@ -12,6 +12,7 @@ namespace EndlessRunner
         [SerializeField] private GameObject[] obstaclePrefabs;
         [SerializeField] private GameObject[] enemyPrefabs;
         [SerializeField] private GameObject[] chestPrefabs;
+        [SerializeField] private bool enableChests = false;
         [SerializeField] private GameObject[] collectiblePrefabs;
         [SerializeField] private Transform[] spawnPoints;
         [SerializeField] private RunnerController runner;
@@ -86,7 +87,7 @@ namespace EndlessRunner
             float progress = GetProgressFactor(score);
 
             int pointCount = points.Count;
-            bool canSpawnChests = chestPrefabs != null && chestPrefabs.Length > 0;
+            bool canSpawnChests = enableChests && chestPrefabs != null && chestPrefabs.Length > 0;
             bool canSpawnCollectibles = (collectiblePrefabs != null && collectiblePrefabs.Length > 0) || autoCreateRuntimeCollectiblePrefab;
             bool canSpawnEnemies = enemyPrefabs != null && enemyPrefabs.Length > 0;
             bool canSpawnObstacles = obstaclePrefabs != null && obstaclePrefabs.Length > 0;

@@ -9,6 +9,9 @@ namespace EndlessRunner
         public string displayName = "New Ability";
         [TextArea] public string description;
         public Sprite icon;
+        public bool isPassive = false;
+        public ActiveAbilityEffect activeEffect;
+        [Min(0f)] public float activeCooldown = 0f;
         [Min(1)] public int maxStacks = 1;
         [Min(0f)] public float weight = 1f;
         public AbilityEffect[] effects;

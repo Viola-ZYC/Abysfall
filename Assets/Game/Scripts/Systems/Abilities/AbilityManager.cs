@@ -24,9 +24,14 @@ namespace EndlessRunner
 
         private readonly Dictionary<AbilityDefinition, int> acquiredLookup = new();
         private AbilityContext context;
+        private AbilityDefinition currentAbility;
+        private float nextActiveTime;
 
         public event Action<AbilityDefinition, int> AbilityAcquired;
         public event Action<IReadOnlyList<AbilityDefinition>> AbilityChoicesRolled;
+        public event Action<AbilityDefinition> AbilityReplaced;
+
+        public AbilityDefinition CurrentAbility => currentAbility;
 
         private void Awake()
         {
@@ -48,6 +53,8 @@ namespace EndlessRunner
             RemoveAllAbilities();
             acquired.Clear();
             acquiredLookup.Clear();
+            currentAbility = null;
+            nextActiveTime = 0f;
         }
 
         public IReadOnlyList<AbilityDefinition> RollChoices()
@@ -122,6 +129,58 @@ namespace EndlessRunner
             SetStacks(ability, currentStacks + 1);
             AbilityAcquired?.Invoke(ability, currentStacks + 1);
             return true;
+        }
+
+        public bool ReplaceAbility(AbilityDefinition ability)
+        {
+            if (ability == null)
+            {
+                return false;
+            }
+
+            RemoveAllAbilities();
+            acquired.Clear();
+            acquiredLookup.Clear();
+            currentAbility = null;
+
+            bool acquiredAbility = AcquireAbility(ability);
+            if (!acquiredAbility)
+            {
+                return false;
+            }
+
+            currentAbility = ability;
+            nextActiveTime = 0f;
+            AbilityReplaced?.Invoke(ability);
+            return true;
+        }
+
+        public bool TryActivateCurrentAbility()
+        {
+            if (currentAbility == null)
+            {
+                return false;
+            }
+
+            if (currentAbility.isPassive || currentAbility.activeEffect == null)
+            {
+                return false;
+            }
+
+            if (Time.time < nextActiveTime)
+            {
+                return false;
+            }
+
+            EnsureContext();
+            bool activated = currentAbility.activeEffect.Activate(context);
+            if (activated)
+            {
+                float cooldown = Mathf.Max(0f, currentAbility.activeCooldown);
+                nextActiveTime = cooldown > 0f ? Time.time + cooldown : Time.time;
+            }
+
+            return activated;
         }
 
         public int GetStacks(AbilityDefinition ability)

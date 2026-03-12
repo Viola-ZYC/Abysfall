@@ -20,6 +20,34 @@
     flex-direction: column;
 }
 
+.ability-action {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    align-items: center;
+}
+
+.ability-button {
+    width: 360px;
+    height: 72px;
+    background-color: rgba(18, 18, 20, 0.98);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.8);
+    border-radius: 2px;
+    color: rgb(245, 245, 245);
+    font-size: 26px;
+    unity-text-align: middle-center;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.ability-button:disabled {
+    background-color: rgba(20, 20, 22, 0.6);
+    border-color: rgba(120, 120, 120, 0.6);
+    color: rgba(200, 200, 200, 0.6);
+}
+
 .hud-row {
     width: 100%;
     flex-direction: row;
@@ -40,6 +68,14 @@
     color: rgb(245, 245, 245);
     margin-bottom: 6px;
     letter-spacing: 1px;
+    -unity-font-style: bold;
+}
+
+.hud-metric-text {
+    font-size: 22px;
+    color: rgba(232, 232, 232, 0.95);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
     -unity-font-style: bold;
 }
 
@@ -123,6 +159,20 @@
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1.2px;
+}
+
+.ability-acquired-desc {
+    font-size: 22px;
+    color: rgba(230, 230, 230, 0.95);
+    unity-text-align: middle-center;
+    margin-bottom: 18px;
+    max-width: 720px;
+}
+
+.ability-acquired-hint {
+    font-size: 18px;
+    color: rgba(210, 210, 210, 0.8);
+    unity-text-align: middle-center;
 }
 
 .choice-list {

@@ -13,7 +13,7 @@ namespace EndlessRunner
             isDead = false;
         }
 
-        public void OnHitByAttack()
+        public virtual void OnHitByAttack()
         {
             if (isDead)
             {

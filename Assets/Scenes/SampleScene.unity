@@ -282,13 +282,20 @@ MonoBehaviour:
   useSafeArea: 1
   leftWall: {fileID: 519420041}
   rightWall: {fileID: 519420051}
-  gameplayBackground: {fileID: 0}
+  gameplayBackground: {fileID: 700000001}
   runner: {fileID: 2005836459}
   resizeWallsVertically: 1
-  autoFitBackgroundToBounds: 1
+  autoFitBackgroundToBounds: 0
   wallVerticalPadding: 2
   backgroundVerticalPadding: 2
   horizontalInset: 0
+  adaptOrthographicSizeForAspect: 1
+  referenceResolution: {x: 1080, y: 1920}
+  minSupportedAspect: 0.42857143
+  maxSupportedAspect: 0.5625
+  minOrthographicScale: 0.85
+  maxOrthographicScale: 1.35
+  referenceOrthographicSizeOverride: 0
 --- !u!1 &519420040
 GameObject:
   m_ObjectHideFlags: 0
@@ -649,6 +656,162 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &700000000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 700000001}
+  - component: {fileID: 700000002}
+  m_Layer: 0
+  m_Name: GameplayBackground
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &700000001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700000000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 700000014}
+  - {fileID: 700000015}
+  - {fileID: 700000013}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &700000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4333512a0a7d4bf09e16e5609d9d775e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 519420031}
+  followTarget: {fileID: 2005836457}
+  backgroundPrefab: {fileID: 100100000, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+  segmentCount: 3
+  recycleBuffer: 1
+  buildInEditMode: 0
+  keepInSync: 0
+--- !u!1001 &700000010
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 700000001}
+    m_Modifications:
+    - target: {fileID: 5866369720229685896, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_Name
+      value: BG_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+--- !u!1001 &700000011
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 700000001}
+    m_Modifications:
+    - target: {fileID: 5866369720229685896, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_Name
+      value: BG_0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.76
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+--- !u!1001 &700000012
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 700000001}
+    m_Modifications:
+    - target: {fileID: 5866369720229685896, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_Name
+      value: BG_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -5.76
+      objectReference: {fileID: 0}
+    - target: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+--- !u!4 &700000013 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+  m_PrefabInstance: {fileID: 700000012}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &700000014 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+  m_PrefabInstance: {fileID: 700000011}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &700000015 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7769088733814347062, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
+  m_PrefabInstance: {fileID: 700000010}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2005836456
 GameObject:
   m_ObjectHideFlags: 0
@@ -663,6 +826,8 @@ GameObject:
   - component: {fileID: 2005836459}
   - component: {fileID: 3000000061}
   - component: {fileID: 3000000062}
+  - component: {fileID: 5000000003}
+  - component: {fileID: 5000000002}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -680,7 +845,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -702,7 +867,17 @@ MonoBehaviour:
   useKeyboardFallback: 1
   useTouchInput: 1
   simulateTouchWithMouse: 1
+  touchMoveByScreenPosition: 1
+  touchMoveByScreenHalf: 1
+  touchCenterDeadZone: 0.08
   swipeHorizontalRange: 120
+  scaleSwipeRangeWithScreenWidth: 1
+  swipeRangeWidthRatio: 0.11
+  minSwipeHorizontalRange: 90
+  maxSwipeHorizontalRange: 220
+  showDebugOverlayInEditor: 1
+  debugOverlayOffset: {x: 20, y: 80}
+  debugFontSize: 30
 --- !u!114 &2005836459
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -723,6 +898,7 @@ MonoBehaviour:
   maxX: 2.9
   boundaryPadding: 0
   useVisualBoundsForClamp: 1
+  resetTransformOnReset: 1
 --- !u!1 &3000000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -769,6 +945,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.GameManager
   initialState: 1
   forcePortrait: 1
+  useSceneBasedMainMenu: 1
+  allowGameOverQuickRestart: 0
+  mainMenuSceneName: MainMenuScene
+  gameplaySceneName: SampleScene
   runner: {fileID: 2005836459}
   trackManager: {fileID: 3000000013}
   scoreManager: {fileID: 3000000023}
@@ -820,6 +1000,15 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: f1374da2bd2fd2b4dbf807f95fda835e, type: 2}
   player: {fileID: 2005836457}
   pool: {fileID: 3000000033}
+  adaptDistancesToCamera: 1
+  targetCamera: {fileID: 0}
+  referenceCameraHalfHeight: 5
+  minDistanceScale: 0.85
+  maxDistanceScale: 1.35
+  deterministicSegmentSelection: 1
+  segmentProgressScale: 220
+  segmentProgressWeight: 1.35
+  segmentSequenceStride: 1
 --- !u!1 &3000000021
 GameObject:
   m_ObjectHideFlags: 0
@@ -1072,17 +1261,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.002517879, y: 0.000000029802322}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.28, y: 1.28}
+    oldSize: {x: 0.3125, y: 0.546875}
     newSize: {x: 1.28, y: 1.28}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.3050636, y: 0.54678065}
   m_EdgeRadius: 0
 --- !u!1 &3000000071
 GameObject:
@@ -1140,6 +1329,7 @@ MonoBehaviour:
   panelSettingsResource: UI/GamePanelSettings
   panelName: ability-panel
   choiceButtonPrefix: ability-choice-
+  mainMenuButtonName: ability-mainmenu-button
   toolkitChoiceCount: 3
 --- !u!212 &5000000001
 SpriteRenderer:
@@ -1190,7 +1380,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: e072ff15afcf4b27a38c901504930d7a, type: 3}
+  m_Sprite: {fileID: -1101268818540134656, guid: d55736492d142374798f5c79f57556bc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1200,6 +1390,44 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &5000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005836456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e56946a22ea74b6caa44aab17c7c7abe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.PlayerAnimatorStateDriver
+  runner: {fileID: 0}
+  verticalMoveThreshold: 0.05
+  horizontalFacingThreshold: 0.01
+  positiveXFacesRight: 1
+--- !u!95 &5000000003
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005836456}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: b6db7dc8bd5b02c4bbba71552fc756bb, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &7000000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1211,6 +1439,7 @@ GameObject:
   - component: {fileID: 7000000002}
   - component: {fileID: 7000000003}
   - component: {fileID: 7000000004}
+  - component: {fileID: 7000000005}
   m_Layer: 5
   m_Name: GameUI
   m_TagString: Untagged
@@ -1281,6 +1510,8 @@ MonoBehaviour:
   panelSettingsResource: UI/GamePanelSettings
   scoreLabelName: score-label
   healthLabelName: health-label
+  speedLabelName: speed-label
+  accelerationLabelName: acceleration-label
   pauseButtonName: pause-button
   menuPanelName: menu-panel
   menuTitleLabelName: menu-title-label
@@ -1297,12 +1528,43 @@ MonoBehaviour:
   menuCollectionButtonName: menu-collection-button
   menuSettingsButtonName: menu-settings-button
   menuExitButtonName: menu-exit-button
+  pauseMainMenuButtonName: pause-mainmenu-button
+  pauseExitButtonName: pause-exit-button
+  gameOverRestartButtonName: gameover-restart-button
+  gameOverMainMenuButtonName: gameover-mainmenu-button
+  gameOverExitButtonName: gameover-exit-button
   menuHintLabelName: menu-hint-label
+  settingsPanelName: settings-panel
+  settingsVolumeSliderName: settings-volume-slider
+  settingsVolumeValueLabelName: settings-volume-value-label
+  settingsResolutionDropdownName: settings-resolution-dropdown
+  settingsResolutionHintLabelName: settings-resolution-hint-label
+  settingsApplyButtonName: settings-apply-button
+  settingsMainMenuButtonName: settings-mainmenu-button
+  settingsCloseButtonName: settings-close-button
   characterOptions: []
   defaultCharacterIndex: 0
   disableLegacyCanvasOnToolkit: 1
   applySafeArea: 1
-  enableImmediateGuiFallback: 1
+--- !u!114 &7000000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56a0aaef04e74fcc8fc968602fe27049, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiDocument: {fileID: 7000000003}
+  abilityManager: {fileID: 0}
+  gameManager: {fileID: 0}
+  panelName: ability-acquired-panel
+  titleLabelName: ability-acquired-title
+  descLabelName: ability-acquired-desc
+  hintLabelName: ability-acquired-hint
 --- !u!1 &8000000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1349,19 +1611,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreManager: {fileID: 3000000023}
   pool: {fileID: 3000000033}
-  chestPrefab: {fileID: 9150000000000000001, guid: f4e3d2c1b0a9f8e7d6c5b4a39281706f, type: 3}
+  legacyChestPrefab: {fileID: 9150000000000000001, guid: f4e3d2c1b0a9f8e7d6c5b4a39281706f, type: 3}
+  specialCreaturePrefabs:
+  - {fileID: 8270579165458065032, guid: 4f68fcef4f13440cbe71665747d50d67, type: 3}
   loreCollectiblePrefab: {fileID: 9200000000000000001, guid: 9a4f61d3575b47d2b93e12f0a6c8d4e1, type: 3}
   targetCamera: {fileID: 0}
   runner: {fileID: 2005836459}
-  scoreInterval: 120
+  scoreInterval: 100
   enableLoreCollectibleMilestones: 1
-  loreCollectibleMilestones:
-  - 120
-  - 280
-  - 450
-  - 650
-  - 900
-  - 1200
+  loreCollectibleMilestones: 7800000018010000c20100008a02000084030000b0040000
   loreCollectibleScoreValue: 0
   spawnOffsetBelowScreen: 0.2
   useLanePositions: 1
@@ -1389,5 +1647,6 @@ SceneRoots:
   - {fileID: 3000000052}
   - {fileID: 3000000072}
   - {fileID: 2005836457}
+  - {fileID: 700000001}
   - {fileID: 7000000002}
   - {fileID: 8000000002}

@@ -7,9 +7,14 @@
                         <VisualElement class="hud-card">
                             <Label name="score-label" class="hud-text" text="0" />
                             <Label name="health-label" class="hud-text" text="HP 3/3" />
+                            <Label name="speed-label" class="hud-metric-text" text="SPD 0.00 m/s" />
+                            <Label name="acceleration-label" class="hud-metric-text" text="ACC 0.00 m/s2" />
                         </VisualElement>
                         <Button name="pause-button" class="pause-button" text="Pause" />
                     </VisualElement>
+                </VisualElement>
+                <VisualElement name="ability-action" class="ability-action">
+                    <Button name="ability-action-button" class="ability-button" text="No Ability" />
                 </VisualElement>
 
             <VisualElement name="menu-panel" class="overlay overlay-menu">
@@ -85,6 +90,13 @@
                         <Button name="ability-choice-2" class="choice-button" text="Ability 3" />
                         <Button name="ability-mainmenu-button" class="choice-button" text="Return to Main Menu" />
                     </VisualElement>
+                </VisualElement>
+            </VisualElement>
+            <VisualElement name="ability-acquired-panel" class="overlay overlay-ability-acquired">
+                <VisualElement class="overlay-card overlay-card-wide">
+                    <Label name="ability-acquired-title" class="overlay-title" text="Ability Acquired" />
+                    <Label name="ability-acquired-desc" class="ability-acquired-desc" text="A new power surges within you." />
+                    <Label name="ability-acquired-hint" class="ability-acquired-hint" text="Tap anywhere to continue." />
                 </VisualElement>
             </VisualElement>
         </VisualElement>

@@ -33,6 +33,7 @@ namespace EndlessRunner
         [SerializeField] private ScoreManager scoreManager;
         [SerializeField] private GameManager gameManager;
         [SerializeField] private RunnerController runner;
+        [SerializeField] private AbilityManager abilityManager;
         [SerializeField] private Text scoreText;
         [SerializeField] private Text healthText;
         [SerializeField] private GameObject menuPanel;
@@ -45,7 +46,11 @@ namespace EndlessRunner
         [SerializeField] private string panelSettingsResource = "UI/GamePanelSettings";
         [SerializeField] private string scoreLabelName = "score-label";
         [SerializeField] private string healthLabelName = "health-label";
+        [SerializeField] private string speedLabelName = "speed-label";
+        [SerializeField] private string accelerationLabelName = "acceleration-label";
         [SerializeField] private string pauseButtonName = "pause-button";
+        [SerializeField] private string abilityActionContainerName = "ability-action";
+        [SerializeField] private string abilityActionButtonName = "ability-action-button";
         [SerializeField] private string menuPanelName = "menu-panel";
         [SerializeField] private string menuTitleLabelName = "menu-title-label";
         [SerializeField] private string characterSelectionName = "character-selection";
@@ -82,7 +87,10 @@ namespace EndlessRunner
 
         private Label scoreLabel;
         private Label healthLabel;
+        private Label speedLabel;
+        private Label accelerationLabel;
         private Label menuTitleLabel;
+        private VisualElement abilityActionContainer;
         private VisualElement menuPanelElement;
         private VisualElement gameOverPanelElement;
         private VisualElement settingsPanelElement;
@@ -94,6 +102,7 @@ namespace EndlessRunner
         private Label settingsVolumeValueLabel;
         private Label settingsResolutionHintLabel;
         private UITKButton pauseButton;
+        private UITKButton abilityActionButton;
         private UITKButton characterPrevButton;
         private UITKButton characterNextButton;
         private UITKButton menuContinueButton;
@@ -174,6 +183,11 @@ namespace EndlessRunner
                 gameManager.StateChanged += OnStateChanged;
             }
 
+            if (abilityManager != null)
+            {
+                abilityManager.AbilityReplaced += OnAbilityReplaced;
+            }
+
             if (runner != null)
             {
                 runner.HealthChanged += OnHealthChanged;
@@ -195,6 +209,11 @@ namespace EndlessRunner
             if (gameManager != null)
             {
                 gameManager.StateChanged -= OnStateChanged;
+            }
+
+            if (abilityManager != null)
+            {
+                abilityManager.AbilityReplaced -= OnAbilityReplaced;
             }
 
             if (runner != null)
@@ -228,6 +247,8 @@ namespace EndlessRunner
                 return;
             }
 
+            RefreshMotionMetrics();
+
             if (!applySafeArea)
             {
                 return;
@@ -244,11 +265,81 @@ namespace EndlessRunner
             }
         }
 
+        private void OnAbilityReplaced(AbilityDefinition ability)
+        {
+            RefreshAbilityButtonState();
+        }
+
+        private void RefreshAbilityButtonState()
+        {
+            if (abilityActionButton == null)
+            {
+                return;
+            }
+
+            AbilityDefinition ability = abilityManager != null ? abilityManager.CurrentAbility : null;
+            if (ability == null)
+            {
+                abilityActionButton.text = "No Ability";
+                abilityActionButton.SetEnabled(false);
+                return;
+            }
+
+            bool isPassive = ability.isPassive || ability.activeEffect == null;
+            abilityActionButton.text = isPassive
+                ? $"{ability.displayName} (Passive)"
+                : ability.displayName;
+            abilityActionButton.SetEnabled(!isPassive);
+        }
+
+        private void OnAbilityActionClicked()
+        {
+            if (abilityManager == null)
+            {
+                return;
+            }
+
+            abilityManager.TryActivateCurrentAbility();
+        }
+
         private void OnHealthChanged(int current, int max)
         {
             if (healthLabel != null)
             {
                 healthLabel.text = $"HP {current}/{max}";
+            }
+        }
+
+        private void RefreshMotionMetrics()
+        {
+            if (speedLabel == null && accelerationLabel == null)
+            {
+                return;
+            }
+
+            Vector2 velocity = runner != null ? runner.CurrentVelocity : Vector2.zero;
+            Vector2 acceleration = runner != null ? runner.CurrentAcceleration : Vector2.zero;
+
+            float speed = velocity.magnitude;
+            float accel = acceleration.magnitude;
+
+            if (gameManager != null && gameManager.State != GameState.Running)
+            {
+                accel = 0f;
+                if (speed < 0.001f)
+                {
+                    speed = 0f;
+                }
+            }
+
+            if (speedLabel != null)
+            {
+                speedLabel.text = $"SPD {speed:0.00} m/s";
+            }
+
+            if (accelerationLabel != null)
+            {
+                accelerationLabel.text = $"ACC {accel:0.00} m/s2";
             }
         }
 
@@ -268,6 +359,7 @@ namespace EndlessRunner
                 settingsPanelRequested = false;
             }
 
+            SetAbilityButtonVisible(state == GameState.Running);
             SetDisplay(menuPanelElement, showMainMenu || showPauseMenu);
             SetDisplay(gameOverPanelElement, state == GameState.GameOver);
             SetSettingsPanelVisible(canShowSettings && settingsPanelRequested);
@@ -317,7 +409,11 @@ namespace EndlessRunner
 
             scoreLabel = root.Q<Label>(scoreLabelName);
             healthLabel = root.Q<Label>(healthLabelName);
+            speedLabel = root.Q<Label>(speedLabelName);
+            accelerationLabel = root.Q<Label>(accelerationLabelName);
             pauseButton = root.Q<UITKButton>(pauseButtonName);
+            abilityActionContainer = root.Q<VisualElement>(abilityActionContainerName);
+            abilityActionButton = root.Q<UITKButton>(abilityActionButtonName);
             menuPanelElement = root.Q<VisualElement>(menuPanelName);
             menuTitleLabel = root.Q<Label>(menuTitleLabelName);
             characterSelectionElement = root.Q<VisualElement>(characterSelectionName);
@@ -351,7 +447,11 @@ namespace EndlessRunner
             List<string> missingElements = new List<string>();
             if (scoreLabel == null) missingElements.Add(scoreLabelName);
             if (healthLabel == null) missingElements.Add(healthLabelName);
+            if (speedLabel == null) missingElements.Add(speedLabelName);
+            if (accelerationLabel == null) missingElements.Add(accelerationLabelName);
             if (pauseButton == null) missingElements.Add(pauseButtonName);
+            if (abilityActionContainer == null) missingElements.Add(abilityActionContainerName);
+            if (abilityActionButton == null) missingElements.Add(abilityActionButtonName);
             if (menuPanelElement == null) missingElements.Add(menuPanelName);
             if (menuTitleLabel == null) missingElements.Add(menuTitleLabelName);
             if (characterSelectionElement == null) missingElements.Add(characterSelectionName);
@@ -441,6 +541,11 @@ namespace EndlessRunner
             {
                 runner = FindAnyObjectByType<RunnerController>();
             }
+
+            if (abilityManager == null)
+            {
+                abilityManager = FindAnyObjectByType<AbilityManager>();
+            }
         }
 
         /// <summary>
@@ -466,6 +571,8 @@ namespace EndlessRunner
                 runner.HealthChanged += OnHealthChanged;
                 OnHealthChanged(runner.CurrentHealth, runner.MaxHealth);
             }
+
+            RefreshMotionMetrics();
         }
 
         private void InitializeToolkitIfNeeded()
@@ -488,6 +595,8 @@ namespace EndlessRunner
             {
                 OnHealthChanged(runner.CurrentHealth, runner.MaxHealth);
             }
+            RefreshMotionMetrics();
+            RefreshAbilityButtonState();
 
             if (gameManager != null)
             {
@@ -559,6 +668,12 @@ namespace EndlessRunner
             pauseButton.clicked -= OnPauseClicked;
             pauseButton.clicked += OnPauseClicked;
 
+            if (abilityActionButton != null)
+            {
+                abilityActionButton.clicked -= OnAbilityActionClicked;
+                abilityActionButton.clicked += OnAbilityActionClicked;
+            }
+
             characterPrevButton.clicked -= OnCharacterPrevClicked;
             characterPrevButton.clicked += OnCharacterPrevClicked;
 
@@ -616,6 +731,7 @@ namespace EndlessRunner
             RefreshCharacterSelectionUI();
             EnsureSettingsInitialized();
             SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
+            RefreshAbilityButtonState();
         }
 
         private void UnbindMenuButtons()
@@ -628,6 +744,11 @@ namespace EndlessRunner
             if (pauseButton != null)
             {
                 pauseButton.clicked -= OnPauseClicked;
+            }
+
+            if (abilityActionButton != null)
+            {
+                abilityActionButton.clicked -= OnAbilityActionClicked;
             }
 
             if (characterPrevButton != null)
@@ -971,6 +1092,16 @@ namespace EndlessRunner
             }
 
             pauseButton.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void SetAbilityButtonVisible(bool visible)
+        {
+            if (abilityActionContainer == null)
+            {
+                return;
+            }
+
+            abilityActionContainer.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void SetContinueButtonVisible(bool visible)

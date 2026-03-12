@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace EndlessRunner
 {
@@ -6,7 +7,9 @@ namespace EndlessRunner
     {
         [SerializeField] private ScoreManager scoreManager;
         [SerializeField] private ObjectPool pool;
-        [SerializeField] private GameObject chestPrefab;
+        [FormerlySerializedAs("chestPrefab")]
+        [SerializeField] private GameObject legacyChestPrefab;
+        [SerializeField] private GameObject[] specialCreaturePrefabs;
         [SerializeField] private GameObject loreCollectiblePrefab;
         [SerializeField] private Camera targetCamera;
         [SerializeField] private RunnerController runner;
@@ -28,7 +31,7 @@ namespace EndlessRunner
         private int nextScore;
         private int lastScore;
         private int lastProcessedFrame = -1;
-        private int spawnedChestCount;
+        private int spawnedCreatureCount;
         private int nextLoreMilestoneIndex;
         private int spawnedLoreCount;
 
@@ -93,7 +96,7 @@ namespace EndlessRunner
         {
             int current = scoreManager != null ? scoreManager.Score : 0;
             lastScore = current;
-            spawnedChestCount = 0;
+            spawnedCreatureCount = 0;
             spawnedLoreCount = 0;
             if (scoreInterval <= 0)
             {
@@ -146,7 +149,7 @@ namespace EndlessRunner
             int spawnCount = 0;
             while (score >= nextScore && spawnCount < maxSpawnsPerTick)
             {
-                SpawnChest();
+                SpawnSpecialCreature();
                 nextScore += scoreInterval;
                 spawnCount++;
             }
@@ -163,16 +166,17 @@ namespace EndlessRunner
             runner = newRunner;
         }
 
-        private void SpawnChest()
+        private void SpawnSpecialCreature()
         {
-            if (chestPrefab == null)
+            GameObject prefab = GetSpecialCreaturePrefab();
+            if (prefab == null)
             {
                 return;
             }
 
             ResolveReferences();
 
-            int spawnIndex = spawnedChestCount;
+            int spawnIndex = spawnedCreatureCount;
             float x = GetSpawnX(spawnIndex);
             if (!TryGetBottomSpawnY(out float bottomY))
             {
@@ -184,14 +188,14 @@ namespace EndlessRunner
 
             if (pool != null)
             {
-                pool.Get(chestPrefab, world, Quaternion.identity);
+                pool.Get(prefab, world, Quaternion.identity);
             }
             else
             {
-                Instantiate(chestPrefab, world, Quaternion.identity);
+                Instantiate(prefab, world, Quaternion.identity);
             }
 
-            spawnedChestCount++;
+            spawnedCreatureCount++;
         }
 
         private void ProcessLoreMilestones(int score)
@@ -217,7 +221,7 @@ namespace EndlessRunner
                 return;
             }
 
-            int spawnIndex = spawnedChestCount + spawnedLoreCount;
+            int spawnIndex = spawnedCreatureCount + spawnedLoreCount;
             float x = GetSpawnX(spawnIndex);
             Vector3 world = new Vector3(x, bottomY - spawnOffsetBelowScreen, 0f);
 
@@ -297,6 +301,17 @@ namespace EndlessRunner
 
             int score = scoreManager != null ? scoreManager.Score : 0;
             return score / scoreInterval;
+        }
+
+        private GameObject GetSpecialCreaturePrefab()
+        {
+            if (specialCreaturePrefabs != null && specialCreaturePrefabs.Length > 0)
+            {
+                int index = Random.Range(0, specialCreaturePrefabs.Length);
+                return specialCreaturePrefabs[index];
+            }
+
+            return legacyChestPrefab;
         }
 
         private bool TryGetBottomSpawnY(out float bottomY)

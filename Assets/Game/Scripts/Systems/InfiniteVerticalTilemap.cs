@@ -182,8 +182,17 @@ namespace EndlessRunner
             Tilemap tilemap = segments[0].GetComponentInChildren<Tilemap>();
             if (tilemap != null)
             {
-                float scale = Mathf.Abs(tilemap.transform.lossyScale.y);
-                height = tilemap.localBounds.size.y * (scale <= 0f ? 1f : scale);
+                if (TryGetUsedCellBounds(tilemap, out BoundsInt usedBounds))
+                {
+                    Vector3 minWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMin, 0));
+                    Vector3 maxWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMax, 0));
+                    height = Mathf.Abs(maxWorld.y - minWorld.y);
+                }
+                else
+                {
+                    float scale = Mathf.Abs(tilemap.transform.lossyScale.y);
+                    height = tilemap.localBounds.size.y * (scale <= 0f ? 1f : scale);
+                }
             }
             else
             {
@@ -228,6 +237,49 @@ namespace EndlessRunner
 #endif
 
             return Instantiate(backgroundPrefab);
+        }
+
+        private static bool TryGetUsedCellBounds(Tilemap tilemap, out BoundsInt bounds)
+        {
+            BoundsInt cellBounds = tilemap.cellBounds;
+            bool found = false;
+            int minX = 0;
+            int minY = 0;
+            int maxX = 0;
+            int maxY = 0;
+
+            foreach (Vector3Int position in cellBounds.allPositionsWithin)
+            {
+                if (!tilemap.HasTile(position))
+                {
+                    continue;
+                }
+
+                if (!found)
+                {
+                    minX = position.x;
+                    maxX = position.x;
+                    minY = position.y;
+                    maxY = position.y;
+                    found = true;
+                }
+                else
+                {
+                    minX = Mathf.Min(minX, position.x);
+                    maxX = Mathf.Max(maxX, position.x);
+                    minY = Mathf.Min(minY, position.y);
+                    maxY = Mathf.Max(maxY, position.y);
+                }
+            }
+
+            if (!found)
+            {
+                bounds = cellBounds;
+                return false;
+            }
+
+            bounds = new BoundsInt(minX, minY, 0, maxX - minX + 1, maxY - minY + 1, 1);
+            return true;
         }
     }
 }

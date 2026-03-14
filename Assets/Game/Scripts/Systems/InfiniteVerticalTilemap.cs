@@ -98,7 +98,11 @@ namespace EndlessRunner
                 return;
             }
 
-            float cameraY = followTarget != null ? followTarget.position.y : targetCamera.transform.position.y;
+            float cameraY = targetCamera != null ? targetCamera.transform.position.y : transform.position.y;
+            if (targetCamera == null && followTarget != null)
+            {
+                cameraY = followTarget.position.y;
+            }
             float camHalfHeight = targetCamera.orthographic ? targetCamera.orthographicSize : 5f;
 
             float minY = float.PositiveInfinity;

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.RunnerConfig
   maxHealth: 3
   horizontalSpeed: 6
-  baseGravityScale: 2
+  baseGravityScale: 1
   gravityIncreasePerSecond: 0.04
   useScoreBasedGravity: 1
   gravityScoreThreshold1: 500

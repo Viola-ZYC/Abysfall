@@ -19,10 +19,10 @@ MonoBehaviour:
   useScoreBasedGravity: 1
   gravityScoreThreshold1: 500
   gravityScoreThreshold2: 2000
-  gravityIncreaseStage1: 0.005
-  gravityIncreaseStage2: 0.01
-  gravityIncreaseStage3: 0.05
-  maxGravityScale: 8
+  gravityIncreaseStage1: 0.003
+  gravityIncreaseStage2: 0.006
+  gravityIncreaseStage3: 0.02
+  maxGravityScale: 6
   maxFallSpeed: 16
   brakeUpwardImpulse: 8
   resetVerticalVelocity: 1

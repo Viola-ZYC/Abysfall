@@ -24,7 +24,7 @@ MonoBehaviour:
   gravityIncreaseStage3: 0.02
   maxGravityScale: 6
   maxFallSpeed: 16
-  brakeUpwardImpulse: 8
+  brakeUpwardImpulse: 5
   resetVerticalVelocity: 1
   hitStopDuration: 0
   obstacleSlowMultiplier: 0.4

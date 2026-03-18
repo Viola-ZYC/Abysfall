@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6c2d0f6b0a4f3b9c3e3b0f1d2a6e4c, type: 3}
+  m_Name: Air Jump
+  m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.AbilityDefinition
+  abilityId: air_jump_charge_100m
+  displayName: Air Jump
+  description: Gain 1 air jump charge every 100 score. Tap ability to air jump.
+  icon: {fileID: 0}
+  isPassive: 0
+  activeEffect: {fileID: 11400000, guid: 83b802e9c8a54b4990957e234b149901, type: 2}
+  activeCooldown: 0
+  maxStacks: 1
+  weight: 0
+  effects:
+  - {fileID: 11400000, guid: c21725ebca79409b928b07a3102fbeb1, type: 2}

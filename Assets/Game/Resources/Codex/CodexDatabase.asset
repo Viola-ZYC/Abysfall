@@ -55,20 +55,20 @@ MonoBehaviour:
     isPassive: 1
   - id: creature_echo
     title: Echo Jumper
-    description: Grants one air jump charge every 100 meters.
+    description: Grants one air jump charge every 100 score.
     unlockHint: Unlocked on first encounter
     icon: icon_creature_echo
     note: Ability
     abilityId: air_jump_charge_100m
-    isPassive: 1
+    isPassive: 0
   - id: creature_abyss_eye
     title: Abyss Dasher
-    description: Grants one dash charge every 100 meters.
+    description: Grants one dash charge every 100 score.
     unlockHint: Unlocked on first encounter
     icon: icon_creature_eye
     note: Ability
     abilityId: dash_charge_100m
-    isPassive: 1
+    isPassive: 0
   obstacles:
   - id: obstacle_spike
     title: Spikes

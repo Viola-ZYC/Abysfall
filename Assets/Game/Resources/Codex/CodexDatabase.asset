@@ -14,45 +14,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.CodexDatabase
   creatures:
   - id: creature_normal
-    title: 白色方块
-    description: 恢复普通状态。
-    unlockHint: 首次踩踏获得
+    title: White Block
+    description: Returns to normal state.
+    unlockHint: Unlocked on first stomp
     icon: icon_creature_normal
-    note: 必配
+    note: Required
     abilityId: normal
     isPassive: 1
   - id: creature_speed_boost
-    title: 加速幼体
-    description: 速度提升的源头生物。
-    unlockHint: 首次踩踏获得
+    title: Speed Hatchling
+    description: Source creature of the speed boost.
+    unlockHint: Unlocked on first stomp
     icon: icon_creature_speed
-    note: 示例
+    note: Example
     abilityId: speed_boost
     isPassive: 1
   - id: creature_pad
-    title: 踏板生物
-    description: 不改变能力，提供踏板式反冲。
-    unlockHint: 首次踩踏
+    title: Pad Creature
+    description: Does not change ability; provides a bounce.
+    unlockHint: Unlocked on first stomp
     icon: icon_pad_basic
-    note: 每 50 距离固定刷新
+    note: Spawns every 50 distance
     abilityId: 
     isPassive: 0
   obstacles:
   - id: obstacle_spike
-    title: 尖刺
-    description: 基础伤害障碍。
-    unlockHint: 首次遭遇
+    title: Spikes
+    description: Basic damage obstacle.
+    unlockHint: Unlocked on first encounter
     icon: icon_obstacle_spike
-    note: 示例
+    note: Example
     abilityId: 
     isPassive: 0
   pads: []
   collections:
   - id: relic_001
-    title: 深渊残片
-    description: 记载深渊起源的碎片。
-    unlockHint: 首次拾取
+    title: Abyss Shard
+    description: A fragment recording the abyss origin.
+    unlockHint: Unlocked on first pickup
     icon: icon_relic_001
-    note: 示例
+    note: Example
     abilityId: 
     isPassive: 0

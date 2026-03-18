@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.AbilityDefinition
   abilityId: normal
   displayName: Normal
-  description: 恢复普通状态。
+  description: Returns to normal state.
   icon: {fileID: 0}
   isPassive: 1
   activeEffect: {fileID: 0}

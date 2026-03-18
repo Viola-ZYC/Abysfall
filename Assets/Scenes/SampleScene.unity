@@ -1615,13 +1615,10 @@ MonoBehaviour:
   specialCreaturePrefabs:
   - {fileID: 8270579165458065032, guid: 63c3fd5786474299805de3743e9b87b4, type: 3}
   - {fileID: 8270579165458065032, guid: 4f68fcef4f13440cbe71665747d50d67, type: 3}
-  padCreaturePrefabs:
-  - {fileID: 8270579165458065032, guid: 30f527a5d1f64b588871b807cff4be8c, type: 3}
   loreCollectiblePrefab: {fileID: 9200000000000000001, guid: 9a4f61d3575b47d2b93e12f0a6c8d4e1, type: 3}
   targetCamera: {fileID: 0}
   runner: {fileID: 2005836459}
   scoreInterval: 100
-  padScoreInterval: 50
   enableLoreCollectibleMilestones: 1
   loreCollectibleMilestones: 7800000018010000c20100008a02000084030000b0040000
   loreCollectibleScoreValue: 0
@@ -1637,7 +1634,6 @@ MonoBehaviour:
   deterministicXCycle: 0.6180339
   randomRangeX: 2.5
   maxSpawnsPerTick: 2
-  maxPadSpawnsPerTick: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

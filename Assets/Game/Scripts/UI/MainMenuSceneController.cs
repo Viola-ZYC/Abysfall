@@ -861,7 +861,7 @@ namespace EndlessRunner
 
         private void SetManualCategory(CodexCategory category)
         {
-            currentManualCategory = category == CodexCategory.Pad ? CodexCategory.Creature : category;
+            currentManualCategory = category;
             UpdateManualTabVisuals();
             BuildCollectionPage();
         }

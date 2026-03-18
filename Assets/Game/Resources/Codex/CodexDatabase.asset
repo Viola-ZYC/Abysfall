@@ -29,12 +29,36 @@ MonoBehaviour:
     note: Example
     abilityId: speed_boost
     isPassive: 1
-  - id: creature_pad
-    title: Pad Creature
-    description: Does not change ability; provides a bounce.
+  - id: creature_tough_skin
+    title: Stoneback
+    description: Grants tougher skin against hazards.
     unlockHint: Unlocked on first stomp
-    icon: icon_pad_basic
-    note: Spawns every 50 distance
+    icon: icon_creature_tough
+    note: Example
+    abilityId: tough_skin
+    isPassive: 1
+  - id: creature_lightweight
+    title: Featherling
+    description: Reduces fall weight for longer airtime.
+    unlockHint: Unlocked on first stomp
+    icon: icon_creature_light
+    note: Example
+    abilityId: lightweight
+    isPassive: 1
+  - id: creature_echo
+    title: Echo Wisp
+    description: A guiding echo that reveals hidden paths.
+    unlockHint: Unlocked on first encounter
+    icon: icon_creature_echo
+    note: Lore
+    abilityId: 
+    isPassive: 0
+  - id: creature_abyss_eye
+    title: Abyss Eye
+    description: Watches the runner from the dark.
+    unlockHint: Unlocked on first encounter
+    icon: icon_creature_eye
+    note: Lore
     abilityId: 
     isPassive: 0
   obstacles:
@@ -46,13 +70,92 @@ MonoBehaviour:
     note: Example
     abilityId: 
     isPassive: 0
-  pads: []
+  - id: obstacle_shard
+    title: Crystal Shards
+    description: Jagged shards that chip away health.
+    unlockHint: Unlocked on first encounter
+    icon: icon_obstacle_shard
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: obstacle_crusher
+    title: Stone Crusher
+    description: Heavy block that punishes mistimed drops.
+    unlockHint: Unlocked on first encounter
+    icon: icon_obstacle_crusher
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: obstacle_laser
+    title: Abyss Laser
+    description: A thin beam that burns on contact.
+    unlockHint: Unlocked on first encounter
+    icon: icon_obstacle_laser
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: obstacle_pillar
+    title: Fallen Pillar
+    description: Collapsed pillar fragments blocking lanes.
+    unlockHint: Unlocked on first encounter
+    icon: icon_obstacle_pillar
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: obstacle_fan
+    title: Vent Gust
+    description: Turbulence pushes the runner off line.
+    unlockHint: Unlocked on first encounter
+    icon: icon_obstacle_fan
+    note: Example
+    abilityId: 
+    isPassive: 0
   collections:
   - id: relic_001
     title: Abyss Shard
     description: A fragment recording the abyss origin.
     unlockHint: Unlocked on first pickup
     icon: icon_relic_001
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: relic_002
+    title: Crystal Core
+    description: Condensed crystal energy from the upper ruins.
+    unlockHint: Unlocked on first pickup
+    icon: icon_relic_002
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: relic_003
+    title: Worn Compass
+    description: Still points down, no matter where you stand.
+    unlockHint: Unlocked on first pickup
+    icon: icon_relic_003
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: relic_004
+    title: Abyss Emblem
+    description: Badge from the first successful deep run.
+    unlockHint: Unlocked on first pickup
+    icon: icon_relic_004
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: relic_005
+    title: Void Fragment
+    description: Bends light along its fractured edge.
+    unlockHint: Unlocked on first pickup
+    icon: icon_relic_005
+    note: Example
+    abilityId: 
+    isPassive: 0
+  - id: relic_006
+    title: Crown of Depths
+    description: A symbolic trophy for elite divers.
+    unlockHint: Unlocked on first pickup
+    icon: icon_relic_006
     note: Example
     abilityId: 
     isPassive: 0

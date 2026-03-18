@@ -8,7 +8,6 @@ namespace EndlessRunner
     {
         public List<CodexEntry> creatures = new();
         public List<CodexEntry> obstacles = new();
-        public List<CodexEntry> pads = new();
         public List<CodexEntry> collections = new();
 
         public static CodexDatabase Load()
@@ -29,7 +28,6 @@ namespace EndlessRunner
             {
                 CodexCategory.Creature => creatures,
                 CodexCategory.Obstacle => obstacles,
-                CodexCategory.Pad => pads,
                 CodexCategory.Collection => collections,
                 _ => creatures
             };

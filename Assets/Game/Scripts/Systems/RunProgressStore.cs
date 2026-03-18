@@ -20,7 +20,6 @@ namespace EndlessRunner
             public List<int> collectionEntryCounts = new List<int>();
             public List<string> unlockedCreatureIds = new List<string>();
             public List<string> unlockedObstacleIds = new List<string>();
-            public List<string> unlockedPadIds = new List<string>();
             public List<CodexCountEntry> collectionCounts = new List<CodexCountEntry>();
             public string selectedModeId = ModeClassic;
             public List<ModeState> modeStates = new List<ModeState>();
@@ -250,8 +249,6 @@ namespace EndlessRunner
                     return data.unlockedCreatureIds != null && data.unlockedCreatureIds.Contains(entryId);
                 case CodexCategory.Obstacle:
                     return data.unlockedObstacleIds != null && data.unlockedObstacleIds.Contains(entryId);
-                case CodexCategory.Pad:
-                    return data.unlockedPadIds != null && data.unlockedPadIds.Contains(entryId);
                 case CodexCategory.Collection:
                     return GetCollectionCount(data, entryId) > 0;
                 default:
@@ -276,9 +273,6 @@ namespace EndlessRunner
                 case CodexCategory.Obstacle:
                     newlyUnlocked = AddUnique(data.unlockedObstacleIds, entryId);
                     break;
-                case CodexCategory.Pad:
-                    newlyUnlocked = AddUnique(data.unlockedPadIds, entryId);
-                    break;
                 case CodexCategory.Collection:
                     newlyUnlocked = AddOrIncrementCollection(data, entryId, addCount);
                     data.unlockedCollectionCount = CountCollectionUnlocked(data);
@@ -298,8 +292,6 @@ namespace EndlessRunner
                     return CountUnique(data.unlockedCreatureIds);
                 case CodexCategory.Obstacle:
                     return CountUnique(data.unlockedObstacleIds);
-                case CodexCategory.Pad:
-                    return CountUnique(data.unlockedPadIds);
                 case CodexCategory.Collection:
                     return CountCollectionUnlocked(data);
                 default:
@@ -554,11 +546,6 @@ namespace EndlessRunner
                 data.unlockedObstacleIds = new List<string>();
             }
 
-            if (data.unlockedPadIds == null)
-            {
-                data.unlockedPadIds = new List<string>();
-            }
-
             if (data.collectionCounts == null)
             {
                 data.collectionCounts = new List<CodexCountEntry>();
@@ -566,7 +553,6 @@ namespace EndlessRunner
 
             NormalizeUnlockedList(data.unlockedCreatureIds);
             NormalizeUnlockedList(data.unlockedObstacleIds);
-            NormalizeUnlockedList(data.unlockedPadIds);
             NormalizeCollectionCounts(data);
             MigrateLegacyCollectionsIfNeeded(data);
             data.unlockedCollectionCount = CountCollectionUnlocked(data);

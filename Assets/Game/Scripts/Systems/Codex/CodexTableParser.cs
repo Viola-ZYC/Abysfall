@@ -20,7 +20,12 @@ namespace EndlessRunner
             string root = GetDocsRoot();
             database.creatures = ParseTable(Path.Combine(root, "生物表.md"));
             database.obstacles = ParseTable(Path.Combine(root, "障碍表.md"));
-            database.pads = ParseTable(Path.Combine(root, "跳板表.md"));
+            List<CodexEntry> pads = ParseTable(Path.Combine(root, "跳板表.md"));
+            if (pads.Count > 0)
+            {
+                database.creatures.AddRange(pads);
+            }
+            database.pads = new List<CodexEntry>();
             database.collections = ParseTable(Path.Combine(root, "收藏品表.md"));
         }
 

@@ -29,6 +29,14 @@ MonoBehaviour:
     note: 示例
     abilityId: speed_boost
     isPassive: 1
+  - id: creature_pad
+    title: 踏板生物
+    description: 不改变能力，提供踏板式反冲。
+    unlockHint: 首次踩踏
+    icon: icon_pad_basic
+    note: 每 50 距离固定刷新
+    abilityId: 
+    isPassive: 0
   obstacles:
   - id: obstacle_spike
     title: 尖刺
@@ -38,15 +46,7 @@ MonoBehaviour:
     note: 示例
     abilityId: 
     isPassive: 0
-  pads:
-  - id: creature_pad
-    title: 踏板生物
-    description: 不改变能力，提供踏板式反冲。
-    unlockHint: 首次踩踏
-    icon: icon_pad_basic
-    note: 每 50 距离固定刷新
-    abilityId: 
-    isPassive: 0
+  pads: []
   collections:
   - id: relic_001
     title: 深渊残片

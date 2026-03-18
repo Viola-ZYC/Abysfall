@@ -56,7 +56,6 @@ namespace EndlessRunner
         [SerializeField] private string collectionCloseButtonName = "mainmenu-collection-close-button";
         [SerializeField] private string manualTabCreaturesButtonName = "mainmenu-manual-tab-creatures";
         [SerializeField] private string manualTabObstaclesButtonName = "mainmenu-manual-tab-obstacles";
-        [SerializeField] private string manualTabPadsButtonName = "mainmenu-manual-tab-pads";
         [SerializeField] private string manualTabCollectionsButtonName = "mainmenu-manual-tab-collections";
         [SerializeField] private string achievementOverlayName = "mainmenu-achievement-overlay";
         [SerializeField] private string achievementProgressLabelName = "mainmenu-achievement-progress-label";
@@ -97,7 +96,6 @@ namespace EndlessRunner
         private UITKButton collectionCloseButton;
         private UITKButton manualTabCreaturesButton;
         private UITKButton manualTabObstaclesButton;
-        private UITKButton manualTabPadsButton;
         private UITKButton manualTabCollectionsButton;
         private UITKButton achievementBackButton;
         private UITKButton achievementCloseButton;
@@ -277,7 +275,6 @@ namespace EndlessRunner
             collectionCloseButton = root.Q<UITKButton>(collectionCloseButtonName);
             manualTabCreaturesButton = root.Q<UITKButton>(manualTabCreaturesButtonName);
             manualTabObstaclesButton = root.Q<UITKButton>(manualTabObstaclesButtonName);
-            manualTabPadsButton = root.Q<UITKButton>(manualTabPadsButtonName);
             manualTabCollectionsButton = root.Q<UITKButton>(manualTabCollectionsButtonName);
             achievementBackButton = root.Q<UITKButton>(achievementBackButtonName);
             achievementCloseButton = root.Q<UITKButton>(achievementCloseButtonName);
@@ -330,11 +327,6 @@ namespace EndlessRunner
             {
                 manualTabObstaclesButton.clicked -= OnManualObstaclesClicked;
                 manualTabObstaclesButton.clicked += OnManualObstaclesClicked;
-            }
-            if (manualTabPadsButton != null)
-            {
-                manualTabPadsButton.clicked -= OnManualPadsClicked;
-                manualTabPadsButton.clicked += OnManualPadsClicked;
             }
             if (manualTabCollectionsButton != null)
             {
@@ -448,10 +440,6 @@ namespace EndlessRunner
             if (manualTabObstaclesButton != null)
             {
                 manualTabObstaclesButton.clicked -= OnManualObstaclesClicked;
-            }
-            if (manualTabPadsButton != null)
-            {
-                manualTabPadsButton.clicked -= OnManualPadsClicked;
             }
             if (manualTabCollectionsButton != null)
             {
@@ -599,10 +587,6 @@ namespace EndlessRunner
             SetManualCategory(CodexCategory.Obstacle);
         }
 
-        private void OnManualPadsClicked()
-        {
-            SetManualCategory(CodexCategory.Pad);
-        }
 
         private void OnManualCollectionsClicked()
         {
@@ -877,7 +861,7 @@ namespace EndlessRunner
 
         private void SetManualCategory(CodexCategory category)
         {
-            currentManualCategory = category;
+            currentManualCategory = category == CodexCategory.Pad ? CodexCategory.Creature : category;
             UpdateManualTabVisuals();
             BuildCollectionPage();
         }
@@ -886,7 +870,6 @@ namespace EndlessRunner
         {
             SetTabActive(manualTabCreaturesButton, currentManualCategory == CodexCategory.Creature);
             SetTabActive(manualTabObstaclesButton, currentManualCategory == CodexCategory.Obstacle);
-            SetTabActive(manualTabPadsButton, currentManualCategory == CodexCategory.Pad);
             SetTabActive(manualTabCollectionsButton, currentManualCategory == CodexCategory.Collection);
         }
 

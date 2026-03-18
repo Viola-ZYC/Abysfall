@@ -21,6 +21,14 @@ MonoBehaviour:
     note: Required
     abilityId: normal
     isPassive: 1
+  - id: creature_basic
+    title: Plain Hopper
+    description: Basic bounce only. Does not change abilities.
+    unlockHint: Unlocked on first stomp
+    icon: icon_creature_basic
+    note: Basic
+    abilityId: 
+    isPassive: 1
   - id: creature_speed_boost
     title: Speed Hatchling
     description: Source creature of the speed boost.

@@ -1615,6 +1615,11 @@ MonoBehaviour:
   specialCreaturePrefabs:
   - {fileID: 8270579165458065032, guid: 63c3fd5786474299805de3743e9b87b4, type: 3}
   - {fileID: 8270579165458065032, guid: 4f68fcef4f13440cbe71665747d50d67, type: 3}
+  - {fileID: 8270579165458065032, guid: 09b50c601de84fb5bc5c4325025d8db4, type: 3}
+  - {fileID: 8270579165458065032, guid: d70677566bde4693b57b1e01345d9a05, type: 3}
+  - {fileID: 8270579165458065032, guid: f6106130e85b4ce5ac34d98c0b23787c, type: 3}
+  - {fileID: 8270579165458065032, guid: 1a09b6fc2cac4e2890eaa1baa3f391be, type: 3}
+  - {fileID: 8270579165458065032, guid: 6f1dad02199c49cf936ea8fe85016ce8, type: 3}
   loreCollectiblePrefab: {fileID: 9200000000000000001, guid: 9a4f61d3575b47d2b93e12f0a6c8d4e1, type: 3}
   targetCamera: {fileID: 0}
   runner: {fileID: 2005836459}

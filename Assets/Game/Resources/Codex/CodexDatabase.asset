@@ -46,21 +46,21 @@ MonoBehaviour:
     abilityId: lightweight
     isPassive: 1
   - id: creature_echo
-    title: Echo Wisp
-    description: A guiding echo that reveals hidden paths.
+    title: Echo Jumper
+    description: Grants one air jump charge every 100 meters.
     unlockHint: Unlocked on first encounter
     icon: icon_creature_echo
-    note: Lore
-    abilityId: 
-    isPassive: 0
+    note: Ability
+    abilityId: air_jump_charge_100m
+    isPassive: 1
   - id: creature_abyss_eye
-    title: Abyss Eye
-    description: Watches the runner from the dark.
+    title: Abyss Dasher
+    description: Grants one dash charge every 100 meters.
     unlockHint: Unlocked on first encounter
     icon: icon_creature_eye
-    note: Lore
-    abilityId: 
-    isPassive: 0
+    note: Ability
+    abilityId: dash_charge_100m
+    isPassive: 1
   obstacles:
   - id: obstacle_spike
     title: Spikes

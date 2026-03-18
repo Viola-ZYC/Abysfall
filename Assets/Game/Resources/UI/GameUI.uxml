@@ -37,7 +37,7 @@
                         <Button name="pause-exit-button" class="menu-button menu-button-exit" text="Exit Game" />
                         <Button name="menu-start-button" class="menu-button" text="Confirm Start" />
                         <Button name="menu-leaderboard-button" class="menu-button" text="Leaderboard" />
-                        <Button name="menu-collection-button" class="menu-button" text="Collection" />
+                        <Button name="menu-collection-button" class="menu-button" text="Manual" />
                         <Button name="menu-settings-button" class="menu-button" text="Settings" />
                         <Button name="menu-exit-button" class="menu-button menu-button-exit" text="Exit Game" />
                     </VisualElement>

@@ -54,6 +54,10 @@ namespace EndlessRunner
         [SerializeField] private string collectionListName = "mainmenu-collection-list";
         [SerializeField] private string collectionBackButtonName = "mainmenu-collection-back-button";
         [SerializeField] private string collectionCloseButtonName = "mainmenu-collection-close-button";
+        [SerializeField] private string manualTabCreaturesButtonName = "mainmenu-manual-tab-creatures";
+        [SerializeField] private string manualTabObstaclesButtonName = "mainmenu-manual-tab-obstacles";
+        [SerializeField] private string manualTabPadsButtonName = "mainmenu-manual-tab-pads";
+        [SerializeField] private string manualTabCollectionsButtonName = "mainmenu-manual-tab-collections";
         [SerializeField] private string achievementOverlayName = "mainmenu-achievement-overlay";
         [SerializeField] private string achievementProgressLabelName = "mainmenu-achievement-progress-label";
         [SerializeField] private string achievementListName = "mainmenu-achievement-list";
@@ -79,6 +83,7 @@ namespace EndlessRunner
         [SerializeField] private string settingsBackButtonName = "mainmenu-settings-back-button";
         [SerializeField] private string settingsCloseButtonName = "mainmenu-settings-close-button";
         [SerializeField] private CollectionEntry[] collectionEntries;
+        [SerializeField] private CodexDatabase codexDatabase;
         [SerializeField] private bool applySafeArea = true;
 
         private UIDocument uiDocument;
@@ -90,6 +95,10 @@ namespace EndlessRunner
         private UITKButton exitButton;
         private UITKButton collectionBackButton;
         private UITKButton collectionCloseButton;
+        private UITKButton manualTabCreaturesButton;
+        private UITKButton manualTabObstaclesButton;
+        private UITKButton manualTabPadsButton;
+        private UITKButton manualTabCollectionsButton;
         private UITKButton achievementBackButton;
         private UITKButton achievementCloseButton;
         private UITKButton leaderboardBackButton;
@@ -126,6 +135,7 @@ namespace EndlessRunner
         private bool isSettingsVisible;
         private bool settingsInitialized;
         private bool suppressSettingsEvents;
+        private CodexCategory currentManualCategory = CodexCategory.Creature;
         private int selectedResolutionIndex = -1;
         private string pendingSelectedModeId = RunProgressStore.ModeClassic;
         private Rect lastSafeArea = Rect.zero;
@@ -185,7 +195,7 @@ namespace EndlessRunner
                 else if (isCollectionVisible)
                 {
                     SetCollectionOverlayVisible(false);
-                    SetHint("Collection closed.");
+                    SetHint("Manual closed.");
                 }
                 else if (isLeaderboardVisible)
                 {
@@ -265,6 +275,10 @@ namespace EndlessRunner
             exitButton = root.Q<UITKButton>(exitButtonName);
             collectionBackButton = root.Q<UITKButton>(collectionBackButtonName);
             collectionCloseButton = root.Q<UITKButton>(collectionCloseButtonName);
+            manualTabCreaturesButton = root.Q<UITKButton>(manualTabCreaturesButtonName);
+            manualTabObstaclesButton = root.Q<UITKButton>(manualTabObstaclesButtonName);
+            manualTabPadsButton = root.Q<UITKButton>(manualTabPadsButtonName);
+            manualTabCollectionsButton = root.Q<UITKButton>(manualTabCollectionsButtonName);
             achievementBackButton = root.Q<UITKButton>(achievementBackButtonName);
             achievementCloseButton = root.Q<UITKButton>(achievementCloseButtonName);
             leaderboardBackButton = root.Q<UITKButton>(leaderboardBackButtonName);
@@ -307,6 +321,26 @@ namespace EndlessRunner
             collectionButton.clicked += OnCollectionClicked;
             achievementButton.clicked -= OnAchievementClicked;
             achievementButton.clicked += OnAchievementClicked;
+            if (manualTabCreaturesButton != null)
+            {
+                manualTabCreaturesButton.clicked -= OnManualCreaturesClicked;
+                manualTabCreaturesButton.clicked += OnManualCreaturesClicked;
+            }
+            if (manualTabObstaclesButton != null)
+            {
+                manualTabObstaclesButton.clicked -= OnManualObstaclesClicked;
+                manualTabObstaclesButton.clicked += OnManualObstaclesClicked;
+            }
+            if (manualTabPadsButton != null)
+            {
+                manualTabPadsButton.clicked -= OnManualPadsClicked;
+                manualTabPadsButton.clicked += OnManualPadsClicked;
+            }
+            if (manualTabCollectionsButton != null)
+            {
+                manualTabCollectionsButton.clicked -= OnManualCollectionsClicked;
+                manualTabCollectionsButton.clicked += OnManualCollectionsClicked;
+            }
             if (collectionBackButton != null)
             {
                 collectionBackButton.clicked -= OnBackToMainInterfaceClicked;
@@ -372,7 +406,7 @@ namespace EndlessRunner
 
             exitButton.clicked -= OnExitClicked;
             exitButton.clicked += OnExitClicked;
-            BuildCollectionPage();
+            SetManualCategory(CodexCategory.Creature);
             BuildAchievementPage();
             RefreshLeaderboardPanel();
             EnsureSettingsInitialized();
@@ -405,6 +439,23 @@ namespace EndlessRunner
             if (collectionButton != null)
             {
                 collectionButton.clicked -= OnCollectionClicked;
+            }
+
+            if (manualTabCreaturesButton != null)
+            {
+                manualTabCreaturesButton.clicked -= OnManualCreaturesClicked;
+            }
+            if (manualTabObstaclesButton != null)
+            {
+                manualTabObstaclesButton.clicked -= OnManualObstaclesClicked;
+            }
+            if (manualTabPadsButton != null)
+            {
+                manualTabPadsButton.clicked -= OnManualPadsClicked;
+            }
+            if (manualTabCollectionsButton != null)
+            {
+                manualTabCollectionsButton.clicked -= OnManualCollectionsClicked;
             }
 
             if (achievementButton != null)
@@ -530,12 +581,32 @@ namespace EndlessRunner
 
         private void OnCollectionClicked()
         {
-            BuildCollectionPage();
+            SetManualCategory(CodexCategory.Creature);
             SetAchievementOverlayVisible(false);
             SetLeaderboardOverlayVisible(false);
             SetSettingsOverlayVisible(false);
             SetCollectionOverlayVisible(true);
-            SetHint("Collection opened.");
+            SetHint("Manual opened.");
+        }
+
+        private void OnManualCreaturesClicked()
+        {
+            SetManualCategory(CodexCategory.Creature);
+        }
+
+        private void OnManualObstaclesClicked()
+        {
+            SetManualCategory(CodexCategory.Obstacle);
+        }
+
+        private void OnManualPadsClicked()
+        {
+            SetManualCategory(CodexCategory.Pad);
+        }
+
+        private void OnManualCollectionsClicked()
+        {
+            SetManualCategory(CodexCategory.Collection);
         }
 
         private void OnAchievementClicked()
@@ -551,7 +622,7 @@ namespace EndlessRunner
         private void OnCollectionCloseClicked()
         {
             SetCollectionOverlayVisible(false);
-            SetHint("Collection closed.");
+            SetHint("Manual closed.");
         }
 
         private void OnAchievementCloseClicked()
@@ -743,25 +814,90 @@ namespace EndlessRunner
             }
 
             collectionList.Clear();
-            CollectionEntry[] entries = GetCollectionEntries();
+            CodexDatabase database = GetCodexDatabase();
+            IReadOnlyList<CodexEntry> entries = database != null ? database.GetEntries(currentManualCategory) : null;
             int unlockedCount = 0;
             int totalCollectedCount = 0;
+            int totalCount = entries != null ? entries.Count : 0;
 
-            for (int i = 0; i < entries.Length; i++)
+            if (entries != null && totalCount > 0)
             {
-                CollectionEntry entry = entries[i];
-                bool unlocked = RunProgressStore.IsCollectionEntryUnlocked(i);
-                int ownedCount = RunProgressStore.GetCollectionEntryCount(i);
-                if (unlocked)
+                for (int i = 0; i < entries.Count; i++)
                 {
-                    unlockedCount++;
-                }
+                    CodexEntry entry = entries[i];
+                    bool unlocked = RunProgressStore.IsCodexEntryUnlocked(currentManualCategory, entry.id);
+                    int ownedCount = RunProgressStore.GetCodexEntryCount(currentManualCategory, entry.id);
+                    if (unlocked)
+                    {
+                        unlockedCount++;
+                    }
 
-                totalCollectedCount += ownedCount;
-                collectionList.Add(CreateCollectionEntryElement(entry, unlocked, ownedCount));
+                    totalCollectedCount += ownedCount;
+                    collectionList.Add(CreateManualEntryElement(entry, currentManualCategory, unlocked, ownedCount));
+                }
+            }
+            else if (currentManualCategory == CodexCategory.Collection)
+            {
+                CollectionEntry[] legacyEntries = GetCollectionEntries();
+                totalCount = legacyEntries.Length;
+                for (int i = 0; i < legacyEntries.Length; i++)
+                {
+                    CollectionEntry entry = legacyEntries[i];
+                    bool unlocked = RunProgressStore.IsCollectionEntryUnlocked(i);
+                    int ownedCount = RunProgressStore.GetCollectionEntryCount(i);
+                    if (unlocked)
+                    {
+                        unlockedCount++;
+                    }
+
+                    totalCollectedCount += ownedCount;
+                    collectionList.Add(CreateLegacyCollectionEntryElement(entry, unlocked, ownedCount));
+                }
             }
 
-            collectionProgressLabel.text = $"Unlocked {unlockedCount}/{entries.Length} | Total Collected: {totalCollectedCount}";
+            if (currentManualCategory == CodexCategory.Collection)
+            {
+                collectionProgressLabel.text = $"Unlocked {unlockedCount}/{Mathf.Max(1, totalCount)} | Total Collected: {totalCollectedCount}";
+            }
+            else
+            {
+                collectionProgressLabel.text = $"Unlocked {unlockedCount}/{Mathf.Max(1, totalCount)}";
+            }
+        }
+
+        private CodexDatabase GetCodexDatabase()
+        {
+            if (codexDatabase == null)
+            {
+                codexDatabase = CodexDatabase.Load();
+            }
+
+            return codexDatabase;
+        }
+
+        private void SetManualCategory(CodexCategory category)
+        {
+            currentManualCategory = category;
+            UpdateManualTabVisuals();
+            BuildCollectionPage();
+        }
+
+        private void UpdateManualTabVisuals()
+        {
+            SetTabActive(manualTabCreaturesButton, currentManualCategory == CodexCategory.Creature);
+            SetTabActive(manualTabObstaclesButton, currentManualCategory == CodexCategory.Obstacle);
+            SetTabActive(manualTabPadsButton, currentManualCategory == CodexCategory.Pad);
+            SetTabActive(manualTabCollectionsButton, currentManualCategory == CodexCategory.Collection);
+        }
+
+        private static void SetTabActive(VisualElement button, bool active)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.EnableInClassList("is-active", active);
         }
 
         private CollectionEntry[] GetCollectionEntries()
@@ -843,7 +979,10 @@ namespace EndlessRunner
             int bestScore = RunProgressStore.GetBestScore();
             int unlockedCollections = RunProgressStore.GetUnlockedCollectionCount();
             int totalCollectedRelics = RunProgressStore.GetTotalCollectionPickups();
-            int totalCollectionEntries = Mathf.Max(1, GetCollectionEntries().Length);
+            CodexDatabase database = GetCodexDatabase();
+            int totalCollectionEntries = database != null
+                ? Mathf.Max(1, database.GetEntryCount(CodexCategory.Collection))
+                : Mathf.Max(1, GetCollectionEntries().Length);
 
             List<RunProgressStore.GameModeProgress> modeProgress = RunProgressStore.GetGameModeProgress();
             int unlockedModes = 0;
@@ -938,7 +1077,7 @@ namespace EndlessRunner
             return row;
         }
 
-        private VisualElement CreateCollectionEntryElement(CollectionEntry entry, bool unlocked, int ownedCount)
+        private VisualElement CreateLegacyCollectionEntryElement(CollectionEntry entry, bool unlocked, int ownedCount)
         {
             VisualElement row = new VisualElement();
             row.AddToClassList("collection-entry");
@@ -959,6 +1098,44 @@ namespace EndlessRunner
             row.Add(statusLabel);
 
             Label descriptionLabel = new Label(unlocked ? entry.description : "Keep exploring to unlock this collectible.");
+            descriptionLabel.AddToClassList("collection-entry-desc");
+            row.Add(descriptionLabel);
+
+            return row;
+        }
+
+        private VisualElement CreateManualEntryElement(CodexEntry entry, CodexCategory category, bool unlocked, int ownedCount)
+        {
+            VisualElement row = new VisualElement();
+            row.AddToClassList("collection-entry");
+            if (!unlocked)
+            {
+                row.AddToClassList(LockedClass);
+            }
+
+            string title = unlocked ? entry.title : "???";
+            Label titleLabel = new Label(title);
+            titleLabel.AddToClassList("collection-entry-title");
+            row.Add(titleLabel);
+
+            string statusText;
+            if (unlocked)
+            {
+                statusText = category == CodexCategory.Collection
+                    ? $"Collected x{Mathf.Max(1, ownedCount)}"
+                    : "Unlocked";
+            }
+            else
+            {
+                statusText = $"Locked - {entry.unlockHint}";
+            }
+
+            Label statusLabel = new Label(statusText);
+            statusLabel.AddToClassList("collection-entry-status");
+            row.Add(statusLabel);
+
+            string description = unlocked ? entry.description : "Keep exploring to unlock this entry.";
+            Label descriptionLabel = new Label(description);
             descriptionLabel.AddToClassList("collection-entry-desc");
             row.Add(descriptionLabel);
 

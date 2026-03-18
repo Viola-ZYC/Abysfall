@@ -6,7 +6,7 @@
                 <ui:Label name="mainmenu-subtitle-label" class="mainmenu-subtitle" text="Main Menu" />
                 <ui:Button name="mainmenu-play-button" class="mainmenu-button mainmenu-button-primary" text="Play" />
                 <ui:Button name="mainmenu-leaderboard-button" class="mainmenu-button" text="Leaderboard" />
-                <ui:Button name="mainmenu-collection-button" class="mainmenu-button" text="Collection" />
+                <ui:Button name="mainmenu-collection-button" class="mainmenu-button" text="Manual" />
                 <ui:Button name="mainmenu-achievement-button" class="mainmenu-button" text="Achievements" />
                 <ui:Button name="mainmenu-settings-button" class="mainmenu-button" text="Settings" />
                 <ui:Button name="mainmenu-exit-button" class="mainmenu-button mainmenu-button-exit" text="Exit" />
@@ -15,8 +15,14 @@
 
             <ui:VisualElement name="mainmenu-collection-overlay" class="mainmenu-overlay">
                 <ui:VisualElement class="mainmenu-collection-card">
-                    <ui:Label class="mainmenu-collection-title" text="Collection" />
+                    <ui:Label class="mainmenu-collection-title" text="Manual" />
                     <ui:Label name="mainmenu-collection-progress-label" class="mainmenu-collection-progress" text="Unlocked 0/0" />
+                    <ui:VisualElement class="manual-tabs">
+                        <ui:Button name="mainmenu-manual-tab-creatures" class="manual-tab-button" text="生物" />
+                        <ui:Button name="mainmenu-manual-tab-obstacles" class="manual-tab-button" text="障碍" />
+                        <ui:Button name="mainmenu-manual-tab-pads" class="manual-tab-button" text="跳板" />
+                        <ui:Button name="mainmenu-manual-tab-collections" class="manual-tab-button" text="收藏品" />
+                    </ui:VisualElement>
                     <ui:ScrollView name="mainmenu-collection-scroll" class="mainmenu-collection-scroll">
                         <ui:VisualElement name="mainmenu-collection-list" class="mainmenu-collection-list" />
                     </ui:ScrollView>

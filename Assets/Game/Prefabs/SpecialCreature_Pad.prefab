@@ -150,5 +150,5 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84fa836508b640858a11e82243f8dfa1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.SpecialCreature\n  ability: {fileID: 0}\n  abilityManager: {fileID: 0}\n  rewardMode: 1
+  m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.SpecialCreature\n  ability: {fileID: 0}\n  abilityManager: {fileID: 0}\n  rewardMode: 1\n  codexCategory: 2\n  codexEntryId: creature_pad\n  unlockCodexOnHit: 1
 

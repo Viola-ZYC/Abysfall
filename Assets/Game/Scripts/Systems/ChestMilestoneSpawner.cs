@@ -14,6 +14,7 @@ namespace EndlessRunner
         [SerializeField] private GameObject loreCollectiblePrefab;
         [SerializeField] private Camera targetCamera;
         [SerializeField] private RunnerController runner;
+        [SerializeField] private CodexDatabase codexDatabase;
         [SerializeField, Min(1)] private int scoreInterval = 100;
         [SerializeField, Min(1)] private int padScoreInterval = 50;
         [Header("Lore Collectible Milestones")]
@@ -305,7 +306,8 @@ namespace EndlessRunner
                 Collectible collectible = instance.GetComponent<Collectible>();
                 if (collectible != null)
                 {
-                    collectible.ConfigureLoreRelic(entryIndex, loreCollectibleScoreValue);
+                    string entryId = ResolveLoreEntryId(entryIndex);
+                    collectible.ConfigureLoreRelic(entryId, loreCollectibleScoreValue);
                 }
             }
 
@@ -377,6 +379,25 @@ namespace EndlessRunner
             }
 
             return legacyChestPrefab;
+        }
+
+        private string ResolveLoreEntryId(int entryIndex)
+        {
+            if (codexDatabase == null)
+            {
+                codexDatabase = CodexDatabase.Load();
+            }
+
+            if (codexDatabase != null)
+            {
+                string id = codexDatabase.GetEntryId(CodexCategory.Collection, entryIndex);
+                if (!string.IsNullOrWhiteSpace(id))
+                {
+                    return id;
+                }
+            }
+
+            return $"relic_{Mathf.Max(0, entryIndex)}";
         }
 
         private GameObject GetPadCreaturePrefab()

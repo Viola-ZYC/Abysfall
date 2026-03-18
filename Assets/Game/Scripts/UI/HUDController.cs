@@ -909,7 +909,10 @@ namespace EndlessRunner
         private void OnCollectionClicked()
         {
             int unlockedCount = RunProgressStore.GetUnlockedCollectionCount();
-            SetMenuHint($"Collection unlocked: {unlockedCount}/6");
+            CodexDatabase database = CodexDatabase.Load();
+            int totalCount = database != null ? database.GetEntryCount(CodexCategory.Collection) : 0;
+            string progress = totalCount > 0 ? $"{unlockedCount}/{totalCount}" : unlockedCount.ToString();
+            SetMenuHint($"Manual unlocked: {progress}");
         }
 
         private void OnSettingsClicked()

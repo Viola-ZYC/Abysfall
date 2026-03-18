@@ -151,3 +151,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 247744d48375a7f42aac3db8f6b22ce8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.Obstacle
+  codexEntryId: obstacle_spike
+  unlockCodexOnSpawn: 1

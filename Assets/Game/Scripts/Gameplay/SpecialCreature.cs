@@ -13,6 +13,9 @@ namespace EndlessRunner
         [SerializeField] private AbilityDefinition ability;
         [SerializeField] private AbilityManager abilityManager;
         [SerializeField] private RewardMode rewardMode = RewardMode.ReplaceAbility;
+        [SerializeField] private CodexCategory codexCategory = CodexCategory.Creature;
+        [SerializeField] private string codexEntryId = string.Empty;
+        [SerializeField] private bool unlockCodexOnHit = true;
 
         private bool consumed;
 
@@ -32,6 +35,10 @@ namespace EndlessRunner
             }
 
             consumed = true;
+            if (unlockCodexOnHit && !string.IsNullOrWhiteSpace(codexEntryId))
+            {
+                RunProgressStore.UnlockCodexEntry(codexCategory, codexEntryId, 1);
+            }
             if (abilityManager == null)
             {
                 abilityManager = FindAnyObjectByType<AbilityManager>();

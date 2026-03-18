@@ -10,7 +10,7 @@ namespace EndlessRunner
         [Serializable]
         private class SaveData
         {
-            public int version = 2;
+            public int version = 3;
             public int bestScore;
             public int lastScore;
             public int totalRuns;
@@ -18,9 +18,20 @@ namespace EndlessRunner
             public int unlockedCollectionCount;
             public int collectionUnlockMask;
             public List<int> collectionEntryCounts = new List<int>();
+            public List<string> unlockedCreatureIds = new List<string>();
+            public List<string> unlockedObstacleIds = new List<string>();
+            public List<string> unlockedPadIds = new List<string>();
+            public List<CodexCountEntry> collectionCounts = new List<CodexCountEntry>();
             public string selectedModeId = ModeClassic;
             public List<ModeState> modeStates = new List<ModeState>();
             public List<LeaderboardEntry> leaderboardEntries = new List<LeaderboardEntry>();
+        }
+
+        [Serializable]
+        private class CodexCountEntry
+        {
+            public string id;
+            public int count;
         }
 
         [Serializable]
@@ -127,23 +138,35 @@ namespace EndlessRunner
         public static int GetUnlockedCollectionCount()
         {
             SaveData data = GetData();
-            return CountUnlockedCollections(data.collectionUnlockMask);
+            return CountCollectionUnlocked(data);
         }
 
         public static bool IsCollectionEntryUnlocked(int entryIndex)
         {
-            if (entryIndex < 0 || entryIndex >= MaxCollectionEntries)
+            string entryId = ResolveCollectionEntryId(entryIndex);
+            if (string.IsNullOrWhiteSpace(entryId))
             {
-                return false;
+                if (entryIndex < 0 || entryIndex >= MaxCollectionEntries)
+                {
+                    return false;
+                }
+
+                SaveData legacy = GetData();
+                int bit = 1 << entryIndex;
+                return (legacy.collectionUnlockMask & bit) != 0;
             }
 
-            SaveData data = GetData();
-            int bit = 1 << entryIndex;
-            return (data.collectionUnlockMask & bit) != 0;
+            return IsCodexEntryUnlocked(CodexCategory.Collection, entryId);
         }
 
         public static bool UnlockCollectionEntry(int entryIndex)
         {
+            string entryId = ResolveCollectionEntryId(entryIndex);
+            if (!string.IsNullOrWhiteSpace(entryId))
+            {
+                return UnlockCodexEntry(CodexCategory.Collection, entryId, 1);
+            }
+
             if (entryIndex < 0 || entryIndex >= MaxCollectionEntries)
             {
                 return false;
@@ -167,6 +190,12 @@ namespace EndlessRunner
 
         public static int GetCollectionEntryCount(int entryIndex)
         {
+            string entryId = ResolveCollectionEntryId(entryIndex);
+            if (!string.IsNullOrWhiteSpace(entryId))
+            {
+                return GetCodexEntryCount(CodexCategory.Collection, entryId);
+            }
+
             if (entryIndex < 0 || entryIndex >= MaxCollectionEntries)
             {
                 return 0;
@@ -180,14 +209,118 @@ namespace EndlessRunner
         public static int GetTotalCollectionPickups()
         {
             SaveData data = GetData();
-            EnsureCollectionEntryCountSize(data);
-            int total = 0;
-            for (int i = 0; i < data.collectionEntryCounts.Count; i++)
+            if (data.collectionCounts != null && data.collectionCounts.Count > 0)
             {
-                total += Mathf.Max(0, data.collectionEntryCounts[i]);
+                int total = 0;
+                for (int i = 0; i < data.collectionCounts.Count; i++)
+                {
+                    CodexCountEntry entry = data.collectionCounts[i];
+                    if (entry == null)
+                    {
+                        continue;
+                    }
+
+                    total += Mathf.Max(0, entry.count);
+                }
+
+                return total;
             }
 
-            return total;
+            EnsureCollectionEntryCountSize(data);
+            int legacyTotal = 0;
+            for (int i = 0; i < data.collectionEntryCounts.Count; i++)
+            {
+                legacyTotal += Mathf.Max(0, data.collectionEntryCounts[i]);
+            }
+
+            return legacyTotal;
+        }
+
+        public static bool IsCodexEntryUnlocked(CodexCategory category, string entryId)
+        {
+            if (string.IsNullOrWhiteSpace(entryId))
+            {
+                return false;
+            }
+
+            SaveData data = GetData();
+            switch (category)
+            {
+                case CodexCategory.Creature:
+                    return data.unlockedCreatureIds != null && data.unlockedCreatureIds.Contains(entryId);
+                case CodexCategory.Obstacle:
+                    return data.unlockedObstacleIds != null && data.unlockedObstacleIds.Contains(entryId);
+                case CodexCategory.Pad:
+                    return data.unlockedPadIds != null && data.unlockedPadIds.Contains(entryId);
+                case CodexCategory.Collection:
+                    return GetCollectionCount(data, entryId) > 0;
+                default:
+                    return false;
+            }
+        }
+
+        public static bool UnlockCodexEntry(CodexCategory category, string entryId, int addCount = 1)
+        {
+            if (string.IsNullOrWhiteSpace(entryId))
+            {
+                return false;
+            }
+
+            SaveData data = GetData();
+            bool newlyUnlocked = false;
+            switch (category)
+            {
+                case CodexCategory.Creature:
+                    newlyUnlocked = AddUnique(data.unlockedCreatureIds, entryId);
+                    break;
+                case CodexCategory.Obstacle:
+                    newlyUnlocked = AddUnique(data.unlockedObstacleIds, entryId);
+                    break;
+                case CodexCategory.Pad:
+                    newlyUnlocked = AddUnique(data.unlockedPadIds, entryId);
+                    break;
+                case CodexCategory.Collection:
+                    newlyUnlocked = AddOrIncrementCollection(data, entryId, addCount);
+                    data.unlockedCollectionCount = CountCollectionUnlocked(data);
+                    break;
+            }
+
+            SaveDataToDisk(data);
+            return newlyUnlocked;
+        }
+
+        public static int GetCodexUnlockedCount(CodexCategory category)
+        {
+            SaveData data = GetData();
+            switch (category)
+            {
+                case CodexCategory.Creature:
+                    return CountUnique(data.unlockedCreatureIds);
+                case CodexCategory.Obstacle:
+                    return CountUnique(data.unlockedObstacleIds);
+                case CodexCategory.Pad:
+                    return CountUnique(data.unlockedPadIds);
+                case CodexCategory.Collection:
+                    return CountCollectionUnlocked(data);
+                default:
+                    return 0;
+            }
+        }
+
+        public static int GetCodexEntryCount(CodexCategory category, string entryId)
+        {
+            if (string.IsNullOrWhiteSpace(entryId))
+            {
+                return 0;
+            }
+
+            SaveData data = GetData();
+            if (category != CodexCategory.Collection)
+            {
+                return IsCodexEntryUnlocked(category, entryId) ? 1 : 0;
+            }
+
+            return GetCollectionCount(data, entryId);
         }
 
         public static List<LeaderboardEntry> GetLeaderboardEntries(int maxCount = 10)
@@ -411,7 +544,32 @@ namespace EndlessRunner
             }
 
             EnsureCollectionEntryCountSize(data);
-            data.unlockedCollectionCount = CountUnlockedCollections(data.collectionUnlockMask);
+            if (data.unlockedCreatureIds == null)
+            {
+                data.unlockedCreatureIds = new List<string>();
+            }
+
+            if (data.unlockedObstacleIds == null)
+            {
+                data.unlockedObstacleIds = new List<string>();
+            }
+
+            if (data.unlockedPadIds == null)
+            {
+                data.unlockedPadIds = new List<string>();
+            }
+
+            if (data.collectionCounts == null)
+            {
+                data.collectionCounts = new List<CodexCountEntry>();
+            }
+
+            NormalizeUnlockedList(data.unlockedCreatureIds);
+            NormalizeUnlockedList(data.unlockedObstacleIds);
+            NormalizeUnlockedList(data.unlockedPadIds);
+            NormalizeCollectionCounts(data);
+            MigrateLegacyCollectionsIfNeeded(data);
+            data.unlockedCollectionCount = CountCollectionUnlocked(data);
             data.selectedModeId = string.IsNullOrWhiteSpace(data.selectedModeId) ? ModeClassic : data.selectedModeId;
 
             if (data.modeStates == null)
@@ -533,6 +691,17 @@ namespace EndlessRunner
             return Path.Combine(Application.persistentDataPath, SaveFileName);
         }
 
+        private static string ResolveCollectionEntryId(int entryIndex)
+        {
+            CodexDatabase database = CodexDatabase.Load();
+            if (database == null)
+            {
+                return string.Empty;
+            }
+
+            return database.GetEntryId(CodexCategory.Collection, entryIndex);
+        }
+
         private static int CountUnlockedCollections(int mask)
         {
             int count = 0;
@@ -544,6 +713,242 @@ namespace EndlessRunner
             }
 
             return count;
+        }
+
+        private static int CountUnique(List<string> entries)
+        {
+            if (entries == null || entries.Count == 0)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < entries.Count; i++)
+            {
+                string entry = entries[i];
+                if (string.IsNullOrWhiteSpace(entry))
+                {
+                    continue;
+                }
+
+                if (seen.Add(entry))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static bool AddUnique(List<string> entries, string entryId)
+        {
+            if (entries == null || string.IsNullOrWhiteSpace(entryId))
+            {
+                return false;
+            }
+
+            if (entries.Contains(entryId))
+            {
+                return false;
+            }
+
+            entries.Add(entryId);
+            return true;
+        }
+
+        private static int GetCollectionCount(SaveData data, string entryId)
+        {
+            if (data == null || data.collectionCounts == null || string.IsNullOrWhiteSpace(entryId))
+            {
+                return 0;
+            }
+
+            for (int i = 0; i < data.collectionCounts.Count; i++)
+            {
+                CodexCountEntry entry = data.collectionCounts[i];
+                if (entry != null && string.Equals(entry.id, entryId, StringComparison.Ordinal))
+                {
+                    return Mathf.Max(0, entry.count);
+                }
+            }
+
+            return 0;
+        }
+
+        private static bool AddOrIncrementCollection(SaveData data, string entryId, int addCount)
+        {
+            if (data == null || string.IsNullOrWhiteSpace(entryId))
+            {
+                return false;
+            }
+
+            if (data.collectionCounts == null)
+            {
+                data.collectionCounts = new List<CodexCountEntry>();
+            }
+
+            CodexCountEntry found = null;
+            for (int i = 0; i < data.collectionCounts.Count; i++)
+            {
+                CodexCountEntry entry = data.collectionCounts[i];
+                if (entry != null && string.Equals(entry.id, entryId, StringComparison.Ordinal))
+                {
+                    found = entry;
+                    break;
+                }
+            }
+
+            if (found == null)
+            {
+                found = new CodexCountEntry { id = entryId, count = 0 };
+                data.collectionCounts.Add(found);
+            }
+
+            bool newlyUnlocked = found.count <= 0;
+            int increment = Mathf.Max(1, addCount);
+            found.count = Mathf.Max(0, found.count) + increment;
+            return newlyUnlocked;
+        }
+
+        private static int CountCollectionUnlocked(SaveData data)
+        {
+            if (data == null || data.collectionCounts == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int i = 0; i < data.collectionCounts.Count; i++)
+            {
+                CodexCountEntry entry = data.collectionCounts[i];
+                if (entry != null && !string.IsNullOrWhiteSpace(entry.id) && entry.count > 0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static void NormalizeUnlockedList(List<string> entries)
+        {
+            if (entries == null || entries.Count == 0)
+            {
+                return;
+            }
+
+            HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
+            List<string> normalized = new List<string>(entries.Count);
+            for (int i = 0; i < entries.Count; i++)
+            {
+                string entry = entries[i];
+                if (string.IsNullOrWhiteSpace(entry))
+                {
+                    continue;
+                }
+
+                if (seen.Add(entry))
+                {
+                    normalized.Add(entry);
+                }
+            }
+
+            entries.Clear();
+            entries.AddRange(normalized);
+        }
+
+        private static void NormalizeCollectionCounts(SaveData data)
+        {
+            if (data == null || data.collectionCounts == null || data.collectionCounts.Count == 0)
+            {
+                return;
+            }
+
+            Dictionary<string, int> merged = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int i = 0; i < data.collectionCounts.Count; i++)
+            {
+                CodexCountEntry entry = data.collectionCounts[i];
+                if (entry == null || string.IsNullOrWhiteSpace(entry.id))
+                {
+                    continue;
+                }
+
+                int count = Mathf.Max(0, entry.count);
+                if (merged.TryGetValue(entry.id, out int existing))
+                {
+                    merged[entry.id] = existing + count;
+                }
+                else
+                {
+                    merged[entry.id] = count;
+                }
+            }
+
+            data.collectionCounts.Clear();
+            foreach (KeyValuePair<string, int> pair in merged)
+            {
+                data.collectionCounts.Add(new CodexCountEntry
+                {
+                    id = pair.Key,
+                    count = Mathf.Max(0, pair.Value)
+                });
+            }
+        }
+
+        private static void MigrateLegacyCollectionsIfNeeded(SaveData data)
+        {
+            if (data == null || data.collectionCounts == null)
+            {
+                return;
+            }
+
+            if (data.collectionCounts.Count > 0)
+            {
+                return;
+            }
+
+            bool hasLegacy = data.collectionUnlockMask != 0;
+            for (int i = 0; i < data.collectionEntryCounts.Count; i++)
+            {
+                if (data.collectionEntryCounts[i] > 0)
+                {
+                    hasLegacy = true;
+                    break;
+                }
+            }
+
+            if (!hasLegacy)
+            {
+                return;
+            }
+
+            for (int i = 0; i < data.collectionEntryCounts.Count; i++)
+            {
+                int count = Mathf.Max(0, data.collectionEntryCounts[i]);
+                bool unlockedByMask = (data.collectionUnlockMask & (1 << i)) != 0;
+                if (count == 0 && !unlockedByMask)
+                {
+                    continue;
+                }
+
+                if (count == 0 && unlockedByMask)
+                {
+                    count = 1;
+                }
+
+                string entryId = ResolveCollectionEntryId(i);
+                if (string.IsNullOrWhiteSpace(entryId))
+                {
+                    entryId = $"legacy_{i}";
+                }
+
+                data.collectionCounts.Add(new CodexCountEntry
+                {
+                    id = entryId,
+                    count = count
+                });
+            }
         }
 
         private static void EnsureCollectionEntryCountSize(SaveData data)

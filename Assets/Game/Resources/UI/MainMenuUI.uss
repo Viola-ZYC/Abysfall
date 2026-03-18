@@ -167,6 +167,45 @@
     -unity-text-align: middle-center;
 }
 
+.manual-tabs {
+    margin-top: 6px;
+    margin-bottom: 12px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.manual-tab-button {
+    flex-grow: 1;
+    height: 40px;
+    margin-right: 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    background-color: rgba(65, 70, 90, 0.9);
+    color: rgb(235, 238, 252);
+    unity-font-style: bold;
+    font-size: 16px;
+}
+
+.manual-tab-button:last-child {
+    margin-right: 0;
+}
+
+.manual-tab-button:hover {
+    background-color: rgba(78, 83, 104, 0.95);
+}
+
+.manual-tab-button.is-active {
+    background-color: rgb(83, 128, 247);
+    color: rgb(255, 255, 255);
+}
+
 .mainmenu-collection-scroll {
     height: 460px;
     margin-bottom: 14px;

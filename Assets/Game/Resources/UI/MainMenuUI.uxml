@@ -18,9 +18,9 @@
                     <ui:Label class="mainmenu-collection-title" text="Manual" />
                     <ui:Label name="mainmenu-collection-progress-label" class="mainmenu-collection-progress" text="Unlocked 0/0" />
                     <ui:VisualElement class="manual-tabs">
-                        <ui:Button name="mainmenu-manual-tab-creatures" class="manual-tab-button" text="生物" />
-                        <ui:Button name="mainmenu-manual-tab-obstacles" class="manual-tab-button" text="障碍" />
-                        <ui:Button name="mainmenu-manual-tab-collections" class="manual-tab-button" text="收藏品" />
+                        <ui:Button name="mainmenu-manual-tab-creatures" class="manual-tab-button" text="Creatures" />
+                        <ui:Button name="mainmenu-manual-tab-obstacles" class="manual-tab-button" text="Obstacles" />
+                        <ui:Button name="mainmenu-manual-tab-collections" class="manual-tab-button" text="Collections" />
                     </ui:VisualElement>
                     <ui:ScrollView name="mainmenu-collection-scroll" class="mainmenu-collection-scroll">
                         <ui:VisualElement name="mainmenu-collection-list" class="mainmenu-collection-list" />

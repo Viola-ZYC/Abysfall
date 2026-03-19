@@ -156,6 +156,12 @@ namespace EndlessRunner
                 {
                     index["unlock"] = i;
                 }
+                else if (header.Contains("Spawn", StringComparison.OrdinalIgnoreCase) ||
+                         header.Contains("出现", StringComparison.OrdinalIgnoreCase) ||
+                         header.Contains("分数", StringComparison.OrdinalIgnoreCase))
+                {
+                    index["spawn"] = i;
+                }
                 else if (header.Contains("描述", StringComparison.OrdinalIgnoreCase))
                 {
                     index["description"] = i;
@@ -188,6 +194,7 @@ namespace EndlessRunner
                 id = GetCell(index, "id", cells),
                 title = GetCell(index, "title", cells),
                 unlockHint = GetCell(index, "unlock", cells),
+                spawnScore = ParseInt(GetCell(index, "spawn", cells)),
                 description = GetCell(index, "description", cells),
                 abilityId = GetCell(index, "ability", cells),
                 icon = GetCell(index, "icon", cells),
@@ -226,6 +233,16 @@ namespace EndlessRunner
             }
 
             return value.Contains("passive", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static int ParseInt(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return 0;
+            }
+
+            return int.TryParse(value.Trim(), out int result) ? Mathf.Max(0, result) : 0;
         }
     }
 }

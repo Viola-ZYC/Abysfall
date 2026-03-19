@@ -17,6 +17,7 @@ MonoBehaviour:
     title: White Block
     description: Returns to normal state.
     unlockHint: Unlocked on first stomp
+    spawnScore: 0
     icon: icon_creature_normal
     note: Required
     abilityId: normal
@@ -25,6 +26,7 @@ MonoBehaviour:
     title: Plain Hopper
     description: Basic bounce only. Does not change abilities.
     unlockHint: Unlocked on first stomp
+    spawnScore: 0
     icon: icon_creature_basic
     note: Basic
     abilityId: 
@@ -33,6 +35,7 @@ MonoBehaviour:
     title: Speed Hatchling
     description: Source creature of the speed boost.
     unlockHint: Unlocked on first stomp
+    spawnScore: 200
     icon: icon_creature_speed
     note: Example
     abilityId: speed_boost
@@ -41,6 +44,7 @@ MonoBehaviour:
     title: Stoneback
     description: Grants tougher skin against hazards.
     unlockHint: Unlocked on first stomp
+    spawnScore: 400
     icon: icon_creature_tough
     note: Example
     abilityId: tough_skin
@@ -49,6 +53,7 @@ MonoBehaviour:
     title: Featherling
     description: Reduces fall weight for longer airtime.
     unlockHint: Unlocked on first stomp
+    spawnScore: 600
     icon: icon_creature_light
     note: Example
     abilityId: lightweight
@@ -57,6 +62,7 @@ MonoBehaviour:
     title: Echo Jumper
     description: Grants one air jump charge every 100 score.
     unlockHint: Unlocked on first encounter
+    spawnScore: 800
     icon: icon_creature_echo
     note: Ability
     abilityId: air_jump_charge_100m
@@ -65,6 +71,7 @@ MonoBehaviour:
     title: Abyss Dasher
     description: Grants one dash charge every 100 score.
     unlockHint: Unlocked on first encounter
+    spawnScore: 1000
     icon: icon_creature_eye
     note: Ability
     abilityId: dash_charge_100m
@@ -74,6 +81,7 @@ MonoBehaviour:
     title: Spikes
     description: Basic damage obstacle.
     unlockHint: Unlocked on first encounter
+    spawnScore: 0
     icon: icon_obstacle_spike
     note: Example
     abilityId: 
@@ -82,6 +90,7 @@ MonoBehaviour:
     title: Crystal Shards
     description: Jagged shards that chip away health.
     unlockHint: Unlocked on first encounter
+    spawnScore: 200
     icon: icon_obstacle_shard
     note: Example
     abilityId: 
@@ -90,6 +99,7 @@ MonoBehaviour:
     title: Stone Crusher
     description: Heavy block that punishes mistimed drops.
     unlockHint: Unlocked on first encounter
+    spawnScore: 800
     icon: icon_obstacle_crusher
     note: Example
     abilityId: 
@@ -98,6 +108,7 @@ MonoBehaviour:
     title: Abyss Laser
     description: A thin beam that burns on contact.
     unlockHint: Unlocked on first encounter
+    spawnScore: 1000
     icon: icon_obstacle_laser
     note: Example
     abilityId: 
@@ -106,6 +117,7 @@ MonoBehaviour:
     title: Fallen Pillar
     description: Collapsed pillar fragments blocking lanes.
     unlockHint: Unlocked on first encounter
+    spawnScore: 400
     icon: icon_obstacle_pillar
     note: Example
     abilityId: 
@@ -114,6 +126,7 @@ MonoBehaviour:
     title: Vent Gust
     description: Turbulence pushes the runner off line.
     unlockHint: Unlocked on first encounter
+    spawnScore: 600
     icon: icon_obstacle_fan
     note: Example
     abilityId: 
@@ -123,6 +136,7 @@ MonoBehaviour:
     title: Abyss Shard
     description: A fragment recording the abyss origin.
     unlockHint: Unlocked on first pickup
+    spawnScore: 0
     icon: icon_relic_001
     note: Example
     abilityId: 
@@ -131,6 +145,7 @@ MonoBehaviour:
     title: Crystal Core
     description: Condensed crystal energy from the upper ruins.
     unlockHint: Unlocked on first pickup
+    spawnScore: 0
     icon: icon_relic_002
     note: Example
     abilityId: 
@@ -139,6 +154,7 @@ MonoBehaviour:
     title: Worn Compass
     description: Still points down, no matter where you stand.
     unlockHint: Unlocked on first pickup
+    spawnScore: 0
     icon: icon_relic_003
     note: Example
     abilityId: 
@@ -147,6 +163,7 @@ MonoBehaviour:
     title: Abyss Emblem
     description: Badge from the first successful deep run.
     unlockHint: Unlocked on first pickup
+    spawnScore: 0
     icon: icon_relic_004
     note: Example
     abilityId: 
@@ -155,6 +172,7 @@ MonoBehaviour:
     title: Void Fragment
     description: Bends light along its fractured edge.
     unlockHint: Unlocked on first pickup
+    spawnScore: 0
     icon: icon_relic_005
     note: Example
     abilityId: 
@@ -163,6 +181,7 @@ MonoBehaviour:
     title: Crown of Depths
     description: A symbolic trophy for elite divers.
     unlockHint: Unlocked on first pickup
+    spawnScore: 0
     icon: icon_relic_006
     note: Example
     abilityId: 

@@ -16,6 +16,7 @@ namespace EndlessRunner
         [SerializeField] private GameObject[] collectiblePrefabs;
         [SerializeField] private Transform[] spawnPoints;
         [SerializeField] private RunnerController runner;
+        [SerializeField] private CodexDatabase codexDatabase;
         [SerializeField] private bool autoFitSpawnPointsToBounds = true;
         [SerializeField, Min(0f)] private float spawnInset = 0.4f;
         [Header("Progress Formula (Deterministic Count)")]
@@ -41,6 +42,7 @@ namespace EndlessRunner
         {
             pool = ObjectPool.Instance;
             ResolveRunner();
+            ResolveCodex();
         }
 
 #if UNITY_EDITOR
@@ -61,6 +63,7 @@ namespace EndlessRunner
             }
 
             ResolveRunner();
+            ResolveCodex();
             ApplySpawnPointBounds();
             SpawnObstacles();
         }
@@ -90,7 +93,8 @@ namespace EndlessRunner
             bool canSpawnChests = enableChests && chestPrefabs != null && chestPrefabs.Length > 0;
             bool canSpawnCollectibles = (collectiblePrefabs != null && collectiblePrefabs.Length > 0) || autoCreateRuntimeCollectiblePrefab;
             bool canSpawnEnemies = enemyPrefabs != null && enemyPrefabs.Length > 0;
-            bool canSpawnObstacles = obstaclePrefabs != null && obstaclePrefabs.Length > 0;
+            GameObject[] availableObstaclePrefabs = FilterPrefabsByScore(obstaclePrefabs, score);
+            bool canSpawnObstacles = availableObstaclePrefabs != null && availableObstaclePrefabs.Length > 0;
 
             int chestCount = canSpawnChests
                 ? ComputeProgressCount(chestBaseCount, chestGrowth, progress, pointCount)
@@ -123,7 +127,7 @@ namespace EndlessRunner
             SpawnCategory(chestPrefabs, chestCount, points, pointOrder, ref cursor, 0f, seed + 11);
             SpawnCollectibleCategory(collectibleCount, points, pointOrder, ref cursor, seed + 23);
             SpawnCategory(enemyPrefabs, enemyCount, points, pointOrder, ref cursor, 0f, seed + 37);
-            SpawnCategory(obstaclePrefabs, obstacleCount, points, pointOrder, ref cursor, 0f, seed + 53);
+            SpawnCategory(availableObstaclePrefabs, obstacleCount, points, pointOrder, ref cursor, 0f, seed + 53);
 
             deterministicSpawnSerial++;
         }
@@ -149,6 +153,14 @@ namespace EndlessRunner
             if (runner == null)
             {
                 runner = FindAnyObjectByType<RunnerController>();
+            }
+        }
+
+        private void ResolveCodex()
+        {
+            if (codexDatabase == null)
+            {
+                codexDatabase = CodexDatabase.Load();
             }
         }
 
@@ -340,6 +352,50 @@ namespace EndlessRunner
             }
 
             return runtimeCollectiblePrefab;
+        }
+
+        private GameObject[] FilterPrefabsByScore(GameObject[] prefabs, int score)
+        {
+            if (prefabs == null || prefabs.Length == 0)
+            {
+                return prefabs;
+            }
+
+            if (codexDatabase == null)
+            {
+                codexDatabase = CodexDatabase.Load();
+            }
+
+            if (codexDatabase == null)
+            {
+                return prefabs;
+            }
+
+            List<GameObject> filtered = new(prefabs.Length);
+            foreach (GameObject prefab in prefabs)
+            {
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                Obstacle obstacle = prefab.GetComponent<Obstacle>();
+                string entryId = obstacle != null ? obstacle.CodexEntryId : string.Empty;
+                if (string.IsNullOrWhiteSpace(entryId))
+                {
+                    filtered.Add(prefab);
+                    continue;
+                }
+
+                CodexEntry entry = codexDatabase.FindEntry(CodexCategory.Obstacle, entryId);
+                int minScore = entry != null ? Mathf.Max(0, entry.spawnScore) : 0;
+                if (score >= minScore)
+                {
+                    filtered.Add(prefab);
+                }
+            }
+
+            return filtered.ToArray();
         }
 
         private static GameObject CreateRuntimeCollectiblePrefab()

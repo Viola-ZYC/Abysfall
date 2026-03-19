@@ -20,6 +20,7 @@ namespace EndlessRunner
         private bool consumed;
 
         public AbilityDefinition Ability => ability;
+        public string CodexEntryId => codexEntryId;
 
         public override void OnSpawned()
         {

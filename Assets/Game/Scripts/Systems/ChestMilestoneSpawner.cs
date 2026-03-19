@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -310,11 +311,57 @@ namespace EndlessRunner
         {
             if (specialCreaturePrefabs != null && specialCreaturePrefabs.Length > 0)
             {
-                int index = Random.Range(0, specialCreaturePrefabs.Length);
-                return specialCreaturePrefabs[index];
+                int score = scoreManager != null ? scoreManager.Score : 0;
+                List<GameObject> candidates = new List<GameObject>(specialCreaturePrefabs.Length);
+                foreach (GameObject prefab in specialCreaturePrefabs)
+                {
+                    if (prefab == null)
+                    {
+                        continue;
+                    }
+
+                    if (IsPrefabAvailable(prefab, score))
+                    {
+                        candidates.Add(prefab);
+                    }
+                }
+
+                if (candidates.Count > 0)
+                {
+                    int index = Random.Range(0, candidates.Count);
+                    return candidates[index];
+                }
             }
 
             return legacyChestPrefab;
+        }
+
+        private bool IsPrefabAvailable(GameObject prefab, int score)
+        {
+            SpecialCreature creature = prefab.GetComponent<SpecialCreature>();
+            if (creature == null)
+            {
+                return true;
+            }
+
+            string entryId = creature.CodexEntryId;
+            if (string.IsNullOrWhiteSpace(entryId))
+            {
+                return true;
+            }
+
+            if (codexDatabase == null)
+            {
+                codexDatabase = CodexDatabase.Load();
+            }
+
+            CodexEntry entry = codexDatabase != null ? codexDatabase.FindEntry(CodexCategory.Creature, entryId) : null;
+            if (entry == null)
+            {
+                return true;
+            }
+
+            return score >= Mathf.Max(0, entry.spawnScore);
         }
 
         private string ResolveLoreEntryId(int entryIndex)

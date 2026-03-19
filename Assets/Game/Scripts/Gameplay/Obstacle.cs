@@ -8,6 +8,8 @@ namespace EndlessRunner
         [SerializeField] private bool unlockCodexOnSpawn = true;
         private bool consumed;
 
+        public string CodexEntryId => codexEntryId;
+
         private void OnEnable()
         {
             consumed = false;

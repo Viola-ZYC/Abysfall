@@ -513,7 +513,7 @@ namespace EndlessRunner
 
         private static GameObject[] TryLoadFallback(string name)
         {
-            string path = $"Assets/Game/Prefabs/{name}.prefab";
+            string path = GetFallbackPath(name);
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (prefab != null)
             {
@@ -521,6 +521,21 @@ namespace EndlessRunner
             }
 
             return Array.Empty<GameObject>();
+        }
+
+        private static string GetFallbackPath(string name)
+        {
+            if (string.Equals(name, "Enemy", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Assets/Game/Prefabs/Enemies/Enemy.prefab";
+            }
+
+            if (string.Equals(name, "Obstacle", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Assets/Game/Prefabs/Obstacles/Obstacle.prefab";
+            }
+
+            return $"Assets/Game/Prefabs/{name}.prefab";
         }
 
         private static GameObject[] FilterPrefabs(GameObject[] prefabs)

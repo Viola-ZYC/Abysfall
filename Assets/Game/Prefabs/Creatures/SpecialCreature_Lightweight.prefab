@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6968571930359764487}
   - component: {fileID: 5307832073755920297}
   - component: {fileID: 7593948915473152328}
+  - component: {fileID: 9000000000000000003}
   m_Layer: 0
   m_Name: SpecialCreature_Lightweight
   m_TagString: Untagged
@@ -83,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 5e0ebb318e2e4efeb93235e4acbf9d7d, type: 3}
+  m_Sprite: {fileID: 1035104852675971328, guid: 1e3008a38caf23d4c97d319f036bb2f0, type: 3}
   m_Color: {r: 0.4, g: 0.85, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -151,4 +152,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84fa836508b640858a11e82243f8dfa1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.SpecialCreature\n  ability: {fileID: 11400000, guid: d2b2c2d2e2f2a2b2c2d2e2f2a2b2c2d2, type: 2}\n  abilityManager: {fileID: 0}\n  rewardMode: 0\n  codexCategory: 0\n  codexEntryId: creature_lightweight\n  unlockCodexOnHit: 1
+--- !u!95 &9000000000000000003
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8270579165458065032}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 0da2a9406d234933bda9478a61b4094a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 

@@ -112,15 +112,22 @@ namespace EndlessRunner
             }
 
             float recycleThreshold = camHalfHeight + segmentHeight * 0.5f + recycleBuffer;
+            Transform recycleCandidate = null;
+            float maxAbove = float.NegativeInfinity;
             for (int i = 0; i < segments.Count; i++)
             {
                 Transform seg = segments[i];
                 float above = seg.position.y - cameraY;
-                if (above > recycleThreshold)
+                if (above > recycleThreshold && above > maxAbove)
                 {
-                    seg.position = new Vector3(seg.position.x, minY - segmentStep, seg.position.z);
-                    minY = seg.position.y;
+                    maxAbove = above;
+                    recycleCandidate = seg;
                 }
+            }
+
+            if (recycleCandidate != null)
+            {
+                recycleCandidate.position = new Vector3(recycleCandidate.position.x, minY - segmentStep, recycleCandidate.position.z);
             }
         }
 

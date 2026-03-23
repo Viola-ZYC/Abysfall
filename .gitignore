@@ -36,3 +36,5 @@ Assets/AssetStoreTools*
 .DS_Store
 Thumbs.db
 
+
+# Local test outputs\nUnityLogs/

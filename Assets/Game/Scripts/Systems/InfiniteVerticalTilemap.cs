@@ -104,6 +104,7 @@ namespace EndlessRunner
                 cameraY = followTarget.position.y;
             }
             float camHalfHeight = targetCamera.orthographic ? targetCamera.orthographicSize : 5f;
+            float cameraBottom = cameraY - camHalfHeight;
 
             float minY = float.PositiveInfinity;
             for (int i = 0; i < segments.Count; i++)
@@ -111,16 +112,17 @@ namespace EndlessRunner
                 minY = Mathf.Min(minY, segments[i].position.y);
             }
 
-            float recycleThreshold = camHalfHeight + segmentHeight * 0.5f + recycleBuffer;
+            float recycleThreshold = segmentStep + recycleBuffer;
             Transform recycleCandidate = null;
             float maxAbove = float.NegativeInfinity;
             for (int i = 0; i < segments.Count; i++)
             {
                 Transform seg = segments[i];
-                float above = seg.position.y - cameraY;
-                if (above > recycleThreshold && above > maxAbove)
+                float segBottom = seg.position.y - segmentHeight * 0.5f;
+                float aboveBottom = segBottom - cameraBottom;
+                if (aboveBottom > recycleThreshold && aboveBottom > maxAbove)
                 {
-                    maxAbove = above;
+                    maxAbove = aboveBottom;
                     recycleCandidate = seg;
                 }
             }

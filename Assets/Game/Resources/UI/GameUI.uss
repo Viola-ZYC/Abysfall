@@ -381,3 +381,62 @@
     flex-direction: column;
     align-items: stretch;
 }
+
+#pause-button,
+#menu-continue-button,
+#menu-start-button,
+#menu-leaderboard-button,
+#menu-collection-button,
+#menu-settings-button,
+#menu-exit-button,
+#pause-mainmenu-button,
+#pause-exit-button,
+#gameover-restart-button,
+#gameover-mainmenu-button,
+#gameover-exit-button,
+#settings-apply-button,
+#settings-mainmenu-button,
+#settings-close-button,
+#ability-mainmenu-button {
+    padding-left: 52px;
+    background-position: 16px 50%;
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
+}
+
+#pause-button {
+    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12.png");
+}
+
+#menu-continue-button,
+#menu-start-button,
+#gameover-restart-button {
+    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons17.png");
+}
+
+#menu-leaderboard-button,
+#menu-collection-button {
+    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12.png");
+}
+
+#menu-settings-button {
+    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons1.png");
+}
+
+#menu-exit-button,
+#pause-exit-button,
+#gameover-exit-button,
+#settings-close-button {
+    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons9.png");
+}
+
+#pause-mainmenu-button,
+#gameover-mainmenu-button,
+#settings-mainmenu-button,
+#ability-mainmenu-button {
+    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons16.png");
+}
+
+#settings-apply-button {
+    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons8.png");
+}

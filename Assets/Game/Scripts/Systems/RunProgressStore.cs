@@ -266,21 +266,28 @@ namespace EndlessRunner
 
             SaveData data = GetData();
             bool newlyUnlocked = false;
+            bool changed = false;
             switch (category)
             {
                 case CodexCategory.Creature:
                     newlyUnlocked = AddUnique(data.unlockedCreatureIds, entryId);
+                    changed = newlyUnlocked;
                     break;
                 case CodexCategory.Obstacle:
                     newlyUnlocked = AddUnique(data.unlockedObstacleIds, entryId);
+                    changed = newlyUnlocked;
                     break;
                 case CodexCategory.Collection:
                     newlyUnlocked = AddOrIncrementCollection(data, entryId, addCount);
                     data.unlockedCollectionCount = CountCollectionUnlocked(data);
+                    changed = true;
                     break;
             }
 
-            SaveDataToDisk(data);
+            if (changed)
+            {
+                SaveDataToDisk(data);
+            }
             return newlyUnlocked;
         }
 
@@ -304,7 +311,10 @@ namespace EndlessRunner
 
             SaveData data = GetData();
             bool newlyUnlocked = AddUnique(data.unlockedAbilityIds, abilityId);
-            SaveDataToDisk(data);
+            if (newlyUnlocked)
+            {
+                SaveDataToDisk(data);
+            }
             return newlyUnlocked;
         }
 

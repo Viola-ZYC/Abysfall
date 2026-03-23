@@ -25,6 +25,7 @@ namespace EndlessRunner
         private readonly List<Transform> segments = new();
         private float segmentHeight;
         private float segmentStep;
+        private float segmentBottomOffset;
 
         private void Awake()
         {
@@ -133,10 +134,7 @@ namespace EndlessRunner
                 }
 
                 float targetBottom = minBottom - segmentStep;
-                float bottomOffset = GetSegmentBottomOffset(recycleCandidate);
-                Vector3 pos = recycleCandidate.position;
-                pos.y = targetBottom + bottomOffset;
-                recycleCandidate.position = pos;
+                SetSegmentBottom(recycleCandidate, targetBottom);
             }
         }
 
@@ -195,39 +193,26 @@ namespace EndlessRunner
             }
 
             float height = 0f;
-            if (TryGetSegmentBounds(segments[0], out Bounds bounds))
+            segmentBottomOffset = 0f;
+
+            Transform sample = segments[0];
+            Tilemap tilemap = sample.GetComponentInChildren<Tilemap>();
+            if (tilemap != null && TryGetUsedCellBounds(tilemap, out BoundsInt usedBounds))
+            {
+                Vector3 minWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMin, 0));
+                Vector3 maxWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMax, 0));
+                height = Mathf.Abs(maxWorld.y - minWorld.y);
+                segmentBottomOffset = sample.position.y - minWorld.y;
+            }
+            else if (TryGetSegmentBounds(sample, out Bounds bounds))
             {
                 height = bounds.size.y;
-            }
-            else
-            {
-                Tilemap tilemap = segments[0].GetComponentInChildren<Tilemap>();
-                if (tilemap != null)
-                {
-                    if (TryGetUsedCellBounds(tilemap, out BoundsInt usedBounds))
-                    {
-                        Vector3 minWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMin, 0));
-                        Vector3 maxWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMax, 0));
-                        height = Mathf.Abs(maxWorld.y - minWorld.y);
-                    }
-                    else
-                    {
-                        float scale = Mathf.Abs(tilemap.transform.lossyScale.y);
-                        height = tilemap.localBounds.size.y * (scale <= 0f ? 1f : scale);
-                    }
-                }
-                else
-                {
-                    TilemapRenderer renderer = segments[0].GetComponentInChildren<TilemapRenderer>();
-                    if (renderer != null)
-                    {
-                        height = renderer.bounds.size.y;
-                    }
-                }
+                segmentBottomOffset = sample.position.y - bounds.min.y;
             }
 
             segmentHeight = Mathf.Max(0.01f, height);
             segmentStep = Mathf.Max(0.01f, segmentHeight - Mathf.Max(0f, segmentOverlap));
+            segmentBottomOffset = Mathf.Max(0.01f, segmentBottomOffset > 0f ? segmentBottomOffset : segmentHeight * 0.5f);
         }
 
         private void StackSegments()
@@ -243,8 +228,7 @@ namespace EndlessRunner
                 Vector3 pos = segments[i].position;
                 pos.x = transform.position.x;
                 float targetBottom = baseBottom - segmentStep * i;
-                float bottomOffset = GetSegmentBottomOffset(segments[i]);
-                pos.y = targetBottom + bottomOffset;
+                pos.y = targetBottom + GetSegmentBottomOffset(segments[i]);
                 segments[i].position = pos;
             }
         }
@@ -333,22 +317,19 @@ namespace EndlessRunner
 
         private float GetSegmentBottom(Transform segment)
         {
-            if (TryGetSegmentBounds(segment, out Bounds bounds))
-            {
-                return bounds.min.y;
-            }
-
-            return segment.position.y - segmentHeight * 0.5f;
+            return segment.position.y - segmentBottomOffset;
         }
 
         private float GetSegmentBottomOffset(Transform segment)
         {
-            if (TryGetSegmentBounds(segment, out Bounds bounds))
-            {
-                return segment.position.y - bounds.min.y;
-            }
+            return segmentBottomOffset;
+        }
 
-            return segmentHeight * 0.5f;
+        private void SetSegmentBottom(Transform segment, float targetBottom)
+        {
+            Vector3 pos = segment.position;
+            pos.y = targetBottom + segmentBottomOffset;
+            segment.position = pos;
         }
     }
 }

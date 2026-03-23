@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -80,10 +81,16 @@ namespace EndlessRunner
         [SerializeField] private string settingsApplyButtonName = "settings-apply-button";
         [SerializeField] private string settingsMainMenuButtonName = "settings-mainmenu-button";
         [SerializeField] private string settingsCloseButtonName = "settings-close-button";
+        [SerializeField] private string fxHitFlashName = "fx-hit-flash";
+        [SerializeField] private string fxLowHealthName = "fx-low-health";
+        [SerializeField] private string fxAbilityPulseName = "fx-ability-pulse";
         [SerializeField] private CharacterOption[] characterOptions;
         [SerializeField] private int defaultCharacterIndex = 0;
         [SerializeField] private bool disableLegacyCanvasOnToolkit = true;
         [SerializeField] private bool applySafeArea = true;
+        [SerializeField, Range(0.1f, 0.9f)] private float lowHealthThreshold = 0.35f;
+        [SerializeField] private float hitFlashDuration = 0.12f;
+        [SerializeField] private float abilityPulseDuration = 0.2f;
 
         private Label scoreLabel;
         private Label healthLabel;
@@ -96,6 +103,9 @@ namespace EndlessRunner
         private VisualElement settingsPanelElement;
         private VisualElement safeAreaElement;
         private VisualElement characterSelectionElement;
+        private VisualElement fxHitFlashElement;
+        private VisualElement fxLowHealthElement;
+        private VisualElement fxAbilityPulseElement;
         private Label characterNameLabel;
         private Label characterDescLabel;
         private Label menuHintLabel;
@@ -136,9 +146,14 @@ namespace EndlessRunner
         private bool suppressSettingsEvents;
         private int selectedResolutionIndex = -1;
         private int selectedCharacterIndex;
+        private int lastHealth = -1;
+        private int lastHealthMax = -1;
+        private Coroutine hitFlashRoutine;
+        private Coroutine abilityPulseRoutine;
         private readonly List<ResolutionOption> availableResolutions = new List<ResolutionOption>();
         private readonly List<string> availableResolutionLabels = new List<string>();
         private const string VisibleClass = "is-visible";
+        private const string FxActiveClass = "is-active";
         private const int ToolkitRetryLogFrame = 60;
         private const string MasterVolumePrefKey = "settings.master_volume";
         private const string ResolutionPrefKey = "settings.resolution_index";
@@ -268,6 +283,10 @@ namespace EndlessRunner
         private void OnAbilityChanged(AbilityDefinition ability, AbilityManager.AbilityChangeType changeType, int stacks)
         {
             RefreshAbilityButtonState();
+            if (changeType == AbilityManager.AbilityChangeType.Acquired)
+            {
+                TriggerAbilityPulse();
+            }
         }
 
         private void RefreshAbilityButtonState()
@@ -300,6 +319,7 @@ namespace EndlessRunner
             }
 
             abilityManager.TryActivateCurrentAbility();
+            TriggerAbilityPulse();
         }
 
         private void OnHealthChanged(int current, int max)
@@ -308,6 +328,67 @@ namespace EndlessRunner
             {
                 healthLabel.text = $"HP {current}/{max}";
             }
+
+            if (lastHealth >= 0 && current < lastHealth)
+            {
+                TriggerHitFlash();
+            }
+
+            lastHealth = current;
+            lastHealthMax = max;
+            UpdateLowHealthFx(current, max);
+        }
+
+        private void UpdateLowHealthFx(int current, int max)
+        {
+            if (fxLowHealthElement == null)
+            {
+                return;
+            }
+
+            if (max <= 0)
+            {
+                fxLowHealthElement.RemoveFromClassList(FxActiveClass);
+                return;
+            }
+
+            float ratio = current / (float)max;
+            bool isLow = ratio <= lowHealthThreshold;
+            fxLowHealthElement.EnableInClassList(FxActiveClass, isLow);
+        }
+
+        private void TriggerHitFlash()
+        {
+            StartFxRoutine(ref hitFlashRoutine, fxHitFlashElement, hitFlashDuration);
+        }
+
+        private void TriggerAbilityPulse()
+        {
+            StartFxRoutine(ref abilityPulseRoutine, fxAbilityPulseElement, abilityPulseDuration);
+        }
+
+        private void StartFxRoutine(ref Coroutine routine, VisualElement element, float duration)
+        {
+            if (element == null)
+            {
+                return;
+            }
+
+            if (routine != null)
+            {
+                StopCoroutine(routine);
+            }
+
+            routine = StartCoroutine(FxRoutine(element, duration, () => routine = null));
+        }
+
+        private IEnumerator FxRoutine(VisualElement element, float duration, Action onComplete)
+        {
+            element.RemoveFromClassList(FxActiveClass);
+            element.AddToClassList(FxActiveClass);
+            yield return new WaitForSecondsRealtime(duration);
+            element.RemoveFromClassList(FxActiveClass);
+            onComplete?.Invoke();
         }
 
         private void RefreshMotionMetrics()
@@ -424,6 +505,9 @@ namespace EndlessRunner
             gameOverPanelElement = root.Q<VisualElement>(gameOverPanelName);
             settingsPanelElement = root.Q<VisualElement>(settingsPanelName);
             safeAreaElement = root.Q<VisualElement>(safeAreaName);
+            fxHitFlashElement = root.Q<VisualElement>(fxHitFlashName);
+            fxLowHealthElement = root.Q<VisualElement>(fxLowHealthName);
+            fxAbilityPulseElement = root.Q<VisualElement>(fxAbilityPulseName);
             menuHintLabel = root.Q<Label>(menuHintLabelName);
             menuContinueButton = root.Q<UITKButton>(menuContinueButtonName);
             menuStartButton = root.Q<UITKButton>(menuStartButtonName);
@@ -486,6 +570,11 @@ namespace EndlessRunner
                 Debug.LogError(
                     $"HUDController could not bind required UI Toolkit elements. Missing: {string.Join(", ", missingElements)}",
                     this);
+            }
+
+            if (useToolkit && lastHealth >= 0)
+            {
+                UpdateLowHealthFx(lastHealth, lastHealthMax);
             }
         }
 

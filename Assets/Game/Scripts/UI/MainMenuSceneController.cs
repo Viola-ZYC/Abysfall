@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -41,6 +42,7 @@ namespace EndlessRunner
         [SerializeField] private string panelSettingsResource = "UI/GamePanelSettings";
         [SerializeField] private string visualTreeResource = "UI/MainMenuUI";
         [SerializeField] private string styleSheetResource = "UI/MainMenuUI";
+        [SerializeField] private string mainMenuCardName = "mainmenu-card";
         [SerializeField] private string playButtonName = "mainmenu-play-button";
         [SerializeField] private string leaderboardButtonName = "mainmenu-leaderboard-button";
         [SerializeField] private string collectionButtonName = "mainmenu-collection-button";
@@ -84,6 +86,9 @@ namespace EndlessRunner
         [SerializeField] private CollectionEntry[] collectionEntries;
         [SerializeField] private CodexDatabase codexDatabase;
         [SerializeField] private bool applySafeArea = true;
+        [SerializeField] private float glowMinInterval = 1.6f;
+        [SerializeField] private float glowMaxInterval = 3.2f;
+        [SerializeField] private float glowDuration = 0.12f;
 
         private UIDocument uiDocument;
         private UITKButton playButton;
@@ -117,6 +122,7 @@ namespace EndlessRunner
         private Label settingsResolutionHintLabel;
         private Label gameModeHintLabel;
         private VisualElement safeAreaElement;
+        private VisualElement mainMenuCard;
         private VisualElement collectionOverlay;
         private VisualElement achievementOverlay;
         private VisualElement leaderboardOverlay;
@@ -145,6 +151,8 @@ namespace EndlessRunner
         private readonly List<string> availableModeLabels = new List<string>();
         private const string VisibleClass = "is-visible";
         private const string LockedClass = "is-locked";
+        private const string GlowClass = "is-glow";
+        private Coroutine glowRoutine;
         private const string MasterVolumePrefKey = "settings.master_volume";
         private const string ResolutionPrefKey = "settings.resolution_index";
         private const string AutoResolutionLabel = "Auto (Recommended)";
@@ -296,6 +304,7 @@ namespace EndlessRunner
             settingsResolutionHintLabel = root.Q<Label>(settingsResolutionHintLabelName);
             gameModeHintLabel = root.Q<Label>(gameModeHintLabelName);
             safeAreaElement = root.Q<VisualElement>(safeAreaElementName);
+            mainMenuCard = root.Q<VisualElement>(mainMenuCardName);
             collectionOverlay = root.Q<VisualElement>(collectionOverlayName);
             achievementOverlay = root.Q<VisualElement>(achievementOverlayName);
             leaderboardOverlay = root.Q<VisualElement>(leaderboardOverlayName);
@@ -409,6 +418,7 @@ namespace EndlessRunner
             SetHint("Select an option.");
             ApplySafeAreaIfNeeded();
             isBound = true;
+            StartGlowLoopIfReady();
         }
 
         private void UnbindButtons()
@@ -516,6 +526,46 @@ namespace EndlessRunner
             SetLeaderboardOverlayVisible(false);
             SetSettingsOverlayVisible(false);
             isBound = false;
+            StopGlowLoop();
+        }
+
+        private void StartGlowLoopIfReady()
+        {
+            if (glowRoutine != null || mainMenuCard == null)
+            {
+                return;
+            }
+
+            glowRoutine = StartCoroutine(GlowLoop());
+        }
+
+        private void StopGlowLoop()
+        {
+            if (glowRoutine != null)
+            {
+                StopCoroutine(glowRoutine);
+                glowRoutine = null;
+            }
+
+            if (mainMenuCard != null)
+            {
+                mainMenuCard.RemoveFromClassList(GlowClass);
+            }
+        }
+
+        private IEnumerator GlowLoop()
+        {
+            while (mainMenuCard != null)
+            {
+                float waitTime = UnityEngine.Random.Range(glowMinInterval, glowMaxInterval);
+                yield return new WaitForSecondsRealtime(waitTime);
+
+                mainMenuCard.AddToClassList(GlowClass);
+                yield return new WaitForSecondsRealtime(glowDuration);
+                mainMenuCard.RemoveFromClassList(GlowClass);
+            }
+
+            glowRoutine = null;
         }
 
         private void OnPlayClicked()

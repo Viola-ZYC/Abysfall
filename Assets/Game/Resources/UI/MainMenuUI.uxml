@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="mainmenu-root" class="mainmenu-root">
         <ui:VisualElement name="mainmenu-safe-area" class="mainmenu-safe-area">
-            <ui:VisualElement class="mainmenu-card">
+            <ui:VisualElement name="mainmenu-card" class="mainmenu-card">
                 <ui:Label name="mainmenu-title-label" class="mainmenu-title" text="ENDLESS ABYSS" />
                 <ui:Label name="mainmenu-subtitle-label" class="mainmenu-subtitle" text="Main Menu" />
                 <ui:Button name="mainmenu-play-button" class="mainmenu-button mainmenu-button-primary" text="Play" />

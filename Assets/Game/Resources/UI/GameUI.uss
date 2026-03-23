@@ -29,6 +29,72 @@
     align-items: center;
 }
 
+.fx-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.fx-hit-flash {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(255, 60, 80, 0.35);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+}
+
+.fx-hit-flash.is-active {
+    opacity: 1;
+}
+
+.fx-low-health {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(20, 0, 0, 0.15);
+    border-width: 6px;
+    border-color: rgba(255, 60, 80, 0.6);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+}
+
+.fx-low-health.is-active {
+    opacity: 1;
+}
+
+.fx-ability-pulse {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 420px;
+    height: 420px;
+    margin-left: -210px;
+    margin-top: -210px;
+    border-width: 2px;
+    border-color: rgba(255, 90, 100, 0.85);
+    border-radius: 2px;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+}
+
+.fx-ability-pulse.is-active {
+    opacity: 1;
+}
+
 .ability-button {
     width: 360px;
     height: 72px;

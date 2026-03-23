@@ -13,9 +13,15 @@
                         <Button name="pause-button" class="pause-button" text="Pause" />
                     </VisualElement>
                 </VisualElement>
-                <VisualElement name="ability-action" class="ability-action">
-                    <Button name="ability-action-button" class="ability-button" text="No Ability" />
-                </VisualElement>
+            <VisualElement name="ability-action" class="ability-action">
+                <Button name="ability-action-button" class="ability-button" text="No Ability" />
+            </VisualElement>
+
+            <VisualElement name="fx-layer" class="fx-layer">
+                <VisualElement name="fx-hit-flash" class="fx-hit-flash" />
+                <VisualElement name="fx-low-health" class="fx-low-health" />
+                <VisualElement name="fx-ability-pulse" class="fx-ability-pulse" />
+            </VisualElement>
 
             <VisualElement name="menu-panel" class="overlay overlay-menu">
                 <VisualElement class="overlay-card overlay-card-wide">

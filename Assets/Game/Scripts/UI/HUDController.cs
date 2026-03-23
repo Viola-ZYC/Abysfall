@@ -872,7 +872,7 @@ namespace EndlessRunner
             }
 
             pauseMenuRequested = true;
-            gameManager.Pause();
+            gameManager.RequestPause(this);
         }
 
         private void OnContinueClicked()
@@ -885,7 +885,7 @@ namespace EndlessRunner
             settingsPanelRequested = false;
             SetSettingsPanelVisible(false);
             pauseMenuRequested = false;
-            gameManager.Resume();
+            gameManager.ReleasePause(this);
         }
 
         private void OnStartClicked()

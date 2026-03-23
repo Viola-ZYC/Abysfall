@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 #if ENABLE_INPUT_SYSTEM
@@ -24,6 +25,10 @@ namespace EndlessRunner
 
         public GameState State { get; private set; }
         public event Action<GameState> StateChanged;
+
+        private readonly HashSet<object> pauseOwners = new();
+        private readonly object manualPauseToken = new();
+        private GameState stateBeforePause = GameState.Running;
 
         private void Awake()
         {
@@ -84,6 +89,7 @@ namespace EndlessRunner
                 return;
             }
 
+            ClearPauseRequests();
             Time.timeScale = 1f;
             if (abilityManager == null)
             {
@@ -114,24 +120,67 @@ namespace EndlessRunner
 
         public void Pause()
         {
-            if (State != GameState.Running)
-            {
-                return;
-            }
-
-            Time.timeScale = 0f;
-            SetState(GameState.Paused);
+            RequestPause(manualPauseToken);
         }
 
         public void Resume()
         {
-            if (State != GameState.Paused)
+            ReleasePause(manualPauseToken);
+        }
+
+        public void RequestPause(object owner)
+        {
+            if (owner == null)
             {
                 return;
             }
 
+            if (!pauseOwners.Add(owner))
+            {
+                return;
+            }
+
+            if (pauseOwners.Count == 1)
+            {
+                stateBeforePause = State;
+                Time.timeScale = 0f;
+                if (State == GameState.Running)
+                {
+                    SetState(GameState.Paused);
+                }
+            }
+        }
+
+        public void ReleasePause(object owner)
+        {
+            if (owner == null)
+            {
+                return;
+            }
+
+            if (!pauseOwners.Remove(owner))
+            {
+                return;
+            }
+
+            if (pauseOwners.Count == 0)
+            {
+                Time.timeScale = 1f;
+                if (State == GameState.Paused && stateBeforePause == GameState.Running)
+                {
+                    SetState(GameState.Running);
+                }
+            }
+        }
+
+        public void ClearPauseRequests()
+        {
+            pauseOwners.Clear();
             Time.timeScale = 1f;
-            SetState(GameState.Running);
+            if (State == GameState.Paused)
+            {
+                SetState(GameState.Running);
+            }
         }
 
         public void GameOver()
@@ -247,6 +296,7 @@ namespace EndlessRunner
                 return;
             }
 
+            ClearPauseRequests();
             Time.timeScale = 1f;
             SceneManager.LoadScene(sceneName);
         }

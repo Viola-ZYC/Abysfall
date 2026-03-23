@@ -8,6 +8,12 @@ namespace EndlessRunner
         private Coroutine routine;
         private float restoreScale = 1f;
         private bool inHitStop;
+        private GameManager gameManager;
+
+        private void Awake()
+        {
+            gameManager = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
+        }
 
         public void Trigger(float duration)
         {
@@ -16,12 +22,17 @@ namespace EndlessRunner
                 return;
             }
 
-            if (Time.timeScale <= 0f && !inHitStop)
+            if (gameManager != null && gameManager.State != GameState.Running && !inHitStop)
             {
                 return;
             }
 
-            if (Time.timeScale > 0f)
+            if (gameManager == null && Time.timeScale <= 0f && !inHitStop)
+            {
+                return;
+            }
+
+            if (gameManager == null && Time.timeScale > 0f)
             {
                 restoreScale = Time.timeScale;
             }
@@ -37,9 +48,23 @@ namespace EndlessRunner
         private IEnumerator StopRoutine(float duration)
         {
             inHitStop = true;
-            Time.timeScale = 0f;
+            if (gameManager != null)
+            {
+                gameManager.RequestPause(this);
+            }
+            else
+            {
+                Time.timeScale = 0f;
+            }
             yield return new WaitForSecondsRealtime(duration);
-            Time.timeScale = restoreScale;
+            if (gameManager != null)
+            {
+                gameManager.ReleasePause(this);
+            }
+            else
+            {
+                Time.timeScale = restoreScale;
+            }
             inHitStop = false;
             routine = null;
         }

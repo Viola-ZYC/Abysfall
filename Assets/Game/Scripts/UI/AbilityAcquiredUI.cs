@@ -207,7 +207,7 @@ namespace EndlessRunner
         {
             if (gameManager != null)
             {
-                gameManager.Pause();
+                gameManager.RequestPause(this);
                 return;
             }
 
@@ -218,7 +218,7 @@ namespace EndlessRunner
         {
             if (gameManager != null)
             {
-                gameManager.Resume();
+                gameManager.ReleasePause(this);
                 return;
             }
 

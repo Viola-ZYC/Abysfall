@@ -21,6 +21,7 @@ namespace EndlessRunner
         [SerializeField, Min(0f)] private float segmentOverlap = 0.05f;
         [SerializeField] private bool buildInEditMode = true;
         [SerializeField] private bool keepInSync = false;
+        [SerializeField] private bool alignTopSegmentToFollowTarget = true;
 
         private readonly List<Transform> segments = new();
         private float segmentHeight;
@@ -223,6 +224,14 @@ namespace EndlessRunner
             }
 
             float baseBottom = GetSegmentBottom(segments[0]);
+            if (alignTopSegmentToFollowTarget)
+            {
+                Transform anchor = followTarget != null ? followTarget : (targetCamera != null ? targetCamera.transform : null);
+                if (anchor != null)
+                {
+                    baseBottom = anchor.position.y - segmentHeight * 0.5f;
+                }
+            }
             for (int i = 0; i < segments.Count; i++)
             {
                 Vector3 pos = segments[i].position;

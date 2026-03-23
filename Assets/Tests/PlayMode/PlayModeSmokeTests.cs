@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,13 +11,29 @@ public class PlayModeSmokeTests
     [UnityTest]
     public IEnumerator Smoke_FrameAdvances()
     {
+        yield return RunWithLogging(nameof(Smoke_FrameAdvances), Smoke_FrameAdvances_Impl);
+    }
+
+    [UnityTest]
+    public IEnumerator Smoke_CanCreateAndDestroyGameObject()
+    {
+        yield return RunWithLogging(nameof(Smoke_CanCreateAndDestroyGameObject), Smoke_CanCreateAndDestroyGameObject_Impl);
+    }
+
+    [UnityTest]
+    public IEnumerator SampleScene_CoreSystemsPresent()
+    {
+        yield return RunWithLogging(nameof(SampleScene_CoreSystemsPresent), SampleScene_CoreSystemsPresent_Impl);
+    }
+
+    private IEnumerator Smoke_FrameAdvances_Impl()
+    {
         var startFrame = Time.frameCount;
         yield return null;
         Assert.Greater(Time.frameCount, startFrame);
     }
 
-    [UnityTest]
-    public IEnumerator Smoke_CanCreateAndDestroyGameObject()
+    private IEnumerator Smoke_CanCreateAndDestroyGameObject_Impl()
     {
         var go = new GameObject("PlayModeSmoke");
         Assert.IsNotNull(go);
@@ -25,8 +42,7 @@ public class PlayModeSmokeTests
         Assert.IsTrue(go == null);
     }
 
-    [UnityTest]
-    public IEnumerator SampleScene_CoreSystemsPresent()
+    private IEnumerator SampleScene_CoreSystemsPresent_Impl()
     {
         Time.timeScale = 1f;
         if (SceneManager.GetActiveScene().name != "SampleScene")
@@ -77,5 +93,65 @@ public class PlayModeSmokeTests
         Assert.IsNotNull(background, "SampleScene should contain InfiniteVerticalTilemap.");
         var tilemap = background != null ? background.GetComponentInChildren<UnityEngine.Tilemaps.Tilemap>() : null;
         Assert.IsNotNull(tilemap, "Background should include a Tilemap child.");
+    }
+
+    private static IEnumerator RunWithLogging(string testName, Func<IEnumerator> body)
+    {
+        Exception caught = null;
+        IEnumerator routine = null;
+
+        try
+        {
+            routine = body();
+        }
+        catch (Exception ex)
+        {
+            caught = ex;
+        }
+
+        if (caught != null)
+        {
+            LogFail(testName, caught);
+            throw caught;
+        }
+
+        while (true)
+        {
+            bool movedNext = false;
+            object current = null;
+
+            try
+            {
+                movedNext = routine.MoveNext();
+                if (movedNext)
+                {
+                    current = routine.Current;
+                }
+            }
+            catch (Exception ex)
+            {
+                caught = ex;
+            }
+
+            if (caught != null)
+            {
+                LogFail(testName, caught);
+                throw caught;
+            }
+
+            if (!movedNext)
+            {
+                break;
+            }
+
+            yield return current;
+        }
+
+        Debug.Log($"[PlayModeTest] {testName}: PASS");
+    }
+
+    private static void LogFail(string testName, Exception ex)
+    {
+        Debug.LogError($"[PlayModeTest] {testName}: FAIL - {ex.GetType().Name}: {ex.Message}");
     }
 }

@@ -39,7 +39,6 @@ namespace EndlessRunner
 
             if (config == null || player == null)
                 return;
-            }
 
             if (GameManager.Instance != null && GameManager.Instance.State != GameState.Running)
             {

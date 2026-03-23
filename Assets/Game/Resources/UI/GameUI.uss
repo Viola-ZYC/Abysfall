@@ -1,4 +1,5 @@
 .root {
+    -unity-font: resource("UI/PressStart2P-Regular");
     position: absolute;
     left: 0;
     right: 0;

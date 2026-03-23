@@ -1,0 +1,27 @@
+﻿fileFormatVersion: 2
+guid: f66d9cbbf9134683aea0cb506c41eba9
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 5
+  fontSize: 16
+  forceTextureCase: -1
+  characterSpacing: 1
+  characterPadding: 0
+  includeFontData: 1
+  fontNames:
+  - Press Start 2P
+  fallbackFontReferences: []
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  descentCalculationMode: 1
+  lineSpacingCalculationMode: 1
+  customCharacters: 
+  fontPath: 
+  fontName: Press Start 2P
+  fontStyle: 0
+  fontData: 
+  texture:
+  m_DontReloadOnExport: 0
+  m_UserData: 
+  assetBundleName: 
+  assetBundleVariant: 

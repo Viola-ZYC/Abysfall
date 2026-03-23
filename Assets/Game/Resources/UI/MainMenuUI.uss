@@ -1,6 +1,7 @@
 .mainmenu-root {
     flex-grow: 1;
-    background-color: rgba(8, 10, 16, 0.96);
+    -unity-font: resource("UI/PressStart2P-Regular");
+    background-color: rgba(6, 6, 8, 0.96);
 }
 
 .mainmenu-safe-area {
@@ -20,34 +21,34 @@
     padding-right: 30px;
     padding-bottom: 30px;
     padding-left: 30px;
-    border-top-left-radius: 18px;
-    border-top-right-radius: 18px;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-    background-color: rgba(22, 24, 34, 0.9);
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.08);
-    border-right-color: rgba(255, 255, 255, 0.08);
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    border-left-color: rgba(255, 255, 255, 0.08);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgba(12, 12, 14, 0.95);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.8);
+    border-right-color: rgba(255, 60, 80, 0.8);
+    border-bottom-color: rgba(255, 60, 80, 0.8);
+    border-left-color: rgba(255, 60, 80, 0.8);
 }
 
 .mainmenu-title {
     margin-bottom: 10px;
     unity-font-style: bold;
-    font-size: 42px;
-    letter-spacing: 1.5px;
-    color: rgb(238, 240, 255);
+    font-size: 34px;
+    letter-spacing: 1.2px;
+    color: rgb(245, 245, 245);
     -unity-text-align: middle-center;
 }
 
 .mainmenu-subtitle {
     margin-bottom: 24px;
-    font-size: 20px;
-    color: rgba(205, 210, 233, 0.82);
+    font-size: 16px;
+    color: rgba(220, 220, 220, 0.85);
     -unity-text-align: middle-center;
 }
 
@@ -55,57 +56,73 @@
     height: 58px;
     margin-top: 8px;
     margin-bottom: 8px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border-top-width: 0;
-    border-right-width: 0;
-    border-bottom-width: 0;
-    border-left-width: 0;
-    background-color: rgb(61, 66, 86);
-    color: rgb(255, 255, 255);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.8);
+    border-right-color: rgba(255, 60, 80, 0.8);
+    border-bottom-color: rgba(255, 60, 80, 0.8);
+    border-left-color: rgba(255, 60, 80, 0.8);
+    background-color: rgba(18, 18, 20, 0.98);
+    color: rgb(245, 245, 245);
     unity-font-style: bold;
-    font-size: 22px;
+    font-size: 18px;
+    letter-spacing: 1px;
 }
 
 .mainmenu-button:hover {
-    background-color: rgb(74, 79, 100);
+    background-color: rgba(255, 60, 80, 0.2);
+    border-top-color: rgba(255, 90, 100, 1);
+    border-right-color: rgba(255, 90, 100, 1);
+    border-bottom-color: rgba(255, 90, 100, 1);
+    border-left-color: rgba(255, 90, 100, 1);
 }
 
 .mainmenu-button:active {
-    background-color: rgb(53, 57, 75);
+    background-color: rgba(255, 60, 80, 0.35);
 }
 
 .mainmenu-button-primary {
-    background-color: rgb(83, 128, 247);
+    background-color: rgba(24, 24, 28, 1);
+    border-top-color: rgba(255, 110, 120, 1);
+    border-right-color: rgba(255, 110, 120, 1);
+    border-bottom-color: rgba(255, 110, 120, 1);
+    border-left-color: rgba(255, 110, 120, 1);
 }
 
 .mainmenu-button-primary:hover {
-    background-color: rgb(98, 140, 255);
+    background-color: rgba(255, 60, 80, 0.25);
 }
 
 .mainmenu-button-primary:active {
-    background-color: rgb(67, 113, 238);
+    background-color: rgba(255, 60, 80, 0.4);
 }
 
 .mainmenu-button-exit {
-    background-color: rgb(104, 56, 56);
+    border-top-color: rgba(255, 130, 90, 0.95);
+    border-right-color: rgba(255, 130, 90, 0.95);
+    border-bottom-color: rgba(255, 130, 90, 0.95);
+    border-left-color: rgba(255, 130, 90, 0.95);
 }
 
 .mainmenu-button-exit:hover {
-    background-color: rgb(121, 64, 64);
+    background-color: rgba(255, 120, 80, 0.25);
 }
 
 .mainmenu-button-exit:active {
-    background-color: rgb(91, 49, 49);
+    background-color: rgba(255, 120, 80, 0.4);
 }
 
 .mainmenu-hint {
     margin-top: 16px;
     min-height: 24px;
-    font-size: 16px;
-    color: rgba(198, 205, 230, 0.85);
+    font-size: 14px;
+    color: rgba(210, 210, 210, 0.85);
     -unity-text-align: middle-center;
 }
 
@@ -117,7 +134,7 @@
     bottom: 0;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.72);
+    background-color: rgba(0, 0, 0, 0.75);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -137,33 +154,33 @@
     padding-right: 24px;
     padding-bottom: 24px;
     padding-left: 24px;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-    background-color: rgba(20, 24, 36, 0.98);
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.12);
-    border-right-color: rgba(255, 255, 255, 0.12);
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-    border-left-color: rgba(255, 255, 255, 0.12);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgba(12, 12, 14, 0.95);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.8);
+    border-right-color: rgba(255, 60, 80, 0.8);
+    border-bottom-color: rgba(255, 60, 80, 0.8);
+    border-left-color: rgba(255, 60, 80, 0.8);
 }
 
 .mainmenu-collection-title {
-    font-size: 36px;
+    font-size: 28px;
     unity-font-style: bold;
-    color: rgb(238, 240, 255);
+    color: rgb(245, 245, 245);
     -unity-text-align: middle-center;
 }
 
 .mainmenu-collection-progress {
     margin-top: 8px;
     margin-bottom: 14px;
-    font-size: 18px;
-    color: rgba(205, 210, 233, 0.9);
+    font-size: 14px;
+    color: rgba(220, 220, 220, 0.9);
     -unity-text-align: middle-center;
 }
 
@@ -179,18 +196,22 @@
     flex-grow: 1;
     height: 40px;
     margin-right: 8px;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    border-top-width: 0;
-    border-right-width: 0;
-    border-bottom-width: 0;
-    border-left-width: 0;
-    background-color: rgba(65, 70, 90, 0.9);
-    color: rgb(235, 238, 252);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.5);
+    border-right-color: rgba(255, 60, 80, 0.5);
+    border-bottom-color: rgba(255, 60, 80, 0.5);
+    border-left-color: rgba(255, 60, 80, 0.5);
+    background-color: rgba(18, 18, 20, 0.98);
+    color: rgb(235, 235, 235);
     unity-font-style: bold;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .manual-tab-button:last-child {
@@ -198,11 +219,15 @@
 }
 
 .manual-tab-button:hover {
-    background-color: rgba(78, 83, 104, 0.95);
+    background-color: rgba(255, 60, 80, 0.2);
 }
 
 .manual-tab-button.is-active {
-    background-color: rgb(83, 128, 247);
+    background-color: rgba(255, 60, 80, 0.35);
+    border-top-color: rgba(255, 90, 100, 1);
+    border-right-color: rgba(255, 90, 100, 1);
+    border-bottom-color: rgba(255, 90, 100, 1);
+    border-left-color: rgba(255, 90, 100, 1);
     color: rgb(255, 255, 255);
 }
 
@@ -222,19 +247,19 @@
     padding-right: 14px;
     padding-bottom: 12px;
     padding-left: 14px;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    background-color: rgba(54, 69, 117, 0.38);
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-top-color: rgba(175, 201, 255, 0.35);
-    border-right-color: rgba(175, 201, 255, 0.35);
-    border-bottom-color: rgba(175, 201, 255, 0.35);
-    border-left-color: rgba(175, 201, 255, 0.35);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgba(18, 18, 20, 0.9);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.35);
+    border-right-color: rgba(255, 60, 80, 0.35);
+    border-bottom-color: rgba(255, 60, 80, 0.35);
+    border-left-color: rgba(255, 60, 80, 0.35);
 }
 
 .collection-entry.is-locked {
@@ -246,14 +271,14 @@
 }
 
 .collection-entry-title {
-    font-size: 20px;
+    font-size: 16px;
     unity-font-style: bold;
-    color: rgb(238, 241, 255);
+    color: rgb(245, 245, 245);
 }
 
 .collection-entry-status {
     margin-top: 4px;
-    font-size: 15px;
+    font-size: 13px;
     color: rgba(172, 248, 191, 0.95);
 }
 
@@ -263,16 +288,16 @@
 
 .collection-entry-desc {
     margin-top: 4px;
-    font-size: 15px;
-    color: rgba(219, 224, 245, 0.92);
+    font-size: 13px;
+    color: rgba(220, 220, 220, 0.92);
 }
 
 .achievement-entry {
-    background-color: rgba(72, 62, 124, 0.32);
-    border-top-color: rgba(201, 181, 255, 0.35);
-    border-right-color: rgba(201, 181, 255, 0.35);
-    border-bottom-color: rgba(201, 181, 255, 0.35);
-    border-left-color: rgba(201, 181, 255, 0.35);
+    background-color: rgba(18, 18, 20, 0.92);
+    border-top-color: rgba(255, 60, 80, 0.45);
+    border-right-color: rgba(255, 60, 80, 0.45);
+    border-bottom-color: rgba(255, 60, 80, 0.45);
+    border-left-color: rgba(255, 60, 80, 0.45);
 }
 
 .achievement-entry.is-locked {
@@ -291,26 +316,26 @@
     padding-right: 24px;
     padding-bottom: 24px;
     padding-left: 24px;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-    background-color: rgba(20, 24, 36, 0.98);
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.12);
-    border-right-color: rgba(255, 255, 255, 0.12);
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-    border-left-color: rgba(255, 255, 255, 0.12);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgba(12, 12, 14, 0.95);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.8);
+    border-right-color: rgba(255, 60, 80, 0.8);
+    border-bottom-color: rgba(255, 60, 80, 0.8);
+    border-left-color: rgba(255, 60, 80, 0.8);
 }
 
 .mainmenu-panel-title {
     margin-bottom: 14px;
-    font-size: 34px;
+    font-size: 24px;
     unity-font-style: bold;
-    color: rgb(238, 240, 255);
+    color: rgb(245, 245, 245);
     -unity-text-align: middle-center;
 }
 
@@ -320,31 +345,31 @@
     padding-right: 12px;
     padding-bottom: 10px;
     padding-left: 12px;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    background-color: rgba(54, 69, 117, 0.28);
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-top-color: rgba(175, 201, 255, 0.25);
-    border-right-color: rgba(175, 201, 255, 0.25);
-    border-bottom-color: rgba(175, 201, 255, 0.25);
-    border-left-color: rgba(175, 201, 255, 0.25);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgba(18, 18, 20, 0.9);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.35);
+    border-right-color: rgba(255, 60, 80, 0.35);
+    border-bottom-color: rgba(255, 60, 80, 0.35);
+    border-left-color: rgba(255, 60, 80, 0.35);
 }
 
 .mainmenu-info-row {
     margin-top: 6px;
     margin-bottom: 6px;
-    font-size: 20px;
-    color: rgb(238, 241, 255);
+    font-size: 14px;
+    color: rgb(235, 235, 235);
 }
 
 .mainmenu-info-row-small {
-    font-size: 16px;
-    color: rgba(214, 220, 242, 0.95);
+    font-size: 12px;
+    color: rgba(210, 210, 210, 0.95);
 }
 
 .mainmenu-settings-section {
@@ -354,19 +379,19 @@
     padding-right: 12px;
     padding-bottom: 12px;
     padding-left: 12px;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    background-color: rgba(54, 69, 117, 0.28);
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-top-color: rgba(175, 201, 255, 0.25);
-    border-right-color: rgba(175, 201, 255, 0.25);
-    border-bottom-color: rgba(175, 201, 255, 0.25);
-    border-left-color: rgba(175, 201, 255, 0.25);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgba(18, 18, 20, 0.9);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-color: rgba(255, 60, 80, 0.45);
+    border-right-color: rgba(255, 60, 80, 0.45);
+    border-bottom-color: rgba(255, 60, 80, 0.45);
+    border-left-color: rgba(255, 60, 80, 0.45);
 }
 
 .mainmenu-settings-row {
@@ -377,14 +402,14 @@
 }
 
 .mainmenu-settings-label {
-    font-size: 20px;
+    font-size: 16px;
     unity-font-style: bold;
-    color: rgb(238, 241, 255);
+    color: rgb(245, 245, 245);
 }
 
 .mainmenu-settings-value {
-    font-size: 18px;
-    color: rgba(205, 210, 233, 0.95);
+    font-size: 14px;
+    color: rgba(230, 230, 230, 0.95);
 }
 
 .mainmenu-settings-slider {
@@ -395,14 +420,14 @@
 .mainmenu-settings-dropdown {
     margin-top: 10px;
     height: 48px;
-    font-size: 18px;
-    color: rgb(238, 241, 255);
+    font-size: 14px;
+    color: rgb(245, 245, 245);
 }
 
 .mainmenu-settings-hint {
     margin-top: 8px;
-    font-size: 15px;
-    color: rgba(205, 210, 233, 0.9);
+    font-size: 12px;
+    color: rgba(220, 220, 220, 0.9);
 }
 
 .mainmenu-settings-actions {

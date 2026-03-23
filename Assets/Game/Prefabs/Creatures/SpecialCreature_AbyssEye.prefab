@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6968571930359764487}
   - component: {fileID: 5307832073755920297}
   - component: {fileID: 7593948915473152328}
-  - component: {fileID: 9000000000000000001}
+  - component: {fileID: 9000000000000000005}
   m_Layer: 0
   m_Name: SpecialCreature_AbyssEye
   m_TagString: Untagged
@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.28, y: 0.16, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -58,7 +58,7 @@ SpriteRenderer:
   m_SmallMeshCulling: 1
   m_ForceMeshLod: -1
   m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
+  m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
@@ -84,11 +84,11 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2792402802363126846, guid: acd010efd13559a4f8a4f2cb08a8747c, type: 3}
-  m_Color: {r: 1, g: 0.3, b: 0.3, a: 1}
+  m_Sprite: {fileID: -8368767636098219407, guid: d0bd81513a80e7e4e841492338f30454, type: 3}
+  m_Color: {r: 0.7, g: 0.6, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
-  m_DrawMode: 0
+  m_DrawMode: 1
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
@@ -132,13 +132,13 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.28, y: 1.28}
+    oldSize: {x: 0.28, y: 0.16}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
-    drawMode: 0
+    drawMode: 1
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.3, y: 0.15}
   m_EdgeRadius: 0
 --- !u!114 &7593948915473152328
 MonoBehaviour:
@@ -151,8 +151,14 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84fa836508b640858a11e82243f8dfa1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.SpecialCreature\n  ability: {fileID: 11400000, guid: 538e08fd520242f39eb93c7d0926727f, type: 2}\n  abilityManager: {fileID: 0}\n  rewardMode: 0\n  codexCategory: 0\n  codexEntryId: creature_abyss_eye\n  unlockCodexOnHit: 1
---- !u!95 &9000000000000000001
+  m_EditorClassIdentifier: 
+  ability: {fileID: 11400000, guid: 538e08fd520242f39eb93c7d0926727f, type: 2}
+  abilityManager: {fileID: 0}
+  rewardMode: 0
+  codexCategory: 0
+  codexEntryId: creature_abyss_eye
+  unlockCodexOnHit: 1
+--- !u!95 &9000000000000000005
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
@@ -162,7 +168,7 @@ Animator:
   m_GameObject: {fileID: 8270579165458065032}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 2825bf22cbab42bbb3934edc236181e6, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9f7ba43c58924482b601854819b448f2, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

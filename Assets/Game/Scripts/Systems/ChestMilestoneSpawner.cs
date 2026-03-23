@@ -128,6 +128,11 @@ namespace EndlessRunner
                 return;
             }
 
+            if (pool == null || targetCamera == null || runner == null)
+            {
+                ResolveReferences();
+            }
+
             if (score < lastScore)
             {
                 ResetMilestones();
@@ -161,8 +166,6 @@ namespace EndlessRunner
             {
                 return;
             }
-
-            ResolveReferences();
 
             int spawnIndex = spawnedCreatureCount;
             if (!TryBuildSpawnPosition(spawnIndex, out Vector3 world))
@@ -200,7 +203,6 @@ namespace EndlessRunner
 
         private void SpawnLoreCollectible(int entryIndex)
         {
-            ResolveReferences();
             int spawnIndex = spawnedCreatureCount + spawnedLoreCount;
             if (!TryBuildSpawnPosition(spawnIndex, out Vector3 world))
             {

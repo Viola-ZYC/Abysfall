@@ -49,11 +49,12 @@ namespace EndlessRunner
             float distanceScale = GetDistanceScale();
             float recycleDistance = config.recycleDistance * distanceScale;
             float spawnAheadDistance = config.spawnAheadDistance * distanceScale;
+            float playerY = player.position.y;
 
             while (activeSegments.Count > 0)
             {
                 TrackSegment segment = activeSegments.Peek();
-                if (player.position.y < segment.EndY - recycleDistance)
+                if (playerY < segment.EndY - recycleDistance)
                 {
                     activeSegments.Dequeue();
                     ReleaseSegment(segment);
@@ -64,7 +65,7 @@ namespace EndlessRunner
                 }
             }
 
-            while (nextSpawnY > player.position.y - spawnAheadDistance)
+            while (nextSpawnY > playerY - spawnAheadDistance)
             {
                 SpawnSegment();
             }

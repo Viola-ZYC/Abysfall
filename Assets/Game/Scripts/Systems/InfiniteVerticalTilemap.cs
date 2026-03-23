@@ -106,30 +106,37 @@ namespace EndlessRunner
             float camHalfHeight = targetCamera.orthographic ? targetCamera.orthographicSize : 5f;
             float cameraBottom = cameraY - camHalfHeight;
 
-            float minY = float.PositiveInfinity;
-            for (int i = 0; i < segments.Count; i++)
-            {
-                minY = Mathf.Min(minY, segments[i].position.y);
-            }
-
             float recycleThreshold = segmentStep + recycleBuffer;
-            Transform recycleCandidate = null;
-            float maxAbove = float.NegativeInfinity;
-            for (int i = 0; i < segments.Count; i++)
+            for (int iteration = 0; iteration < segments.Count; iteration++)
             {
-                Transform seg = segments[i];
-                float segBottom = seg.position.y - segmentHeight * 0.5f;
-                float aboveBottom = segBottom - cameraBottom;
-                if (aboveBottom > recycleThreshold && aboveBottom > maxAbove)
-                {
-                    maxAbove = aboveBottom;
-                    recycleCandidate = seg;
-                }
-            }
+                float minBottom = float.PositiveInfinity;
+                Transform recycleCandidate = null;
+                float maxAbove = float.NegativeInfinity;
 
-            if (recycleCandidate != null)
-            {
-                recycleCandidate.position = new Vector3(recycleCandidate.position.x, minY - segmentStep, recycleCandidate.position.z);
+                for (int i = 0; i < segments.Count; i++)
+                {
+                    Transform seg = segments[i];
+                    float segBottom = GetSegmentBottom(seg);
+                    minBottom = Mathf.Min(minBottom, segBottom);
+
+                    float aboveBottom = segBottom - cameraBottom;
+                    if (aboveBottom > recycleThreshold && aboveBottom > maxAbove)
+                    {
+                        maxAbove = aboveBottom;
+                        recycleCandidate = seg;
+                    }
+                }
+
+                if (recycleCandidate == null)
+                {
+                    break;
+                }
+
+                float targetBottom = minBottom - segmentStep;
+                float bottomOffset = GetSegmentBottomOffset(recycleCandidate);
+                Vector3 pos = recycleCandidate.position;
+                pos.y = targetBottom + bottomOffset;
+                recycleCandidate.position = pos;
             }
         }
 
@@ -188,27 +195,34 @@ namespace EndlessRunner
             }
 
             float height = 0f;
-            Tilemap tilemap = segments[0].GetComponentInChildren<Tilemap>();
-            if (tilemap != null)
+            if (TryGetSegmentBounds(segments[0], out Bounds bounds))
             {
-                if (TryGetUsedCellBounds(tilemap, out BoundsInt usedBounds))
-                {
-                    Vector3 minWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMin, 0));
-                    Vector3 maxWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMax, 0));
-                    height = Mathf.Abs(maxWorld.y - minWorld.y);
-                }
-                else
-                {
-                    float scale = Mathf.Abs(tilemap.transform.lossyScale.y);
-                    height = tilemap.localBounds.size.y * (scale <= 0f ? 1f : scale);
-                }
+                height = bounds.size.y;
             }
             else
             {
-                TilemapRenderer renderer = segments[0].GetComponentInChildren<TilemapRenderer>();
-                if (renderer != null)
+                Tilemap tilemap = segments[0].GetComponentInChildren<Tilemap>();
+                if (tilemap != null)
                 {
-                    height = renderer.bounds.size.y;
+                    if (TryGetUsedCellBounds(tilemap, out BoundsInt usedBounds))
+                    {
+                        Vector3 minWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMin, 0));
+                        Vector3 maxWorld = tilemap.CellToWorld(new Vector3Int(usedBounds.xMin, usedBounds.yMax, 0));
+                        height = Mathf.Abs(maxWorld.y - minWorld.y);
+                    }
+                    else
+                    {
+                        float scale = Mathf.Abs(tilemap.transform.lossyScale.y);
+                        height = tilemap.localBounds.size.y * (scale <= 0f ? 1f : scale);
+                    }
+                }
+                else
+                {
+                    TilemapRenderer renderer = segments[0].GetComponentInChildren<TilemapRenderer>();
+                    if (renderer != null)
+                    {
+                        height = renderer.bounds.size.y;
+                    }
                 }
             }
 
@@ -223,11 +237,14 @@ namespace EndlessRunner
                 return;
             }
 
+            float baseBottom = GetSegmentBottom(segments[0]);
             for (int i = 0; i < segments.Count; i++)
             {
                 Vector3 pos = segments[i].position;
                 pos.x = transform.position.x;
-                pos.y = transform.position.y - segmentStep * i;
+                float targetBottom = baseBottom - segmentStep * i;
+                float bottomOffset = GetSegmentBottomOffset(segments[i]);
+                pos.y = targetBottom + bottomOffset;
                 segments[i].position = pos;
             }
         }
@@ -289,6 +306,49 @@ namespace EndlessRunner
 
             bounds = new BoundsInt(minX, minY, 0, maxX - minX + 1, maxY - minY + 1, 1);
             return true;
+        }
+
+        private static bool TryGetSegmentBounds(Transform segment, out Bounds bounds)
+        {
+            TilemapRenderer renderer = segment.GetComponentInChildren<TilemapRenderer>();
+            if (renderer != null)
+            {
+                bounds = renderer.bounds;
+                return true;
+            }
+
+            Tilemap tilemap = segment.GetComponentInChildren<Tilemap>();
+            if (tilemap != null)
+            {
+                Bounds local = tilemap.localBounds;
+                Vector3 worldCenter = tilemap.transform.TransformPoint(local.center);
+                Vector3 worldSize = Vector3.Scale(local.size, tilemap.transform.lossyScale);
+                bounds = new Bounds(worldCenter, worldSize);
+                return true;
+            }
+
+            bounds = default;
+            return false;
+        }
+
+        private float GetSegmentBottom(Transform segment)
+        {
+            if (TryGetSegmentBounds(segment, out Bounds bounds))
+            {
+                return bounds.min.y;
+            }
+
+            return segment.position.y - segmentHeight * 0.5f;
+        }
+
+        private float GetSegmentBottomOffset(Transform segment)
+        {
+            if (TryGetSegmentBounds(segment, out Bounds bounds))
+            {
+                return segment.position.y - bounds.min.y;
+            }
+
+            return segmentHeight * 0.5f;
         }
     }
 }

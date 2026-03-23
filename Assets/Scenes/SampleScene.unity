@@ -1756,20 +1756,10 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
-  - {fileID: 619394802}
-  - {fileID: 3000000002}
-  - {fileID: 3000000012}
-  - {fileID: 3000000022}
-  - {fileID: 3000000032}
-  - {fileID: 3000000042}
-  - {fileID: 3000000052}
-  - {fileID: 3000000072}
-  - {fileID: 2005836457}
-  - {fileID: 700000001}
-  - {fileID: 7000000002}
-  - {fileID: 8000000002}
-
-
+  - {fileID: 8000000005}
+  - {fileID: 8000000007}
+  - {fileID: 8000000009}
+  - {fileID: 8000000011}
 --- !u!1 &8000000004
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.RunnerConfig
   maxHealth: 3
   horizontalSpeed: 6
-  baseGravityScale: 0.5
+  baseGravityScale: 0.2
   gravityIncreasePerSecond: 0.04
   useScoreBasedGravity: 1
   gravityScoreThreshold1: 500
@@ -24,7 +24,7 @@ MonoBehaviour:
   gravityIncreaseStage3: 0.01
   maxGravityScale: 3
   maxFallSpeed: 16
-  brakeUpwardImpulse: 5
+  brakeUpwardImpulse: 3.5
   resetVerticalVelocity: 1
   hitStopDuration: 0
   obstacleSlowMultiplier: 0.4

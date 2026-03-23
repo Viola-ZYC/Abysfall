@@ -32,14 +32,20 @@ namespace EndlessRunner
                 return;
             }
 
+            bool newlyUnlocked = false;
             if (collectibleType == CollectibleType.LoreRelic && !string.IsNullOrWhiteSpace(codexEntryId))
             {
-                RunProgressStore.UnlockCodexEntry(codexCategory, codexEntryId, 1);
+                newlyUnlocked = RunProgressStore.UnlockCodexEntry(codexCategory, codexEntryId, 1);
             }
 
             if (value > 0)
             {
                 ScoreManager.Instance?.AddCollectible(value);
+            }
+
+            if (newlyUnlocked)
+            {
+                TryShowCollectiblePopup();
             }
 
             if (ObjectPool.Instance != null)
@@ -82,6 +88,29 @@ namespace EndlessRunner
             }
 
             cachedRenderer.color = collectibleType == CollectibleType.LoreRelic ? loreRelicColor : scorePickupColor;
+        }
+
+        private void TryShowCollectiblePopup()
+        {
+            if (string.IsNullOrWhiteSpace(codexEntryId))
+            {
+                return;
+            }
+
+            AbilityAcquiredUI popup = FindAnyObjectByType<AbilityAcquiredUI>();
+            if (popup == null)
+            {
+                return;
+            }
+
+            CodexDatabase database = CodexDatabase.Load();
+            CodexEntry entry = database != null ? database.FindEntry(codexCategory, codexEntryId) : null;
+            if (entry == null)
+            {
+                return;
+            }
+
+            popup.ShowCollectible(entry);
         }
     }
 }

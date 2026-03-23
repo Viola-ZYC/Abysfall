@@ -35,7 +35,7 @@ namespace EndlessRunner
             CacheElements();
             if (abilityManager != null)
             {
-                abilityManager.AbilityReplaced += OnAbilityReplaced;
+                abilityManager.AbilityAcquired += OnAbilityAcquired;
             }
         }
 
@@ -43,21 +43,46 @@ namespace EndlessRunner
         {
             if (abilityManager != null)
             {
-                abilityManager.AbilityReplaced -= OnAbilityReplaced;
+                abilityManager.AbilityAcquired -= OnAbilityAcquired;
             }
         }
 
-        private void OnAbilityReplaced(AbilityDefinition ability)
+        private void OnAbilityAcquired(AbilityDefinition ability, int stacks)
         {
             if (ability == null)
             {
                 return;
             }
 
-            Show(ability);
+            if (stacks != 1)
+            {
+                return;
+            }
+
+            if (!RunProgressStore.UnlockAbility(ability.abilityId))
+            {
+                return;
+            }
+
+            ShowAbility(ability);
         }
 
-        private void Show(AbilityDefinition ability)
+        public void ShowCollectible(CodexEntry entry)
+        {
+            if (entry == null)
+            {
+                return;
+            }
+
+            string title = string.IsNullOrWhiteSpace(entry.title) ? "New Collectible" : entry.title;
+            string description = string.IsNullOrWhiteSpace(entry.description)
+                ? "A new collectible has been recorded."
+                : entry.description;
+
+            Show(title, description);
+        }
+
+        private void ShowAbility(AbilityDefinition ability)
         {
             if (panel == null)
             {
@@ -69,10 +94,28 @@ namespace EndlessRunner
                 return;
             }
 
-            titleLabel.text = ability.displayName;
-            descLabel.text = string.IsNullOrWhiteSpace(ability.description)
+            string title = string.IsNullOrWhiteSpace(ability.displayName) ? "Ability Acquired" : ability.displayName;
+            string description = string.IsNullOrWhiteSpace(ability.description)
                 ? "A new power surges within you."
                 : ability.description;
+
+            Show(title, description);
+        }
+
+        private void Show(string title, string description)
+        {
+            if (panel == null)
+            {
+                CacheElements();
+            }
+
+            if (panel == null)
+            {
+                return;
+            }
+
+            titleLabel.text = title;
+            descLabel.text = description;
 
             if (hintLabel != null)
             {

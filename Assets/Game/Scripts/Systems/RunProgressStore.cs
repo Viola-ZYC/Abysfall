@@ -20,6 +20,7 @@ namespace EndlessRunner
             public List<int> collectionEntryCounts = new List<int>();
             public List<string> unlockedCreatureIds = new List<string>();
             public List<string> unlockedObstacleIds = new List<string>();
+            public List<string> unlockedAbilityIds = new List<string>();
             public List<CodexCountEntry> collectionCounts = new List<CodexCountEntry>();
             public string selectedModeId = ModeClassic;
             public List<ModeState> modeStates = new List<ModeState>();
@@ -279,6 +280,30 @@ namespace EndlessRunner
                     break;
             }
 
+            SaveDataToDisk(data);
+            return newlyUnlocked;
+        }
+
+        public static bool IsAbilityUnlocked(string abilityId)
+        {
+            if (string.IsNullOrWhiteSpace(abilityId))
+            {
+                return false;
+            }
+
+            SaveData data = GetData();
+            return data.unlockedAbilityIds != null && data.unlockedAbilityIds.Contains(abilityId);
+        }
+
+        public static bool UnlockAbility(string abilityId)
+        {
+            if (string.IsNullOrWhiteSpace(abilityId))
+            {
+                return false;
+            }
+
+            SaveData data = GetData();
+            bool newlyUnlocked = AddUnique(data.unlockedAbilityIds, abilityId);
             SaveDataToDisk(data);
             return newlyUnlocked;
         }
@@ -546,6 +571,11 @@ namespace EndlessRunner
                 data.unlockedObstacleIds = new List<string>();
             }
 
+            if (data.unlockedAbilityIds == null)
+            {
+                data.unlockedAbilityIds = new List<string>();
+            }
+
             if (data.collectionCounts == null)
             {
                 data.collectionCounts = new List<CodexCountEntry>();
@@ -553,6 +583,7 @@ namespace EndlessRunner
 
             NormalizeUnlockedList(data.unlockedCreatureIds);
             NormalizeUnlockedList(data.unlockedObstacleIds);
+            NormalizeUnlockedList(data.unlockedAbilityIds);
             NormalizeCollectionCounts(data);
             MigrateLegacyCollectionsIfNeeded(data);
             data.unlockedCollectionCount = CountCollectionUnlocked(data);

@@ -609,41 +609,25 @@ namespace EndlessRunner
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            if (collision.collider.GetComponent<Obstacle>() != null)
-            {
-                Obstacle obstacle = collision.collider.GetComponent<Obstacle>();
-                if (obstacle == null || !obstacle.Consume())
-                {
-                    return;
-                }
-
-                ApplyDamage(1);
-                ApplyObstacleSlow();
-                DespawnObstacle(obstacle.gameObject);
-                return;
-            }
-
-            Enemy enemy = collision.collider.GetComponent<Enemy>();
-            if (enemy == null)
-            {
-                return;
-            }
-
-            if (IsFalling())
-            {
-                OnAttackHit(enemy);
-                return;
-            }
-
-            GameManager.Instance?.GameOver();
+            HandleContact(collision.collider);
         }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.GetComponent<Obstacle>() != null)
+            HandleContact(other);
+        }
+
+        private void HandleContact(Collider2D collider)
+        {
+            if (collider == null)
             {
-                Obstacle obstacle = other.GetComponent<Obstacle>();
-                if (obstacle == null || !obstacle.Consume())
+                return;
+            }
+
+            Obstacle obstacle = collider.GetComponent<Obstacle>();
+            if (obstacle != null)
+            {
+                if (!obstacle.Consume())
                 {
                     return;
                 }
@@ -654,7 +638,7 @@ namespace EndlessRunner
                 return;
             }
 
-            Enemy enemy = other.GetComponent<Enemy>();
+            Enemy enemy = collider.GetComponent<Enemy>();
             if (enemy == null)
             {
                 return;

@@ -8,6 +8,7 @@ namespace EndlessRunner
         [SerializeField] private TrackConfig config;
         [SerializeField] private Transform player;
         [SerializeField] private ObjectPool pool;
+        [SerializeField] private ScoreManager scoreManager;
         [Header("Adaptive Distances")]
         [SerializeField] private bool adaptDistancesToCamera = true;
         [SerializeField] private Camera targetCamera;
@@ -26,21 +27,17 @@ namespace EndlessRunner
 
         private void Awake()
         {
-            if (pool == null)
-            {
-                pool = ObjectPool.Instance;
-            }
-
-            if (targetCamera == null)
-            {
-                targetCamera = Camera.main;
-            }
+            ResolveReferences();
         }
 
         private void Update()
         {
-            if (config == null || player == null)
+            if (player == null || pool == null || targetCamera == null || scoreManager == null)
             {
+                ResolveReferences();
+            }
+
+            if (config == null || player == null)
                 return;
             }
 
@@ -75,6 +72,7 @@ namespace EndlessRunner
 
         public void ResetTrack()
         {
+            ResolveReferences();
             ClearSegments();
             nextSpawnY = player != null ? player.position.y : 0f;
             spawnedSegmentCount = 0;
@@ -147,7 +145,7 @@ namespace EndlessRunner
             int index;
             if (deterministicSegmentSelection)
             {
-                int score = ScoreManager.Instance != null ? ScoreManager.Instance.Score : 0;
+                int score = scoreManager != null ? scoreManager.Score : 0;
                 float progress = Mathf.Log(1f + Mathf.Max(0f, score) / Mathf.Max(1f, segmentProgressScale));
                 int progressOffset = Mathf.FloorToInt(progress * Mathf.Max(0f, segmentProgressWeight));
                 int stride = Mathf.Max(1, segmentSequenceStride);
@@ -214,6 +212,30 @@ namespace EndlessRunner
             }
 
             return Mathf.Clamp(distanceScale, minScale, maxScale);
+        }
+
+        private void ResolveReferences()
+        {
+            if (pool == null)
+            {
+                pool = ObjectPool.Instance;
+            }
+
+            if (targetCamera == null)
+            {
+                targetCamera = Camera.main;
+            }
+
+            if (player == null)
+            {
+                RunnerController runner = FindAnyObjectByType<RunnerController>();
+                player = runner != null ? runner.transform : null;
+            }
+
+            if (scoreManager == null)
+            {
+                scoreManager = ScoreManager.Instance != null ? ScoreManager.Instance : FindAnyObjectByType<ScoreManager>();
+            }
         }
 
         private static int PositiveModulo(int value, int mod)

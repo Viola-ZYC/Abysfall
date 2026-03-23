@@ -16,6 +16,7 @@ namespace EndlessRunner
 
         private float startY;
         private int collectibleCount;
+        private bool isRunning = true;
 
         private void Awake()
         {
@@ -26,6 +27,24 @@ namespace EndlessRunner
             }
 
             Instance = this;
+            isRunning = GameManager.Instance == null || GameManager.Instance.State == GameState.Running;
+        }
+
+        private void OnEnable()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.StateChanged += OnGameStateChanged;
+                isRunning = GameManager.Instance.State == GameState.Running;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.StateChanged -= OnGameStateChanged;
+            }
         }
 
         private void OnDestroy()
@@ -38,7 +57,7 @@ namespace EndlessRunner
 
         private void Update()
         {
-            if (!IsRunning() || player == null)
+            if (!isRunning || player == null)
             {
                 return;
             }
@@ -93,9 +112,9 @@ namespace EndlessRunner
             }
         }
 
-        private bool IsRunning()
+        private void OnGameStateChanged(GameState state)
         {
-            return GameManager.Instance == null || GameManager.Instance.State == GameState.Running;
+            isRunning = state == GameState.Running;
         }
     }
 }

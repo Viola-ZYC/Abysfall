@@ -179,14 +179,10 @@ namespace EndlessRunner
             ResolveReferences();
 
             int spawnIndex = spawnedCreatureCount;
-            float x = GetSpawnX(spawnIndex);
-            if (!TryGetBottomSpawnY(out float bottomY))
+            if (!TryBuildSpawnPosition(spawnIndex, out Vector3 world))
             {
                 return;
             }
-
-            Vector3 world = new Vector3(x, bottomY - spawnOffsetBelowScreen, 0f);
-            world.x = x;
 
             if (pool != null)
             {
@@ -219,14 +215,11 @@ namespace EndlessRunner
         private void SpawnLoreCollectible(int entryIndex)
         {
             ResolveReferences();
-            if (!TryGetBottomSpawnY(out float bottomY))
+            int spawnIndex = spawnedCreatureCount + spawnedLoreCount;
+            if (!TryBuildSpawnPosition(spawnIndex, out Vector3 world))
             {
                 return;
             }
-
-            int spawnIndex = spawnedCreatureCount + spawnedLoreCount;
-            float x = GetSpawnX(spawnIndex);
-            Vector3 world = new Vector3(x, bottomY - spawnOffsetBelowScreen, 0f);
 
             GameObject instance;
             if (pool != null)
@@ -249,6 +242,19 @@ namespace EndlessRunner
             }
 
             spawnedLoreCount++;
+        }
+
+        private bool TryBuildSpawnPosition(int spawnIndex, out Vector3 world)
+        {
+            world = Vector3.zero;
+            if (!TryGetBottomSpawnY(out float bottomY))
+            {
+                return false;
+            }
+
+            float x = GetSpawnX(spawnIndex);
+            world = new Vector3(x, bottomY - spawnOffsetBelowScreen, 0f);
+            return true;
         }
 
         private float GetSpawnX(int spawnIndex)

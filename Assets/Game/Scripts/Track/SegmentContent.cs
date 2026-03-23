@@ -9,6 +9,17 @@ namespace EndlessRunner
 {
     public class SegmentContent : MonoBehaviour, IPoolable
     {
+        private struct SpawnPlan
+        {
+            public GameObject[] obstaclePrefabs;
+            public int chestCount;
+            public int collectibleCount;
+            public int enemyCount;
+            public int obstacleCount;
+
+            public int TotalCount => chestCount + collectibleCount + enemyCount + obstacleCount;
+        }
+
         [SerializeField] private GameObject[] obstaclePrefabs;
         [SerializeField] private GameObject[] enemyPrefabs;
         [SerializeField] private GameObject[] chestPrefabs;
@@ -88,46 +99,22 @@ namespace EndlessRunner
 
             int score = ScoreManager.Instance != null ? ScoreManager.Instance.Score : 0;
             float progress = GetProgressFactor(score);
-
             int pointCount = points.Count;
-            bool canSpawnChests = enableChests && chestPrefabs != null && chestPrefabs.Length > 0;
-            bool canSpawnCollectibles = (collectiblePrefabs != null && collectiblePrefabs.Length > 0) || autoCreateRuntimeCollectiblePrefab;
-            bool canSpawnEnemies = enemyPrefabs != null && enemyPrefabs.Length > 0;
-            GameObject[] availableObstaclePrefabs = FilterPrefabsByScore(obstaclePrefabs, score);
-            bool canSpawnObstacles = availableObstaclePrefabs != null && availableObstaclePrefabs.Length > 0;
-
-            int chestCount = canSpawnChests
-                ? ComputeProgressCount(chestBaseCount, chestGrowth, progress, pointCount)
-                : 0;
-
-            int collectibleCount = canSpawnCollectibles
-                ? ComputeCollectibleCount(progress, pointCount - chestCount)
-                : 0;
-
-            int remainingForHostiles = Mathf.Max(0, pointCount - chestCount - collectibleCount);
-            int hostileCount = ComputeProgressCount(hostileBaseCount, hostileGrowth, progress, remainingForHostiles);
-
-            int enemyCount = 0;
-            int obstacleCount = 0;
-            if (canSpawnEnemies || canSpawnObstacles)
+            SpawnPlan plan = BuildSpawnPlan(score, progress, pointCount);
+            if (plan.TotalCount <= 0)
             {
-                float enemyRatio = Mathf.Clamp01(enemyRatioBase + enemyRatioGrowth * (1f - Mathf.Exp(-progress)));
-                enemyCount = canSpawnEnemies ? Mathf.Clamp(Mathf.RoundToInt(hostileCount * enemyRatio), 0, hostileCount) : 0;
-                obstacleCount = canSpawnObstacles ? hostileCount - enemyCount : 0;
-                if (!canSpawnObstacles)
-                {
-                    enemyCount = hostileCount;
-                }
+                deterministicSpawnSerial++;
+                return;
             }
 
             int seed = deterministicSpawnSerial * 97 + Mathf.FloorToInt(progress * 100f);
             List<int> pointOrder = BuildDeterministicPointOrder(pointCount, seed);
             int cursor = 0;
 
-            SpawnCategory(chestPrefabs, chestCount, points, pointOrder, ref cursor, 0f, seed + 11);
-            SpawnCollectibleCategory(collectibleCount, points, pointOrder, ref cursor, seed + 23);
-            SpawnCategory(enemyPrefabs, enemyCount, points, pointOrder, ref cursor, 0f, seed + 37);
-            SpawnCategory(availableObstaclePrefabs, obstacleCount, points, pointOrder, ref cursor, 0f, seed + 53);
+            SpawnCategory(chestPrefabs, plan.chestCount, points, pointOrder, ref cursor, 0f, seed + 11);
+            SpawnCollectibleCategory(plan.collectibleCount, points, pointOrder, ref cursor, seed + 23);
+            SpawnCategory(enemyPrefabs, plan.enemyCount, points, pointOrder, ref cursor, 0f, seed + 37);
+            SpawnCategory(plan.obstaclePrefabs, plan.obstacleCount, points, pointOrder, ref cursor, 0f, seed + 53);
 
             deterministicSpawnSerial++;
         }
@@ -206,6 +193,52 @@ namespace EndlessRunner
             // sqrt term keeps collectible growth smooth while still increasing with progress.
             float value = Mathf.Max(0f, collectibleBaseCount) + Mathf.Max(0f, collectibleGrowth) * Mathf.Sqrt(1f + Mathf.Max(0f, progress));
             return Mathf.Clamp(Mathf.FloorToInt(value), 0, maxCount);
+        }
+
+        private SpawnPlan BuildSpawnPlan(int score, float progress, int pointCount)
+        {
+            SpawnPlan plan = new SpawnPlan
+            {
+                obstaclePrefabs = FilterPrefabsByScore(obstaclePrefabs, score),
+                chestCount = 0,
+                collectibleCount = 0,
+                enemyCount = 0,
+                obstacleCount = 0
+            };
+
+            if (pointCount <= 0)
+            {
+                return plan;
+            }
+
+            bool canSpawnChests = enableChests && chestPrefabs != null && chestPrefabs.Length > 0;
+            bool canSpawnCollectibles = (collectiblePrefabs != null && collectiblePrefabs.Length > 0) || autoCreateRuntimeCollectiblePrefab;
+            bool canSpawnEnemies = enemyPrefabs != null && enemyPrefabs.Length > 0;
+            bool canSpawnObstacles = plan.obstaclePrefabs != null && plan.obstaclePrefabs.Length > 0;
+
+            plan.chestCount = canSpawnChests
+                ? ComputeProgressCount(chestBaseCount, chestGrowth, progress, pointCount)
+                : 0;
+
+            plan.collectibleCount = canSpawnCollectibles
+                ? ComputeCollectibleCount(progress, pointCount - plan.chestCount)
+                : 0;
+
+            int remainingForHostiles = Mathf.Max(0, pointCount - plan.chestCount - plan.collectibleCount);
+            int hostileCount = ComputeProgressCount(hostileBaseCount, hostileGrowth, progress, remainingForHostiles);
+
+            if (canSpawnEnemies || canSpawnObstacles)
+            {
+                float enemyRatio = Mathf.Clamp01(enemyRatioBase + enemyRatioGrowth * (1f - Mathf.Exp(-progress)));
+                plan.enemyCount = canSpawnEnemies ? Mathf.Clamp(Mathf.RoundToInt(hostileCount * enemyRatio), 0, hostileCount) : 0;
+                plan.obstacleCount = canSpawnObstacles ? hostileCount - plan.enemyCount : 0;
+                if (!canSpawnObstacles)
+                {
+                    plan.enemyCount = hostileCount;
+                }
+            }
+
+            return plan;
         }
 
         private void SpawnCategory(

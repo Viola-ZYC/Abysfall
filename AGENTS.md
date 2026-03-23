@@ -2,6 +2,7 @@
 
 - 默认允许直接修改工作目录 `E:\Unity Project\Graduation design` 内的文件，无需逐条确认。
 - 禁止读取或操作工作目录以外的任何文件或目录。
+- 例外：允许读取并执行 `E:\AppData\Unity\Unity 6000.3.0f1\Editor\Unity.exe`（仅运行与读取日志，禁止修改该文件或其目录）。
 - 每次修改工作目录内文件后，必须执行一次 `git commit`，并随后 `git push` 上传到远程仓库。
 - 提交信息风格参考既有提交（例如 `batch N: ...`）。
 - 如果 `git commit` 超时或 `git push` 失败，需要及时反馈原因。

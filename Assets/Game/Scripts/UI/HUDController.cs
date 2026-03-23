@@ -359,36 +359,57 @@ namespace EndlessRunner
 
         private void TriggerHitFlash()
         {
-            StartFxRoutine(ref hitFlashRoutine, fxHitFlashElement, hitFlashDuration);
-        }
-
-        private void TriggerAbilityPulse()
-        {
-            StartFxRoutine(ref abilityPulseRoutine, fxAbilityPulseElement, abilityPulseDuration);
-        }
-
-        private void StartFxRoutine(ref Coroutine routine, VisualElement element, float duration)
-        {
-            if (element == null)
+            if (fxHitFlashElement == null)
             {
                 return;
             }
 
-            if (routine != null)
+            if (hitFlashRoutine != null)
             {
-                StopCoroutine(routine);
+                StopCoroutine(hitFlashRoutine);
             }
 
-            routine = StartCoroutine(FxRoutine(element, duration, () => routine = null));
+            hitFlashRoutine = StartCoroutine(HitFlashRoutine());
         }
 
-        private IEnumerator FxRoutine(VisualElement element, float duration, Action onComplete)
+        private void TriggerAbilityPulse()
         {
+            if (fxAbilityPulseElement == null)
+            {
+                return;
+            }
+
+            if (abilityPulseRoutine != null)
+            {
+                StopCoroutine(abilityPulseRoutine);
+            }
+
+            abilityPulseRoutine = StartCoroutine(AbilityPulseRoutine());
+        }
+
+        private IEnumerator HitFlashRoutine()
+        {
+            yield return FxRoutine(fxHitFlashElement, hitFlashDuration);
+            hitFlashRoutine = null;
+        }
+
+        private IEnumerator AbilityPulseRoutine()
+        {
+            yield return FxRoutine(fxAbilityPulseElement, abilityPulseDuration);
+            abilityPulseRoutine = null;
+        }
+
+        private IEnumerator FxRoutine(VisualElement element, float duration)
+        {
+            if (element == null)
+            {
+                yield break;
+            }
+
             element.RemoveFromClassList(FxActiveClass);
             element.AddToClassList(FxActiveClass);
             yield return new WaitForSecondsRealtime(duration);
             element.RemoveFromClassList(FxActiveClass);
-            onComplete?.Invoke();
         }
 
         private void RefreshMotionMetrics()

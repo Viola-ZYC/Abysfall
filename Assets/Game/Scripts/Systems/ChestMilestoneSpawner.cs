@@ -45,6 +45,7 @@ namespace EndlessRunner
             if (scoreManager != null)
             {
                 scoreManager.ScoreChanged += OnScoreChanged;
+                ProcessScore(scoreManager.Score);
             }
         }
 
@@ -54,21 +55,6 @@ namespace EndlessRunner
             {
                 scoreManager.ScoreChanged -= OnScoreChanged;
             }
-        }
-
-        private void Update()
-        {
-            if (scoreManager == null)
-            {
-                ResolveReferences();
-            }
-
-            if (scoreManager == null)
-            {
-                return;
-            }
-
-            ProcessScore(scoreManager.Score);
         }
 
         private void ResolveReferences()

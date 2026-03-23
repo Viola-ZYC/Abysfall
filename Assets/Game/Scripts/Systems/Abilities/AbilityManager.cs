@@ -27,9 +27,16 @@ namespace EndlessRunner
         private AbilityDefinition currentAbility;
         private float nextActiveTime;
 
+        public enum AbilityChangeType
+        {
+            Acquired = 0,
+            Replaced = 1
+        }
+
         public event Action<AbilityDefinition, int> AbilityAcquired;
         public event Action<IReadOnlyList<AbilityDefinition>> AbilityChoicesRolled;
         public event Action<AbilityDefinition> AbilityReplaced;
+        public event Action<AbilityDefinition, AbilityChangeType, int> AbilityChanged;
 
         public AbilityDefinition CurrentAbility => currentAbility;
 
@@ -113,22 +120,7 @@ namespace EndlessRunner
 
         public bool AcquireAbility(AbilityDefinition ability)
         {
-            if (ability == null)
-            {
-                return false;
-            }
-
-            int currentStacks = GetStacks(ability);
-            int maxStacks = Mathf.Max(1, ability.maxStacks);
-            if (currentStacks >= maxStacks)
-            {
-                return false;
-            }
-
-            ApplyEffects(ability, 1);
-            SetStacks(ability, currentStacks + 1);
-            AbilityAcquired?.Invoke(ability, currentStacks + 1);
-            return true;
+            return AcquireAbilityInternal(ability, notifyChange: true);
         }
 
         public bool ReplaceAbility(AbilityDefinition ability)
@@ -143,7 +135,7 @@ namespace EndlessRunner
             acquiredLookup.Clear();
             currentAbility = null;
 
-            bool acquiredAbility = AcquireAbility(ability);
+            bool acquiredAbility = AcquireAbilityInternal(ability, notifyChange: false);
             if (!acquiredAbility)
             {
                 return false;
@@ -152,6 +144,7 @@ namespace EndlessRunner
             currentAbility = ability;
             nextActiveTime = 0f;
             AbilityReplaced?.Invoke(ability);
+            AbilityChanged?.Invoke(ability, AbilityChangeType.Replaced, GetStacks(ability));
             return true;
         }
 
@@ -264,6 +257,31 @@ namespace EndlessRunner
             {
                 RemoveEffects(entry.ability, entry.stacks);
             }
+        }
+
+        private bool AcquireAbilityInternal(AbilityDefinition ability, bool notifyChange)
+        {
+            if (ability == null)
+            {
+                return false;
+            }
+
+            int currentStacks = GetStacks(ability);
+            int maxStacks = Mathf.Max(1, ability.maxStacks);
+            if (currentStacks >= maxStacks)
+            {
+                return false;
+            }
+
+            ApplyEffects(ability, 1);
+            int newStacks = currentStacks + 1;
+            SetStacks(ability, newStacks);
+            AbilityAcquired?.Invoke(ability, newStacks);
+            if (notifyChange)
+            {
+                AbilityChanged?.Invoke(ability, AbilityChangeType.Acquired, newStacks);
+            }
+            return true;
         }
 
         private void SetStacks(AbilityDefinition ability, int stacks)

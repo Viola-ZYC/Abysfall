@@ -185,7 +185,7 @@ namespace EndlessRunner
 
             if (abilityManager != null)
             {
-                abilityManager.AbilityReplaced += OnAbilityReplaced;
+                abilityManager.AbilityChanged += OnAbilityChanged;
             }
 
             if (runner != null)
@@ -213,7 +213,7 @@ namespace EndlessRunner
 
             if (abilityManager != null)
             {
-                abilityManager.AbilityReplaced -= OnAbilityReplaced;
+                abilityManager.AbilityChanged -= OnAbilityChanged;
             }
 
             if (runner != null)
@@ -265,7 +265,7 @@ namespace EndlessRunner
             }
         }
 
-        private void OnAbilityReplaced(AbilityDefinition ability)
+        private void OnAbilityChanged(AbilityDefinition ability, AbilityManager.AbilityChangeType changeType, int stacks)
         {
             RefreshAbilityButtonState();
         }

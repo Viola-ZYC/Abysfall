@@ -6,10 +6,46 @@
     top: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0);
+    overflow: hidden;
+}
+
+.ui-ambient-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.ui-ambient-glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 680px;
+    height: 680px;
+    margin-left: -340px;
+    margin-top: -340px;
+    border-width: 1px;
+    border-color: rgba(255, 92, 108, 0.16);
+    border-radius: 2px;
+    background-color: rgba(30, 8, 14, 0.08);
+}
+
+.ui-ambient-frame {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    top: 16px;
+    bottom: 16px;
+    border-width: 1px;
+    border-color: rgba(255, 92, 108, 0.12);
+    border-radius: 2px;
 }
 
 .safe-area {
     flex-grow: 1;
+    position: relative;
 }
 
 .hud {
@@ -17,7 +53,7 @@
     left: 0;
     right: 0;
     top: 0;
-    padding: 24px;
+    padding: 18px;
     flex-direction: column;
 }
 
@@ -25,7 +61,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 24px;
+    bottom: 18px;
     align-items: center;
 }
 
@@ -78,10 +114,10 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 420px;
-    height: 420px;
-    margin-left: -210px;
-    margin-top: -210px;
+    width: 320px;
+    height: 320px;
+    margin-left: -160px;
+    margin-top: -160px;
     border-width: 2px;
     border-color: rgba(255, 90, 100, 0.85);
     border-radius: 2px;
@@ -96,14 +132,15 @@
 }
 
 .ability-button {
-    width: 360px;
-    height: 72px;
+    width: 320px;
+    max-width: 86%;
+    height: 64px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 26px;
+    font-size: 18px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1px;
@@ -123,38 +160,39 @@
 }
 
 .hud-card {
-    background-color: rgba(6, 6, 8, 0.7);
+    min-width: 280px;
+    background-color: rgba(6, 7, 10, 0.78);
     border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.65);
+    border-color: rgba(255, 72, 88, 0.72);
     border-radius: 2px;
-    padding: 10px 16px;
+    padding: 12px 14px;
 }
 
 .hud-text {
-    font-size: 32px;
+    font-size: 24px;
     color: rgb(245, 245, 245);
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     letter-spacing: 1px;
     -unity-font-style: bold;
 }
 
 .hud-metric-text {
-    font-size: 22px;
+    font-size: 14px;
     color: rgba(232, 232, 232, 0.95);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     letter-spacing: 0.5px;
     -unity-font-style: bold;
 }
 
 .pause-button {
-    height: 58px;
-    min-width: 180px;
+    height: 54px;
+    min-width: 156px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 24px;
+    font-size: 16px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
 }
@@ -174,7 +212,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: rgba(1, 1, 2, 0.84);
     align-items: center;
     justify-content: center;
     opacity: 0;
@@ -192,22 +230,22 @@
 }
 
 .overlay-card {
-    background-color: rgba(12, 12, 14, 0.95);
+    background-color: rgba(10, 11, 14, 0.96);
     border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.8);
+    border-color: rgba(255, 72, 88, 0.82);
     border-radius: 2px;
-    padding: 28px 36px;
+    padding: 24px 28px;
     align-items: center;
     justify-content: center;
 }
 
 .overlay-card-wide {
-    width: 80%;
-    max-width: 900px;
+    width: 92%;
+    max-width: 820px;
 }
 
 .overlay-text {
-    font-size: 44px;
+    font-size: 32px;
     color: rgb(245, 245, 245);
     unity-text-align: middle-center;
     -unity-font-style: bold;
@@ -220,24 +258,24 @@
 }
 
 .overlay-title {
-    font-size: 36px;
+    font-size: 24px;
     color: rgb(245, 245, 245);
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1.2px;
 }
 
 .ability-acquired-desc {
-    font-size: 22px;
+    font-size: 16px;
     color: rgba(230, 230, 230, 0.95);
     unity-text-align: middle-center;
-    margin-bottom: 18px;
-    max-width: 720px;
+    margin-bottom: 14px;
+    max-width: 620px;
 }
 
 .ability-acquired-hint {
-    font-size: 18px;
+    font-size: 12px;
     color: rgba(210, 210, 210, 0.8);
     unity-text-align: middle-center;
 }
@@ -249,14 +287,14 @@
 }
 
 .choice-button {
-    height: 84px;
-    margin-top: 12px;
+    height: 72px;
+    margin-top: 10px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 28px;
+    font-size: 18px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1px;
@@ -276,8 +314,8 @@
 
 .character-selection {
     width: 100%;
-    margin-bottom: 14px;
-    padding: 14px;
+    margin-bottom: 12px;
+    padding: 12px;
     background-color: rgba(16, 16, 19, 0.9);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.55);
@@ -285,7 +323,7 @@
 }
 
 .character-title {
-    font-size: 26px;
+    font-size: 18px;
     color: rgb(245, 245, 245);
     margin-bottom: 10px;
     unity-text-align: middle-center;
@@ -300,14 +338,14 @@
 }
 
 .character-nav-button {
-    width: 72px;
-    height: 72px;
+    width: 58px;
+    height: 58px;
     background-color: rgba(24, 24, 28, 1);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 36px;
+    font-size: 24px;
     -unity-font-style: bold;
     unity-text-align: middle-center;
 }
@@ -328,7 +366,7 @@
 }
 
 .character-name {
-    font-size: 32px;
+    font-size: 22px;
     color: rgb(245, 245, 245);
     -unity-font-style: bold;
     unity-text-align: middle-center;
@@ -336,7 +374,7 @@
 
 .character-desc {
     margin-top: 4px;
-    font-size: 18px;
+    font-size: 12px;
     color: rgba(230, 230, 230, 0.9);
     unity-text-align: middle-center;
 }
@@ -348,14 +386,14 @@
 }
 
 .menu-button {
-    height: 84px;
-    margin-top: 12px;
+    height: 72px;
+    margin-top: 10px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 28px;
+    font-size: 18px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1px;
@@ -386,20 +424,20 @@
 }
 
 .menu-hint {
-    margin-top: 16px;
-    font-size: 22px;
+    margin-top: 14px;
+    font-size: 12px;
     color: rgba(220, 220, 220, 0.95);
     unity-text-align: middle-center;
 }
 
 .settings-card {
-    max-width: 760px;
+    max-width: 700px;
 }
 
 .settings-section {
     width: 100%;
-    margin-bottom: 20px;
-    padding: 14px;
+    margin-bottom: 16px;
+    padding: 12px;
     background-color: rgba(16, 16, 19, 0.9);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.45);
@@ -414,31 +452,31 @@
 }
 
 .settings-label {
-    font-size: 26px;
+    font-size: 18px;
     color: rgb(245, 245, 245);
     -unity-font-style: bold;
 }
 
 .settings-value-label {
-    font-size: 24px;
+    font-size: 14px;
     color: rgba(230, 230, 230, 0.95);
 }
 
 .settings-slider {
     margin-top: 10px;
-    height: 36px;
+    height: 32px;
 }
 
 .settings-dropdown {
     margin-top: 10px;
-    height: 56px;
-    font-size: 22px;
+    height: 48px;
+    font-size: 14px;
     color: rgb(245, 245, 245);
 }
 
 .settings-hint {
     margin-top: 10px;
-    font-size: 18px;
+    font-size: 11px;
     color: rgba(220, 220, 220, 0.92);
 }
 
@@ -471,38 +509,38 @@
 }
 
 #pause-button {
-    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12.png");
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12.png");
 }
 
 #menu-continue-button,
 #menu-start-button,
 #gameover-restart-button {
-    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons17.png");
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons17.png");
 }
 
 #menu-leaderboard-button,
 #menu-collection-button {
-    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12.png");
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12.png");
 }
 
 #menu-settings-button {
-    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons1.png");
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons1.png");
 }
 
 #menu-exit-button,
 #pause-exit-button,
 #gameover-exit-button,
 #settings-close-button {
-    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons9.png");
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons9.png");
 }
 
 #pause-mainmenu-button,
 #gameover-mainmenu-button,
 #settings-mainmenu-button,
 #ability-mainmenu-button {
-    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons16.png");
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons16.png");
 }
 
 #settings-apply-button {
-    background-image: url("Assets/Game/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons8.png");
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons8.png");
 }

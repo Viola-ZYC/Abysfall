@@ -119,7 +119,7 @@ namespace EndlessRunner
 
             if (hintLabel != null)
             {
-                hintLabel.text = "Tap anywhere to continue.";
+                hintLabel.text = "Tap to resume the run.";
             }
 
             SetVisible(true);

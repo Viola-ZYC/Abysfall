@@ -471,7 +471,7 @@ namespace EndlessRunner
             SetCharacterSelectionVisible(showMainMenu);
             SetMenuOptionButtonsVisible(showMainMenuOnlyButtons);
             SetStartButtonVisible(showMainMenu);
-            SetMenuTitle(showPauseMenu ? "Paused" : "Character Select");
+            SetMenuTitle(showPauseMenu ? "Paused" : "Loadout Select");
 
             if (showPauseMenu)
             {
@@ -479,7 +479,7 @@ namespace EndlessRunner
             }
             else if (state == GameState.Menu)
             {
-                SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
+                SetMenuHint("Choose a loadout, then begin the descent.");
             }
         }
 
@@ -731,8 +731,8 @@ namespace EndlessRunner
             SetCharacterSelectionVisible(true);
             SetMenuOptionButtonsVisible(IsMainMenuSceneActive());
             SetStartButtonVisible(true);
-            SetMenuTitle("Character Select");
-            SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
+            SetMenuTitle("Loadout Select");
+            SetMenuHint("Choose a loadout, then begin the descent.");
         }
 
         private void DisableLegacyUI()
@@ -840,7 +840,7 @@ namespace EndlessRunner
 
             RefreshCharacterSelectionUI();
             EnsureSettingsInitialized();
-            SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
+            SetMenuHint("Choose a loadout, then begin the descent.");
             RefreshAbilityButtonState();
         }
 
@@ -1022,7 +1022,7 @@ namespace EndlessRunner
             CodexDatabase database = CodexDatabase.Load();
             int totalCount = database != null ? database.GetEntryCount(CodexCategory.Collection) : 0;
             string progress = totalCount > 0 ? $"{unlockedCount}/{totalCount}" : unlockedCount.ToString();
-            SetMenuHint($"Manual unlocked: {progress}");
+            SetMenuHint($"Codex unlocked: {progress}");
         }
 
         private void OnSettingsClicked()
@@ -1146,7 +1146,7 @@ namespace EndlessRunner
             SetSettingsPanelVisible(false);
             if (gameManager != null && gameManager.State == GameState.Menu)
             {
-                SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
+                SetMenuHint("Choose a loadout, then begin the descent.");
             }
         }
 

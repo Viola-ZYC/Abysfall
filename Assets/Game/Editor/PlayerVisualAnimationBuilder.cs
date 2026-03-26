@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -10,59 +11,39 @@ namespace EndlessRunner.EditorTools
 {
     public static class PlayerVisualAnimationBuilder
     {
-        private const string AutoBuildKey = "EndlessRunner.PlayerVisualAnimationBuilder.AutoBuilt";
-        private const string ProcessedDir = "Assets/Game/Art/Sprite/Player/Processed";
-        private const string AnimDir = "Assets/Game/Art/Sprite/Player/Animations";
-        private const string IdleSpritePath = ProcessedDir + "/player_idle_cropped.png";
-        private const string MoveSpritePath = ProcessedDir + "/player_cropped.png";
-        private const string JumpSpritePath = ProcessedDir + "/player_jump_cropped.png";
-        private const string FallSpritePath = ProcessedDir + "/player_fall_cropped.png";
+        private const string SpriteSheetPath = "Assets/Game/Resources/Art/Sprite/Player/Player_Graphics.png";
+        private const string AnimDir = "Assets/Game/Resources/Art/Sprite/Player/Animations";
         private const string IdleClipPath = AnimDir + "/Player_Idle.anim";
-        private const string MoveClipPath = AnimDir + "/Player_Move.anim";
         private const string JumpClipPath = AnimDir + "/Player_Jump.anim";
         private const string FallClipPath = AnimDir + "/Player_Fall.anim";
-        private const string ControllerPath = AnimDir + "/Player.controller";
+        private const string LegacyMoveClipPath = AnimDir + "/Player_Run.anim";
+        private const string LegacyAttackClipPath = AnimDir + "/Player_Attack.anim";
+        private const string ControllerPath = AnimDir + "/Player_Graphics.controller";
         private const string ScenePath = "Assets/Scenes/SampleScene.unity";
 
-        [InitializeOnLoadMethod]
-        private static void TryAutoBuildOnce()
-        {
-            // Keep animator setup as an explicit menu action to avoid re-attaching Animator automatically.
-            if (Application.isBatchMode || EditorPrefs.GetBool(AutoBuildKey, false))
-            {
-                return;
-            }
-        }
+        private static readonly int[] IdleFrames = { 0, 1, 2, 3, 4, 5 };
+        private static readonly int[] JumpFrames = { 74, 75, 76, 77 };
+        private static readonly int[] FallFrames = { 82, 83, 84, 85 };
 
         [MenuItem("Tools/Player/Build Visual Animator")]
         public static void BuildAll()
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             EnsureFolder(AnimDir);
-            ConfigureSpriteImporter(IdleSpritePath);
-            ConfigureSpriteImporter(MoveSpritePath);
-            ConfigureSpriteImporter(JumpSpritePath);
-            ConfigureSpriteImporter(FallSpritePath);
+            ConfigureSpriteImporter(SpriteSheetPath);
+            AssetDatabase.DeleteAsset(LegacyMoveClipPath);
+            AssetDatabase.DeleteAsset(LegacyAttackClipPath);
 
-            Sprite idle = AssetDatabase.LoadAssetAtPath<Sprite>(IdleSpritePath);
-            Sprite move = AssetDatabase.LoadAssetAtPath<Sprite>(MoveSpritePath);
-            Sprite jump = AssetDatabase.LoadAssetAtPath<Sprite>(JumpSpritePath);
-            Sprite fall = AssetDatabase.LoadAssetAtPath<Sprite>(FallSpritePath);
-            if (idle == null || move == null || jump == null || fall == null)
-            {
-                throw new FileNotFoundException("Processed player sprites are missing. Please ensure cropped PNG files exist.");
-            }
+            Dictionary<int, Sprite> spritesByIndex = LoadSpritesByIndex(SpriteSheetPath);
+            AnimationClip idleClip = CreateFrameClip(IdleClipPath, "Player_Idle", spritesByIndex, IdleFrames, 8f, true);
+            AnimationClip jumpClip = CreateFrameClip(JumpClipPath, "Player_Jump", spritesByIndex, JumpFrames, 12f, false);
+            AnimationClip fallClip = CreateFrameClip(FallClipPath, "Player_Fall", spritesByIndex, FallFrames, 10f, true);
 
-            AnimationClip idleClip = CreateSingleSpriteClip(IdleClipPath, "Player_Idle", idle);
-            AnimationClip moveClip = CreateSingleSpriteClip(MoveClipPath, "Player_Move", move);
-            AnimationClip jumpClip = CreateSingleSpriteClip(JumpClipPath, "Player_Jump", jump);
-            AnimationClip fallClip = CreateSingleSpriteClip(FallClipPath, "Player_Fall", fall);
-            AnimatorController controller = CreateAnimatorController(idleClip, moveClip, jumpClip, fallClip);
-
-            AttachToPlayerInScene(controller, idle);
+            AnimatorController controller = CreateAnimatorController(idleClip, jumpClip, fallClip);
+            AttachToPlayerInScene(controller, spritesByIndex[IdleFrames[0]]);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("Player visual animator build completed.");
+            Debug.Log("Player animations and Animator Controller generated from Player_Graphics.");
         }
 
         private static void EnsureFolder(string path)
@@ -95,22 +76,90 @@ namespace EndlessRunner.EditorTools
             }
 
             importer.textureType = TextureImporterType.Sprite;
-            importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = 100f;
+            importer.spriteImportMode = SpriteImportMode.Multiple;
             importer.mipmapEnabled = false;
             importer.alphaIsTransparency = true;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
-            importer.filterMode = FilterMode.Bilinear;
+            importer.filterMode = FilterMode.Point;
             importer.SaveAndReimport();
         }
 
-        private static AnimationClip CreateSingleSpriteClip(string clipPath, string clipName, Sprite sprite)
+        private static Dictionary<int, Sprite> LoadSpritesByIndex(string spriteSheetPath)
+        {
+            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(spriteSheetPath);
+            Dictionary<int, Sprite> spritesByIndex = new Dictionary<int, Sprite>();
+            foreach (UnityEngine.Object asset in assets)
+            {
+                Sprite sprite = asset as Sprite;
+                if (sprite == null)
+                {
+                    continue;
+                }
+
+                int index = TryParseSpriteIndex(sprite.name);
+                if (index < 0)
+                {
+                    continue;
+                }
+
+                spritesByIndex[index] = sprite;
+            }
+
+            if (spritesByIndex.Count == 0)
+            {
+                throw new FileNotFoundException($"No sliced sprites were found in {spriteSheetPath}. Open Sprite Editor and make sure slicing is applied.");
+            }
+
+            return spritesByIndex;
+        }
+
+        private static int TryParseSpriteIndex(string spriteName)
+        {
+            if (string.IsNullOrWhiteSpace(spriteName))
+            {
+                return -1;
+            }
+
+            int separator = spriteName.LastIndexOf('_');
+            if (separator < 0 || separator >= spriteName.Length - 1)
+            {
+                return -1;
+            }
+
+            string suffix = spriteName.Substring(separator + 1);
+            int index;
+            return int.TryParse(suffix, out index) ? index : -1;
+        }
+
+        private static AnimationClip CreateFrameClip(
+            string clipPath,
+            string clipName,
+            IReadOnlyDictionary<int, Sprite> spritesByIndex,
+            IReadOnlyList<int> frameIndices,
+            float frameRate,
+            bool loop)
         {
             AssetDatabase.DeleteAsset(clipPath);
+            if (frameIndices.Count == 0)
+            {
+                throw new ArgumentException($"No frame indices configured for {clipName}.");
+            }
+
+            List<Sprite> frames = new List<Sprite>(frameIndices.Count);
+            foreach (int index in frameIndices)
+            {
+                if (!spritesByIndex.TryGetValue(index, out Sprite sprite) || sprite == null)
+                {
+                    throw new FileNotFoundException($"Frame Player_Graphics_{index} is missing. Check Sprite slicing result.");
+                }
+
+                frames.Add(sprite);
+            }
+
             AnimationClip clip = new AnimationClip
             {
                 name = clipName,
-                frameRate = 12f
+                frameRate = Mathf.Max(1f, frameRate)
             };
 
             EditorCurveBinding binding = new EditorCurveBinding
@@ -120,10 +169,22 @@ namespace EndlessRunner.EditorTools
                 propertyName = "m_Sprite"
             };
 
-            ObjectReferenceKeyframe[] keys =
+            ObjectReferenceKeyframe[] keys = new ObjectReferenceKeyframe[frames.Count + 1];
+            float secondsPerFrame = 1f / clip.frameRate;
+            for (int i = 0; i < frames.Count; i++)
             {
-                new ObjectReferenceKeyframe { time = 0f, value = sprite },
-                new ObjectReferenceKeyframe { time = 1f / 12f, value = sprite }
+                keys[i] = new ObjectReferenceKeyframe
+                {
+                    time = i * secondsPerFrame,
+                    value = frames[i]
+                };
+            }
+
+            // Duplicate the last frame once so the final key is held for one frame duration.
+            keys[keys.Length - 1] = new ObjectReferenceKeyframe
+            {
+                time = frames.Count * secondsPerFrame,
+                value = frames[frames.Count - 1]
             };
 
             AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
@@ -131,7 +192,7 @@ namespace EndlessRunner.EditorTools
             SerializedProperty settings = clipSerialized.FindProperty("m_AnimationClipSettings");
             if (settings != null)
             {
-                settings.FindPropertyRelative("m_LoopTime").boolValue = true;
+                settings.FindPropertyRelative("m_LoopTime").boolValue = loop;
                 settings.FindPropertyRelative("m_KeepOriginalPositionY").boolValue = true;
             }
 
@@ -142,7 +203,6 @@ namespace EndlessRunner.EditorTools
 
         private static AnimatorController CreateAnimatorController(
             AnimationClip idleClip,
-            AnimationClip moveClip,
             AnimationClip jumpClip,
             AnimationClip fallClip)
         {
@@ -155,56 +215,36 @@ namespace EndlessRunner.EditorTools
                 stateMachine.RemoveState(stateMachine.states[0].state);
             }
 
-            AddBoolParam(controller, "IsRunning");
-            AddBoolParam(controller, "IsMoving");
             AddBoolParam(controller, "IsJumping");
             AddBoolParam(controller, "IsFalling");
 
             AnimatorState idle = stateMachine.AddState("Idle", new Vector3(280f, 120f, 0f));
-            AnimatorState move = stateMachine.AddState("Move", new Vector3(520f, 120f, 0f));
             AnimatorState jump = stateMachine.AddState("Jump", new Vector3(280f, 320f, 0f));
             AnimatorState fall = stateMachine.AddState("Fall", new Vector3(520f, 320f, 0f));
             idle.motion = idleClip;
-            move.motion = moveClip;
             jump.motion = jumpClip;
             fall.motion = fallClip;
             stateMachine.defaultState = idle;
 
-            AnimatorStateTransition idleToMove = CreateTransition(idle, move);
-            idleToMove.AddCondition(AnimatorConditionMode.If, 0f, "IsMoving");
+            AnimatorStateTransition idleToJump = CreateTransition(idle, jump);
+            idleToJump.AddCondition(AnimatorConditionMode.If, 0f, "IsJumping");
 
-            AnimatorStateTransition moveToIdle = CreateTransition(move, idle);
-            moveToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsMoving");
-            moveToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsJumping");
-            moveToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsFalling");
-            moveToIdle.AddCondition(AnimatorConditionMode.If, 0f, "IsRunning");
+            AnimatorStateTransition idleToFall = CreateTransition(idle, fall);
+            idleToFall.AddCondition(AnimatorConditionMode.If, 0f, "IsFalling");
 
             AnimatorStateTransition jumpToFall = CreateTransition(jump, fall);
             jumpToFall.AddCondition(AnimatorConditionMode.If, 0f, "IsFalling");
 
-            AnimatorStateTransition jumpToMove = CreateTransition(jump, move);
-            jumpToMove.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsJumping");
-            jumpToMove.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsFalling");
-            jumpToMove.AddCondition(AnimatorConditionMode.If, 0f, "IsMoving");
-            jumpToMove.AddCondition(AnimatorConditionMode.If, 0f, "IsRunning");
-
             AnimatorStateTransition jumpToIdle = CreateTransition(jump, idle);
             jumpToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsJumping");
             jumpToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsFalling");
-            jumpToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsMoving");
-            jumpToIdle.AddCondition(AnimatorConditionMode.If, 0f, "IsRunning");
 
-            AnimatorStateTransition fallToMove = CreateTransition(fall, move);
-            fallToMove.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsFalling");
-            fallToMove.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsJumping");
-            fallToMove.AddCondition(AnimatorConditionMode.If, 0f, "IsMoving");
-            fallToMove.AddCondition(AnimatorConditionMode.If, 0f, "IsRunning");
+            AnimatorStateTransition fallToJump = CreateTransition(fall, jump);
+            fallToJump.AddCondition(AnimatorConditionMode.If, 0f, "IsJumping");
 
             AnimatorStateTransition fallToIdle = CreateTransition(fall, idle);
             fallToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsFalling");
             fallToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsJumping");
-            fallToIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsMoving");
-            fallToIdle.AddCondition(AnimatorConditionMode.If, 0f, "IsRunning");
 
             AnimatorStateTransition anyToJump = stateMachine.AddAnyStateTransition(jump);
             ConfigureTransition(anyToJump);
@@ -213,10 +253,6 @@ namespace EndlessRunner.EditorTools
             AnimatorStateTransition anyToFall = stateMachine.AddAnyStateTransition(fall);
             ConfigureTransition(anyToFall);
             anyToFall.AddCondition(AnimatorConditionMode.If, 0f, "IsFalling");
-
-            AnimatorStateTransition anyToIdleWhenStopped = stateMachine.AddAnyStateTransition(idle);
-            ConfigureTransition(anyToIdleWhenStopped);
-            anyToIdleWhenStopped.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsRunning");
 
             EditorUtility.SetDirty(controller);
             return controller;
@@ -279,6 +315,13 @@ namespace EndlessRunner.EditorTools
             animator.updateMode = AnimatorUpdateMode.Normal;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             EditorUtility.SetDirty(animator);
+
+            PlayerAnimatorStateDriver stateDriver = player.GetComponent<PlayerAnimatorStateDriver>();
+            if (stateDriver == null)
+            {
+                stateDriver = player.AddComponent<PlayerAnimatorStateDriver>();
+                EditorUtility.SetDirty(stateDriver);
+            }
 
             EditorUtility.SetDirty(player);
             EditorSceneManager.MarkSceneDirty(scene);

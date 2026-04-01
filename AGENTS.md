@@ -1,6 +1,6 @@
 # AGENTS
 
-- 默认允许直接修改工作目录 `E:\Unity Project\Graduation design` 内的文件，无需逐条确认。
+- 默认允许直接修改工作目录 `E:\Document\AutoProject\Graduation design` 内的文件，无需逐条确认。
 - 禁止读取或操作工作目录以外的任何文件或目录。
 - 每次修改工作目录内文件后，必须执行一次 `git commit`，并随后 `git push` 上传到远程仓库。
 - 提交信息风格参考既有提交（例如 `batch N: ...`）。

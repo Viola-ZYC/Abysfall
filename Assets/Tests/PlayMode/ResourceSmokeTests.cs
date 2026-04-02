@@ -1,15 +1,13 @@
-﻿using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
 namespace EndlessRunner.Tests
 {
     public class ResourceSmokeTests
     {
-        [UnityTest]
-        public IEnumerator UiResourcesAreAvailable()
+        [Test]
+        public void UiResourcesAreAvailable()
         {
             VisualTreeAsset gameUi = Resources.Load<VisualTreeAsset>("UI/GameUI");
             VisualTreeAsset mainMenuUi = Resources.Load<VisualTreeAsset>("UI/MainMenuUI");
@@ -20,8 +18,6 @@ namespace EndlessRunner.Tests
             Assert.IsNotNull(mainMenuUi, "UI/MainMenuUI should exist in Resources.");
             Assert.IsNotNull(panelSettings, "UI/GamePanelSettings should exist in Resources.");
             Assert.IsNotNull(pixelFont, "UI/PressStart2P-Regular should exist in Resources.");
-
-            yield return null;
         }
     }
 }

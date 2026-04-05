@@ -1,8 +1,7 @@
-﻿{
-  "name": "PlayModeTests",
-  "references": [
-    "EndlessRunner.Runtime"
-  ],
+{
+  "name": "EndlessRunner.Runtime",
+  "rootNamespace": "EndlessRunner",
+  "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
@@ -11,10 +10,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "rootNamespace": "",
-  "isTestAssembly": true,
-  "optionalUnityReferences": [
-    "TestAssemblies"
-  ]
+  "noEngineReferences": false
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using EndlessRunner;
+using Object = UnityEngine.Object;
 
 public class PlayModeSmokeTests
 {

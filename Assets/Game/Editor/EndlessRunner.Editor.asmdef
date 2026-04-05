@@ -1,11 +1,13 @@
 {
-  "name": "EndlessRunner.Runtime",
-  "rootNamespace": "EndlessRunner",
+  "name": "EndlessRunner.Editor",
+  "rootNamespace": "EndlessRunner.EditorTools",
   "references": [
-    "EndlessRunner.Configs",
-    "Unity.InputSystem"
+    "EndlessRunner.Runtime",
+    "EndlessRunner.Configs"
   ],
-  "includePlatforms": [],
+  "includePlatforms": [
+    "Editor"
+  ],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,

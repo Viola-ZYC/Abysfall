@@ -1,10 +1,7 @@
 {
-  "name": "EndlessRunner.Runtime",
+  "name": "EndlessRunner.Configs",
   "rootNamespace": "EndlessRunner",
-  "references": [
-    "EndlessRunner.Configs",
-    "Unity.InputSystem"
-  ],
+  "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

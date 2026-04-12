@@ -1,7 +1,11 @@
 <UXML xmlns="UnityEngine.UIElements">
     <Style src="GameUI.uss" />
     <VisualElement name="root" class="root">
-            <VisualElement name="safe-area" class="safe-area">
+        <VisualElement class="ui-ambient-layer">
+            <VisualElement class="ui-ambient-glow" />
+            <VisualElement class="ui-ambient-frame" />
+        </VisualElement>
+        <VisualElement name="safe-area" class="safe-area">
                 <VisualElement name="hud" class="hud">
                     <VisualElement class="hud-row">
                         <VisualElement class="hud-card">
@@ -25,9 +29,9 @@
 
             <VisualElement name="menu-panel" class="overlay overlay-menu">
                 <VisualElement class="overlay-card overlay-card-wide">
-                    <Label name="menu-title-label" class="overlay-title" text="Character Select" />
+                    <Label name="menu-title-label" class="overlay-title" text="Loadout Select" />
                     <VisualElement name="character-selection" class="character-selection">
-                        <Label class="character-title" text="Choose Ability / Loadout" />
+                        <Label class="character-title" text="Choose Loadout" />
                         <VisualElement class="character-row">
                             <Button name="character-prev-button" class="character-nav-button" text="&lt;" />
                             <VisualElement class="character-info">
@@ -41,13 +45,13 @@
                         <Button name="menu-continue-button" class="menu-button menu-continue" text="Continue Game" />
                         <Button name="pause-mainmenu-button" class="menu-button" text="Return to Main Menu" />
                         <Button name="pause-exit-button" class="menu-button menu-button-exit" text="Exit Game" />
-                        <Button name="menu-start-button" class="menu-button" text="Confirm Start" />
+                        <Button name="menu-start-button" class="menu-button" text="Begin Run" />
                         <Button name="menu-leaderboard-button" class="menu-button" text="Leaderboard" />
-                        <Button name="menu-collection-button" class="menu-button" text="Manual" />
+                        <Button name="menu-collection-button" class="menu-button" text="Codex" />
                         <Button name="menu-settings-button" class="menu-button" text="Settings" />
                         <Button name="menu-exit-button" class="menu-button menu-button-exit" text="Exit Game" />
                     </VisualElement>
-                    <Label name="menu-hint-label" class="menu-hint" text="Select an option." />
+                    <Label name="menu-hint-label" class="menu-hint" text="Choose a loadout, then start the descent." />
                 </VisualElement>
             </VisualElement>
 
@@ -69,7 +73,7 @@
                     </VisualElement>
 
                     <VisualElement class="settings-actions">
-                        <Button name="settings-apply-button" class="menu-button" text="Apply and Close" />
+                        <Button name="settings-apply-button" class="menu-button" text="Save Changes" />
                         <Button name="settings-mainmenu-button" class="menu-button" text="Return to Main Menu" />
                         <Button name="settings-close-button" class="menu-button menu-button-secondary" text="Cancel" />
                     </VisualElement>
@@ -89,7 +93,7 @@
 
             <VisualElement name="ability-panel" class="overlay overlay-ability">
                 <VisualElement class="overlay-card overlay-card-wide">
-                    <Label class="overlay-title" text="Choose an Ability" />
+                    <Label class="overlay-title" text="Acquire Ability" />
                     <VisualElement name="ability-choices" class="choice-list">
                         <Button name="ability-choice-0" class="choice-button" text="Ability 1" />
                         <Button name="ability-choice-1" class="choice-button" text="Ability 2" />
@@ -102,7 +106,7 @@
                 <VisualElement class="overlay-card overlay-card-wide">
                     <Label name="ability-acquired-title" class="overlay-title" text="Ability Acquired" />
                     <Label name="ability-acquired-desc" class="ability-acquired-desc" text="A new power surges within you." />
-                    <Label name="ability-acquired-hint" class="ability-acquired-hint" text="Tap anywhere to continue." />
+                    <Label name="ability-acquired-hint" class="ability-acquired-hint" text="Tap to resume the run." />
                 </VisualElement>
             </VisualElement>
         </VisualElement>

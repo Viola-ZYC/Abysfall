@@ -201,7 +201,7 @@ namespace EndlessRunner
                 else if (isCollectionVisible)
                 {
                     SetCollectionOverlayVisible(false);
-                    SetHint("Manual closed.");
+                    SetHint("Codex closed.");
                 }
                 else if (isLeaderboardVisible)
                 {
@@ -415,7 +415,7 @@ namespace EndlessRunner
             SetAchievementOverlayVisible(false);
             SetLeaderboardOverlayVisible(false);
             SetSettingsOverlayVisible(false);
-            SetHint("Select an option.");
+            SetHint("Choose where to dive next.");
             ApplySafeAreaIfNeeded();
             isBound = true;
             StartGlowLoopIfReady();
@@ -624,7 +624,7 @@ namespace EndlessRunner
             SetLeaderboardOverlayVisible(false);
             SetSettingsOverlayVisible(false);
             SetCollectionOverlayVisible(true);
-            SetHint("Manual opened.");
+            SetHint("Codex opened.");
         }
 
         private void OnManualCreaturesClicked()
@@ -656,7 +656,7 @@ namespace EndlessRunner
         private void OnCollectionCloseClicked()
         {
             SetCollectionOverlayVisible(false);
-            SetHint("Manual closed.");
+            SetHint("Codex closed.");
         }
 
         private void OnAchievementCloseClicked()
@@ -671,7 +671,7 @@ namespace EndlessRunner
             SetAchievementOverlayVisible(false);
             SetLeaderboardOverlayVisible(false);
             SetSettingsOverlayVisible(false);
-            SetHint("Returned to main interface.");
+            SetHint("Returned to the main menu.");
         }
 
         private void OnLeaderboardCloseClicked()

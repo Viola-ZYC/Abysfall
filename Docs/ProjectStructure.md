@@ -44,8 +44,7 @@
 - `SegmentContent.cs`：段内敌人/障碍/收藏/宝箱生成
 
 ### 5) UI
-- `MainMenuSceneController.cs`：主菜单多页面与设置逻辑
-- `MainMenuSceneBootstrap.cs`：主菜单场景初始化
+- `MainMenuSceneController.cs`：主菜单多页面与设置逻辑（挂在 `MainMenuScene` 的显式 UI 根物体上）
 - `HUDController.cs`：游戏内HUD、暂停/结算面板、角色选择
 - `AbilitySelectionUI.cs`：能力三选一 UI
 - `AbilityAcquiredUI.cs`：首次获得能力/收藏品弹窗

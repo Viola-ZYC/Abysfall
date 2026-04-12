@@ -63,6 +63,8 @@
     right: 0;
     bottom: 18px;
     align-items: center;
+    justify-content: center;
+    min-height: 84px;
 }
 
 .fx-layer {
@@ -132,9 +134,9 @@
 }
 
 .ability-button {
-    width: 320px;
+    width: 360px;
     max-width: 86%;
-    height: 64px;
+    height: 84px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.8);
@@ -154,6 +156,7 @@
 
 .hud-row {
     width: 100%;
+    position: relative;
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
@@ -185,8 +188,8 @@
 }
 
 .pause-button {
-    height: 54px;
-    min-width: 156px;
+    height: 84px;
+    min-width: 220px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
     border-color: rgba(255, 60, 80, 0.8);
@@ -212,6 +215,7 @@
     right: 0;
     top: 0;
     bottom: 0;
+    display: none;
     background-color: rgba(1, 1, 2, 0.84);
     align-items: center;
     justify-content: center;
@@ -224,6 +228,7 @@
 }
 
 .overlay.is-visible {
+    display: flex;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -242,6 +247,10 @@
 .overlay-card-wide {
     width: 92%;
     max-width: 820px;
+}
+
+.pause-card {
+    max-width: 540px;
 }
 
 .overlay-text {
@@ -266,12 +275,29 @@
     letter-spacing: 1.2px;
 }
 
+.ability-acquired-subtitle {
+    margin-bottom: 12px;
+    font-size: 18px;
+    color: rgba(255, 120, 130, 0.95);
+    unity-text-align: middle-center;
+    letter-spacing: 1.6px;
+    -unity-font-style: bold;
+}
+
 .ability-acquired-desc {
     font-size: 16px;
     color: rgba(230, 230, 230, 0.95);
     unity-text-align: middle-center;
     margin-bottom: 14px;
-    max-width: 620px;
+    max-width: 720px;
+}
+
+.ability-acquired-meta {
+    font-size: 17px;
+    color: rgba(205, 205, 205, 0.85);
+    unity-text-align: middle-center;
+    margin-bottom: 18px;
+    max-width: 720px;
 }
 
 .ability-acquired-hint {
@@ -486,8 +512,115 @@
     align-items: stretch;
 }
 
+.codex-card {
+    max-width: 760px;
+    max-height: 90%;
+}
+
+.codex-progress {
+    margin-top: 8px;
+    margin-bottom: 14px;
+    width: 100%;
+    font-size: 14px;
+    color: rgba(220, 220, 220, 0.9);
+    unity-text-align: middle-center;
+}
+
+.manual-tabs {
+    margin-top: 6px;
+    margin-bottom: 12px;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.manual-tab-button {
+    flex-grow: 1;
+    height: 40px;
+    margin-right: 8px;
+    background-color: rgba(18, 18, 20, 0.98);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.5);
+    border-radius: 2px;
+    color: rgb(235, 235, 235);
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+#codex-tab-collections {
+    margin-right: 0;
+}
+
+.manual-tab-button:hover {
+    background-color: rgba(255, 60, 80, 0.2);
+}
+
+.manual-tab-button.is-active {
+    background-color: rgba(255, 60, 80, 0.35);
+    border-color: rgba(255, 90, 100, 1);
+    color: rgb(255, 255, 255);
+}
+
+.codex-scroll {
+    width: 100%;
+    min-height: 0;
+    flex-grow: 1;
+    height: 460px;
+    margin-bottom: 14px;
+    padding-right: 8px;
+}
+
+.codex-list {
+    width: 100%;
+    flex-direction: column;
+}
+
+.codex-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.collection-entry {
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    background-color: rgba(18, 18, 20, 0.9);
+    border-width: 2px;
+    border-color: rgba(255, 60, 80, 0.35);
+    border-radius: 2px;
+}
+
+.collection-entry.is-locked {
+    background-color: rgba(50, 52, 63, 0.5);
+    border-color: rgba(170, 170, 170, 0.22);
+}
+
+.collection-entry-title {
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: rgb(245, 245, 245);
+}
+
+.collection-entry-status {
+    margin-top: 4px;
+    font-size: 13px;
+    color: rgba(172, 248, 191, 0.95);
+}
+
+.collection-entry.is-locked .collection-entry-status {
+    color: rgba(208, 214, 236, 0.75);
+}
+
+.collection-entry-desc {
+    margin-top: 4px;
+    font-size: 13px;
+    color: rgba(220, 220, 220, 0.92);
+}
+
 #pause-button,
 #menu-continue-button,
+#pause-collection-button,
 #menu-start-button,
 #menu-leaderboard-button,
 #menu-collection-button,
@@ -501,7 +634,8 @@
 #settings-apply-button,
 #settings-mainmenu-button,
 #settings-close-button,
-#ability-mainmenu-button {
+#ability-mainmenu-button,
+#codex-close-button {
     padding-left: 52px;
     background-position: 16px 50%;
     background-repeat: no-repeat;
@@ -518,8 +652,12 @@
     background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons17.png");
 }
 
-#menu-leaderboard-button,
+#pause-collection-button,
 #menu-collection-button {
+    background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons13.png");
+}
+
+#menu-leaderboard-button {
     background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12.png");
 }
 
@@ -530,7 +668,8 @@
 #menu-exit-button,
 #pause-exit-button,
 #gameover-exit-button,
-#settings-close-button {
+#settings-close-button,
+#codex-close-button {
     background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons9.png");
 }
 

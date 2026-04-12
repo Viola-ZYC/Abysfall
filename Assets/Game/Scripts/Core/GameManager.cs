@@ -41,6 +41,7 @@ namespace EndlessRunner
             }
 
             Instance = this;
+            SceneTransitionOverlay.EnsureExists();
         }
 
         private void Start()
@@ -57,6 +58,8 @@ namespace EndlessRunner
             {
                 BeginRun();
             }
+
+            SceneTransitionOverlay.PlayStartupIfNeeded(SceneManager.GetActiveScene().name);
         }
 
         private void Update()
@@ -298,7 +301,10 @@ namespace EndlessRunner
 
             ClearPauseRequests();
             Time.timeScale = 1f;
-            SceneManager.LoadScene(sceneName);
+            if (!SceneTransitionOverlay.TryLoadScene(sceneName))
+            {
+                SceneManager.LoadScene(sceneName);
+            }
         }
 
         private void ApplyPortraitOnlyOrientation()

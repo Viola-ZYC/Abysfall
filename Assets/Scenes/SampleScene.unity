@@ -682,7 +682,7 @@ Transform:
   m_GameObject: {fileID: 700000000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.78, z: 0}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -708,8 +708,11 @@ MonoBehaviour:
   backgroundPrefab: {fileID: 100100000, guid: 4e4422caea96dbd4eb7b6cfb45a3d9b1, type: 3}
   segmentCount: 3
   recycleBuffer: 1
+  segmentOverlap: 0.05
+  segmentVisualScaleMultiplier: 1.2
   buildInEditMode: 0
   keepInSync: 0
+  alignTopSegmentToFollowTarget: 1
 --- !u!1001 &700000010
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -893,6 +896,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 072525eec0e545d46b6a88ad16e54957, type: 2}
   input: {fileID: 2005836458}
   hitStopper: {fileID: 3000000043}
+  scoreManager: {fileID: 0}
   clampHorizontal: 1
   minX: -2.9
   maxX: 2.9
@@ -943,7 +947,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c04bdd2c376f53e4caa038f0d8d022f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.GameManager
-  initialState: 1
+  initialState: 2
   forcePortrait: 1
   useSceneBasedMainMenu: 1
   allowGameOverQuickRestart: 0
@@ -1000,6 +1004,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: f1374da2bd2fd2b4dbf807f95fda835e, type: 2}
   player: {fileID: 2005836457}
   pool: {fileID: 3000000033}
+  scoreManager: {fileID: 0}
   adaptDistancesToCamera: 1
   targetCamera: {fileID: 0}
   referenceCameraHalfHeight: 5
@@ -1500,6 +1505,7 @@ MonoBehaviour:
   scoreManager: {fileID: 3000000023}
   gameManager: {fileID: 3000000003}
   runner: {fileID: 2005836459}
+  abilityManager: {fileID: 0}
   scoreText: {fileID: 0}
   healthText: {fileID: 0}
   menuPanel: {fileID: 0}
@@ -1513,6 +1519,8 @@ MonoBehaviour:
   speedLabelName: speed-label
   accelerationLabelName: acceleration-label
   pauseButtonName: pause-button
+  abilityActionContainerName: ability-action
+  abilityActionButtonName: ability-action-button
   menuPanelName: menu-panel
   menuTitleLabelName: menu-title-label
   characterSelectionName: character-selection
@@ -1534,6 +1542,15 @@ MonoBehaviour:
   gameOverMainMenuButtonName: gameover-mainmenu-button
   gameOverExitButtonName: gameover-exit-button
   menuHintLabelName: menu-hint-label
+  codexDatabase: {fileID: 0}
+  pauseCollectionButtonName: pause-collection-button
+  codexPanelName: codex-panel
+  codexProgressLabelName: codex-progress-label
+  codexListName: codex-list
+  codexCloseButtonName: codex-close-button
+  codexTabCreaturesButtonName: codex-tab-creatures
+  codexTabObstaclesButtonName: codex-tab-obstacles
+  codexTabCollectionsButtonName: codex-tab-collections
   settingsPanelName: settings-panel
   settingsVolumeSliderName: settings-volume-slider
   settingsVolumeValueLabelName: settings-volume-value-label
@@ -1542,10 +1559,16 @@ MonoBehaviour:
   settingsApplyButtonName: settings-apply-button
   settingsMainMenuButtonName: settings-mainmenu-button
   settingsCloseButtonName: settings-close-button
+  fxHitFlashName: fx-hit-flash
+  fxLowHealthName: fx-low-health
+  fxAbilityPulseName: fx-ability-pulse
   characterOptions: []
   defaultCharacterIndex: 0
   disableLegacyCanvasOnToolkit: 1
   applySafeArea: 1
+  lowHealthThreshold: 0.35
+  hitFlashDuration: 0.12
+  abilityPulseDuration: 0.2
 --- !u!114 &7000000005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1623,6 +1646,7 @@ MonoBehaviour:
   loreCollectiblePrefab: {fileID: 9200000000000000001, guid: 9a4f61d3575b47d2b93e12f0a6c8d4e1, type: 3}
   targetCamera: {fileID: 0}
   runner: {fileID: 2005836459}
+  codexDatabase: {fileID: 0}
   scoreInterval: 100
   enableLoreCollectibleMilestones: 1
   loreCollectibleMilestones: 7800000018010000c20100008a02000084030000b0040000

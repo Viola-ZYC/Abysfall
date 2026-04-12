@@ -236,6 +236,48 @@ namespace EndlessRunner
             return legacyTotal;
         }
 
+        public static void ResetCodexProgress(bool clearAbilityUnlocks = false)
+        {
+            SaveData data = GetData();
+            if (data == null)
+            {
+                return;
+            }
+
+            data.unlockedCollectionCount = 0;
+            data.collectionUnlockMask = 0;
+            EnsureCollectionEntryCountSize(data);
+            for (int i = 0; i < data.collectionEntryCounts.Count; i++)
+            {
+                data.collectionEntryCounts[i] = 0;
+            }
+
+            data.unlockedCreatureIds?.Clear();
+            data.unlockedObstacleIds?.Clear();
+            data.collectionCounts?.Clear();
+            if (clearAbilityUnlocks)
+            {
+                data.unlockedAbilityIds?.Clear();
+            }
+
+            ClearLegacyProgressKeys(clearAllProgress: false);
+            SaveDataToDisk(data);
+        }
+
+        public static void ResetAllProgress()
+        {
+            SaveData data = new SaveData();
+            cachedData = data;
+            loaded = true;
+            ClearLegacyProgressKeys(clearAllProgress: true);
+            EnsureDataIntegrity(data);
+        }
+
+        public static string GetSavePathForDebug()
+        {
+            return GetSavePath();
+        }
+
         public static bool IsCodexEntryUnlocked(CodexCategory category, string entryId)
         {
             if (string.IsNullOrWhiteSpace(entryId))
@@ -711,6 +753,20 @@ namespace EndlessRunner
             {
                 Debug.LogWarning($"RunProgressStore failed to save progress: {exception.Message}");
             }
+        }
+
+        private static void ClearLegacyProgressKeys(bool clearAllProgress)
+        {
+            if (clearAllProgress)
+            {
+                PlayerPrefs.DeleteKey(BestScoreKey);
+                PlayerPrefs.DeleteKey(LastScoreKey);
+                PlayerPrefs.DeleteKey(TotalRunsKey);
+                PlayerPrefs.DeleteKey(TotalScoreKey);
+            }
+
+            PlayerPrefs.DeleteKey(CollectionUnlockedCountKey);
+            PlayerPrefs.Save();
         }
 
         private static string GetSavePath()

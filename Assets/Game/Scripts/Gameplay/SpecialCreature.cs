@@ -36,10 +36,17 @@ namespace EndlessRunner
             }
 
             consumed = true;
+            bool newlyUnlocked = false;
             if (unlockCodexOnHit && !string.IsNullOrWhiteSpace(codexEntryId))
             {
-                RunProgressStore.UnlockCodexEntry(codexCategory, codexEntryId, 1);
+                newlyUnlocked = RunProgressStore.UnlockCodexEntry(codexCategory, codexEntryId, 1);
             }
+
+            if (newlyUnlocked)
+            {
+                TryShowCodexPopup();
+            }
+
             if (abilityManager == null)
             {
                 abilityManager = FindAnyObjectByType<AbilityManager>();
@@ -50,6 +57,24 @@ namespace EndlessRunner
                 abilityManager?.ReplaceAbility(ability);
             }
             base.OnHitByAttack();
+        }
+
+        private void TryShowCodexPopup()
+        {
+            AbilityAcquiredUI popup = FindAnyObjectByType<AbilityAcquiredUI>();
+            if (popup == null)
+            {
+                return;
+            }
+
+            CodexDatabase database = CodexDatabase.Load();
+            CodexEntry entry = database != null ? database.FindEntry(codexCategory, codexEntryId) : null;
+            if (entry == null)
+            {
+                return;
+            }
+
+            popup.ShowCodexEntry(codexCategory, entry);
         }
     }
 }

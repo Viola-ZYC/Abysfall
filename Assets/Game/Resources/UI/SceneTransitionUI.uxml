@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="project://database/Assets/Game/Resources/UI/SceneTransitionUI.uss?fileID=7433441132597879392&amp;guid=307e3f65587f4febb8d1469109cb2d0a&amp;type=3#SceneTransitionUI"/>
+    <ui:VisualElement name="scene-transition-root" class="scene-transition-root">
+        <ui:VisualElement class="scene-transition-vignette"/>
+    </ui:VisualElement>
+</ui:UXML>

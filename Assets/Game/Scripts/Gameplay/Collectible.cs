@@ -110,7 +110,7 @@ namespace EndlessRunner
                 return;
             }
 
-            popup.ShowCollectible(entry);
+            popup.ShowCodexEntry(codexCategory, entry);
         }
     }
 }

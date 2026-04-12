@@ -199,6 +199,7 @@
     right: 0;
     top: 0;
     bottom: 0;
+    display: none;
     justify-content: center;
     align-items: center;
     background-color: rgba(1, 1, 2, 0.84);
@@ -208,6 +209,7 @@
 }
 
 .mainmenu-overlay.is-visible {
+    display: flex;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;

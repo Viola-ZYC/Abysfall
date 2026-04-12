@@ -306,9 +306,130 @@ MonoBehaviour:
   trackManager: {fileID: 0}
   scoreManager: {fileID: 0}
   abilityManager: {fileID: 0}
+--- !u!1 &7000001001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7000001002}
+  - component: {fileID: 7000001003}
+  - component: {fileID: 7000001004}
+  m_Layer: 5
+  m_Name: MainMenuUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7000001002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7000001001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7000001003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7000001001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_PanelSettings: {fileID: 11400000, guid: ec9485fdcb7a4f71a071313d3ab46f02, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 8ecdb44dc0905ef4cafa2d3cc73e9408, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!114 &7000001004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7000001001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e88e4260e821084bacbd9da85821050, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  mainMenuSceneName: MainMenuScene
+  gameplaySceneName: SampleScene
+  panelSettingsResource: UI/GamePanelSettings
+  visualTreeResource: UI/MainMenuUI
+  styleSheetResource: UI/MainMenuUI
+  mainMenuCardName: mainmenu-card
+  playButtonName: mainmenu-play-button
+  leaderboardButtonName: mainmenu-leaderboard-button
+  collectionButtonName: mainmenu-collection-button
+  achievementButtonName: mainmenu-achievement-button
+  settingsButtonName: mainmenu-settings-button
+  exitButtonName: mainmenu-exit-button
+  hintLabelName: mainmenu-hint-label
+  safeAreaElementName: mainmenu-safe-area
+  collectionOverlayName: mainmenu-collection-overlay
+  collectionProgressLabelName: mainmenu-collection-progress-label
+  collectionListName: mainmenu-collection-list
+  collectionBackButtonName: mainmenu-collection-back-button
+  collectionCloseButtonName: mainmenu-collection-close-button
+  manualTabCreaturesButtonName: mainmenu-manual-tab-creatures
+  manualTabObstaclesButtonName: mainmenu-manual-tab-obstacles
+  manualTabCollectionsButtonName: mainmenu-manual-tab-collections
+  achievementOverlayName: mainmenu-achievement-overlay
+  achievementProgressLabelName: mainmenu-achievement-progress-label
+  achievementListName: mainmenu-achievement-list
+  achievementBackButtonName: mainmenu-achievement-back-button
+  achievementCloseButtonName: mainmenu-achievement-close-button
+  leaderboardOverlayName: mainmenu-leaderboard-overlay
+  leaderboardBestScoreLabelName: mainmenu-best-score-label
+  leaderboardLastScoreLabelName: mainmenu-last-score-label
+  leaderboardTotalRunsLabelName: mainmenu-total-runs-label
+  leaderboardAverageScoreLabelName: mainmenu-average-score-label
+  leaderboardModeProgressLabelName: mainmenu-mode-progress-label
+  leaderboardTopScoresLabelName: mainmenu-top-scores-label
+  leaderboardBackButtonName: mainmenu-leaderboard-back-button
+  leaderboardCloseButtonName: mainmenu-leaderboard-close-button
+  settingsOverlayName: mainmenu-settings-overlay
+  settingsVolumeSliderName: mainmenu-settings-volume-slider
+  settingsVolumeValueLabelName: mainmenu-settings-volume-value-label
+  settingsResolutionDropdownName: mainmenu-settings-resolution-dropdown
+  settingsResolutionHintLabelName: mainmenu-settings-resolution-hint-label
+  gameModeDropdownName: mainmenu-game-mode-dropdown
+  gameModeHintLabelName: mainmenu-game-mode-hint-label
+  settingsApplyButtonName: mainmenu-settings-apply-button
+  settingsBackButtonName: mainmenu-settings-back-button
+  settingsCloseButtonName: mainmenu-settings-close-button
+  collectionEntries: []
+  codexDatabase: {fileID: 0}
+  applySafeArea: 1
+  glowMinInterval: 1.6
+  glowMaxInterval: 3.2
+  glowDuration: 0.12
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 3000000002}
+  - {fileID: 7000001002}

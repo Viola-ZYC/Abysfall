@@ -5,6 +5,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using UnityEngine.EventSystems;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
+#endif
 using UITKButton = UnityEngine.UIElements.Button;
 using UITKDropdownField = UnityEngine.UIElements.DropdownField;
 using UITKSlider = UnityEngine.UIElements.Slider;
@@ -53,6 +58,7 @@ namespace EndlessRunner
         [SerializeField] private string abilityActionContainerName = "ability-action";
         [SerializeField] private string abilityActionButtonName = "ability-action-button";
         [SerializeField] private string menuPanelName = "menu-panel";
+        [SerializeField] private string pausePanelName = "pause-panel";
         [SerializeField] private string menuTitleLabelName = "menu-title-label";
         [SerializeField] private string characterSelectionName = "character-selection";
         [SerializeField] private string characterNameLabelName = "character-name-label";
@@ -73,6 +79,16 @@ namespace EndlessRunner
         [SerializeField] private string gameOverMainMenuButtonName = "gameover-mainmenu-button";
         [SerializeField] private string gameOverExitButtonName = "gameover-exit-button";
         [SerializeField] private string menuHintLabelName = "menu-hint-label";
+        [SerializeField] private string pauseHintLabelName = "pause-hint-label";
+        [SerializeField] private CodexDatabase codexDatabase;
+        [SerializeField] private string pauseCollectionButtonName = "pause-collection-button";
+        [SerializeField] private string codexPanelName = "codex-panel";
+        [SerializeField] private string codexProgressLabelName = "codex-progress-label";
+        [SerializeField] private string codexListName = "codex-list";
+        [SerializeField] private string codexCloseButtonName = "codex-close-button";
+        [SerializeField] private string codexTabCreaturesButtonName = "codex-tab-creatures";
+        [SerializeField] private string codexTabObstaclesButtonName = "codex-tab-obstacles";
+        [SerializeField] private string codexTabCollectionsButtonName = "codex-tab-collections";
         [SerializeField] private string settingsPanelName = "settings-panel";
         [SerializeField] private string settingsVolumeSliderName = "settings-volume-slider";
         [SerializeField] private string settingsVolumeValueLabelName = "settings-volume-value-label";
@@ -99,6 +115,7 @@ namespace EndlessRunner
         private Label menuTitleLabel;
         private VisualElement abilityActionContainer;
         private VisualElement menuPanelElement;
+        private VisualElement pausePanelElement;
         private VisualElement gameOverPanelElement;
         private VisualElement settingsPanelElement;
         private VisualElement safeAreaElement;
@@ -109,6 +126,8 @@ namespace EndlessRunner
         private Label characterNameLabel;
         private Label characterDescLabel;
         private Label menuHintLabel;
+        private Label pauseHintLabel;
+        private Label codexProgressLabel;
         private Label settingsVolumeValueLabel;
         private Label settingsResolutionHintLabel;
         private UITKButton pauseButton;
@@ -116,6 +135,7 @@ namespace EndlessRunner
         private UITKButton characterPrevButton;
         private UITKButton characterNextButton;
         private UITKButton menuContinueButton;
+        private UITKButton pauseCollectionButton;
         private UITKButton menuStartButton;
         private UITKButton menuLeaderboardButton;
         private UITKButton menuCollectionButton;
@@ -129,8 +149,14 @@ namespace EndlessRunner
         private UITKButton settingsApplyButton;
         private UITKButton settingsMainMenuButton;
         private UITKButton settingsCloseButton;
+        private UITKButton codexCloseButton;
+        private UITKButton codexTabCreaturesButton;
+        private UITKButton codexTabObstaclesButton;
+        private UITKButton codexTabCollectionsButton;
         private UITKSlider settingsVolumeSlider;
         private UITKDropdownField settingsResolutionDropdown;
+        private VisualElement codexPanelElement;
+        private VisualElement codexListElement;
         private Rect lastSafeArea = Rect.zero;
         private Vector2Int lastScreenSize = Vector2Int.zero;
         private Vector2 lastPanelSize = Vector2.zero;
@@ -141,9 +167,11 @@ namespace EndlessRunner
         private int toolkitRetryFrames;
         private bool toolkitErrorLogged;
         private bool pauseMenuRequested;
+        private bool codexPanelRequested;
         private bool settingsPanelRequested;
         private bool settingsInitialized;
         private bool suppressSettingsEvents;
+        private CodexCategory currentCodexCategory = CodexCategory.Creature;
         private int selectedResolutionIndex = -1;
         private int selectedCharacterIndex;
         private int lastHealth = -1;
@@ -152,8 +180,14 @@ namespace EndlessRunner
         private Coroutine abilityPulseRoutine;
         private readonly List<ResolutionOption> availableResolutions = new List<ResolutionOption>();
         private readonly List<string> availableResolutionLabels = new List<string>();
+        private readonly List<UITKButton> trackedButtons = new List<UITKButton>();
+        private Coroutine pendingPointerFallbackRoutine;
+        private UITKButton lastTrackedPointerDownButton;
+        private int lastTrackedPointerDownFrame = -1;
         private const string VisibleClass = "is-visible";
         private const string FxActiveClass = "is-active";
+        private const string TabActiveClass = "is-active";
+        private const string LockedClass = "is-locked";
         private const int ToolkitRetryLogFrame = 60;
         private const string MasterVolumePrefKey = "settings.master_volume";
         private const string ResolutionPrefKey = "settings.resolution_index";
@@ -171,9 +205,21 @@ namespace EndlessRunner
             CharacterAbilityType.SingleAirJumpOnBlock,
             CharacterAbilityType.None
         };
+        private const string DefaultPausePanelName = "pause-panel";
+        private const string DefaultPauseHintLabelName = "pause-hint-label";
+        private const string DefaultPauseCollectionButtonName = "pause-collection-button";
+        private const string DefaultCodexPanelName = "codex-panel";
+        private const string DefaultCodexProgressLabelName = "codex-progress-label";
+        private const string DefaultCodexListName = "codex-list";
+        private const string DefaultCodexCloseButtonName = "codex-close-button";
+        private const string DefaultCodexTabCreaturesButtonName = "codex-tab-creatures";
+        private const string DefaultCodexTabObstaclesButtonName = "codex-tab-obstacles";
+        private const string DefaultCodexTabCollectionsButtonName = "codex-tab-collections";
 
         private void Awake()
         {
+            EnsureRuntimeDefaultFieldValues();
+            EnsureEventSystem();
             ResolveReferences();
             legacyCanvas = GetComponent<Canvas>();
             legacyRaycaster = GetComponent<GraphicRaycaster>();
@@ -184,6 +230,8 @@ namespace EndlessRunner
 
         private void OnEnable()
         {
+            EnsureRuntimeDefaultFieldValues();
+            EnsureEventSystem();
             ResolveReferences();
             CacheToolkitElements(false);
             InitializeToolkitIfNeeded();
@@ -211,6 +259,12 @@ namespace EndlessRunner
 
         private void OnDisable()
         {
+            if (pendingPointerFallbackRoutine != null)
+            {
+                StopCoroutine(pendingPointerFallbackRoutine);
+                pendingPointerFallbackRoutine = null;
+            }
+
             UnbindMenuButtons();
             toolkitInitialized = false;
             toolkitRetryFrames = 0;
@@ -263,6 +317,8 @@ namespace EndlessRunner
             }
 
             RefreshMotionMetrics();
+            HandleOverlayBackInput();
+            HandlePointerFallbackInput();
 
             if (!applySafeArea)
             {
@@ -445,6 +501,452 @@ namespace EndlessRunner
             }
         }
 
+        private void HandleOverlayBackInput()
+        {
+            if (!IsEscapePressed())
+            {
+                return;
+            }
+
+            if (IsDiscoveryPopupVisible())
+            {
+                return;
+            }
+
+            if (codexPanelRequested)
+            {
+                OnCodexCloseClicked();
+                return;
+            }
+
+            if (settingsPanelRequested)
+            {
+                OnSettingsCloseClicked();
+            }
+        }
+
+        private bool IsDiscoveryPopupVisible()
+        {
+            if (uiDocument == null || uiDocument.rootVisualElement == null)
+            {
+                return false;
+            }
+
+            VisualElement popup = uiDocument.rootVisualElement.Q<VisualElement>("ability-acquired-panel");
+            return popup != null && popup.ClassListContains(VisibleClass);
+        }
+
+        private void HandlePointerFallbackInput()
+        {
+            if (!TryGetFallbackButtonDownThisFrame(out UITKButton button))
+            {
+                return;
+            }
+
+            if (pendingPointerFallbackRoutine != null)
+            {
+                StopCoroutine(pendingPointerFallbackRoutine);
+            }
+
+            pendingPointerFallbackRoutine = StartCoroutine(InvokeFallbackButtonNextFrame(button, Time.frameCount));
+        }
+
+        private bool TryGetFallbackButtonDownThisFrame(out UITKButton button)
+        {
+            button = null;
+
+#if ENABLE_INPUT_SYSTEM
+            if (Touchscreen.current != null)
+            {
+                var touches = Touchscreen.current.touches;
+                for (int i = 0; i < touches.Count; i++)
+                {
+                    var touch = touches[i];
+                    if (!touch.press.wasPressedThisFrame)
+                    {
+                        continue;
+                    }
+
+                    Vector2 touchPosition = touch.position.ReadValue();
+                    if (TryGetFallbackButtonAtScreenPosition(touchPosition, out button))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                Vector2 mousePosition = Mouse.current.position.ReadValue();
+                return TryGetFallbackButtonAtScreenPosition(mousePosition, out button);
+            }
+
+            return false;
+#else
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch touch = Input.GetTouch(i);
+                if (touch.phase != TouchPhase.Began)
+                {
+                    continue;
+                }
+
+                if (TryGetFallbackButtonAtScreenPosition(touch.position, out button))
+                {
+                    return true;
+                }
+            }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector2 mousePosition = Input.mousePosition;
+                return TryGetFallbackButtonAtScreenPosition(mousePosition, out button);
+            }
+
+            return false;
+#endif
+        }
+
+        private bool TryGetFallbackButtonAtScreenPosition(Vector2 screenPosition, out UITKButton button)
+        {
+            button = null;
+            if (!useToolkit || uiDocument == null)
+            {
+                return false;
+            }
+
+            VisualElement root = uiDocument.rootVisualElement;
+            IPanel panel = root?.panel;
+            if (panel == null)
+            {
+                return false;
+            }
+
+            if (TryGetTrackedButtonAtScreenPosition(root, screenPosition, out button))
+            {
+                return true;
+            }
+
+            Vector2 panelPosition = RuntimePanelUtils.ScreenToPanel(panel, screenPosition);
+            if (TryGetButtonAtPanelPosition(panel, panelPosition, out button))
+            {
+                return true;
+            }
+
+            Vector2 fallbackPanelPosition = ConvertScreenToPanelByScale(root, screenPosition);
+            if ((fallbackPanelPosition - panelPosition).sqrMagnitude > 0.25f &&
+                TryGetButtonAtPanelPosition(panel, fallbackPanelPosition, out button))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryGetTrackedButtonAtScreenPosition(VisualElement root, Vector2 screenPosition, out UITKButton button)
+        {
+            button = null;
+
+            Rect rootBounds = root.worldBound;
+            if (rootBounds.width <= 0f || rootBounds.height <= 0f)
+            {
+                return false;
+            }
+
+            float screenWidth = Mathf.Max(Screen.width, 1f);
+            float screenHeight = Mathf.Max(Screen.height, 1f);
+            float bestDistance = float.MaxValue;
+
+            for (int i = 0; i < trackedButtons.Count; i++)
+            {
+                UITKButton trackedButton = trackedButtons[i];
+                if (!IsTrackedButtonInteractive(trackedButton) ||
+                    !TryConvertWorldBoundToScreenRect(rootBounds, trackedButton.worldBound, screenWidth, screenHeight, out Rect screenRect) ||
+                    !screenRect.Contains(screenPosition))
+                {
+                    continue;
+                }
+
+                float distance = (screenPosition - screenRect.center).sqrMagnitude;
+                if (button == null || distance < bestDistance)
+                {
+                    button = trackedButton;
+                    bestDistance = distance;
+                }
+            }
+
+            return button != null;
+        }
+
+        private bool TryGetButtonAtPanelPosition(IPanel panel, Vector2 panelPosition, out UITKButton button)
+        {
+            button = null;
+            if (TryGetTrackedButtonAtPanelPosition(panelPosition, out button))
+            {
+                return true;
+            }
+
+            VisualElement picked = panel.Pick(panelPosition);
+            while (picked != null)
+            {
+                if (picked is UITKButton pickedButton)
+                {
+                    button = pickedButton;
+                    return true;
+                }
+
+                picked = picked.parent;
+            }
+
+            return false;
+        }
+
+        private static Vector2 ConvertScreenToPanelByScale(VisualElement root, Vector2 screenPosition)
+        {
+            float screenWidth = Mathf.Max(Screen.width, 1);
+            float screenHeight = Mathf.Max(Screen.height, 1);
+            Rect rootBounds = root.worldBound;
+            float panelWidth = rootBounds.width > 0f ? rootBounds.width : root.resolvedStyle.width;
+            float panelHeight = rootBounds.height > 0f ? rootBounds.height : root.resolvedStyle.height;
+
+            if (panelWidth <= 0f)
+            {
+                panelWidth = screenWidth;
+            }
+
+            if (panelHeight <= 0f)
+            {
+                panelHeight = screenHeight;
+            }
+
+            float x = rootBounds.xMin + Mathf.Clamp01(screenPosition.x / screenWidth) * panelWidth;
+            float y = rootBounds.yMin + (1f - Mathf.Clamp01(screenPosition.y / screenHeight)) * panelHeight;
+            return new Vector2(x, y);
+        }
+
+        private bool TryGetTrackedButtonAtPanelPosition(Vector2 panelPosition, out UITKButton button)
+        {
+            button = null;
+            for (int i = 0; i < trackedButtons.Count; i++)
+            {
+                UITKButton trackedButton = trackedButtons[i];
+                if (!IsTrackedButtonInteractive(trackedButton))
+                {
+                    continue;
+                }
+
+                if (!trackedButton.worldBound.Contains(panelPosition))
+                {
+                    continue;
+                }
+
+                button = trackedButton;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsTrackedButtonInteractive(UITKButton button)
+        {
+            if (button == null || !button.enabledInHierarchy)
+            {
+                return false;
+            }
+
+            for (VisualElement current = button; current != null; current = current.parent)
+            {
+                if (!current.visible || current.resolvedStyle.display == DisplayStyle.None)
+                {
+                    return false;
+                }
+            }
+
+            return button.worldBound.width > 0f && button.worldBound.height > 0f;
+        }
+
+        private static bool TryConvertWorldBoundToScreenRect(Rect rootBounds, Rect worldBound, float screenWidth, float screenHeight, out Rect screenRect)
+        {
+            screenRect = default;
+            if (rootBounds.width <= 0f || rootBounds.height <= 0f || worldBound.width <= 0f || worldBound.height <= 0f)
+            {
+                return false;
+            }
+
+            float minX = ((worldBound.xMin - rootBounds.xMin) / rootBounds.width) * screenWidth;
+            float maxX = ((worldBound.xMax - rootBounds.xMin) / rootBounds.width) * screenWidth;
+            float minY = screenHeight - ((worldBound.yMax - rootBounds.yMin) / rootBounds.height) * screenHeight;
+            float maxY = screenHeight - ((worldBound.yMin - rootBounds.yMin) / rootBounds.height) * screenHeight;
+            screenRect = Rect.MinMaxRect(
+                Mathf.Min(minX, maxX),
+                Mathf.Min(minY, maxY),
+                Mathf.Max(minX, maxX),
+                Mathf.Max(minY, maxY));
+            return true;
+        }
+
+        private IEnumerator InvokeFallbackButtonNextFrame(UITKButton button, int pointerDownFrame)
+        {
+            yield return null;
+            pendingPointerFallbackRoutine = null;
+
+            if (!isActiveAndEnabled || button == null)
+            {
+                yield break;
+            }
+
+            if (!ShouldForceTouchFallback(button) &&
+                lastTrackedPointerDownButton == button &&
+                lastTrackedPointerDownFrame >= pointerDownFrame)
+            {
+                yield break;
+            }
+
+            InvokeFallbackButton(button);
+        }
+
+        private bool ShouldForceTouchFallback(UITKButton button)
+        {
+            return button == pauseButton ||
+                   button == pauseCollectionButton ||
+                   button == menuContinueButton ||
+                   button == pauseMainMenuButton ||
+                   button == pauseExitButton ||
+                   button == settingsApplyButton ||
+                   button == settingsMainMenuButton ||
+                   button == settingsCloseButton ||
+                   button == codexCloseButton ||
+                   button == codexTabCreaturesButton ||
+                   button == codexTabObstaclesButton ||
+                   button == codexTabCollectionsButton;
+        }
+
+        private void RegisterTrackedButton(UITKButton button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            if (!trackedButtons.Contains(button))
+            {
+                trackedButtons.Add(button);
+            }
+
+            button.UnregisterCallback<PointerDownEvent>(OnTrackedButtonPointerDown);
+            button.RegisterCallback<PointerDownEvent>(OnTrackedButtonPointerDown);
+        }
+
+        private void UnregisterTrackedButton(UITKButton button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            trackedButtons.Remove(button);
+            button.UnregisterCallback<PointerDownEvent>(OnTrackedButtonPointerDown);
+        }
+
+        private void OnTrackedButtonPointerDown(PointerDownEvent evt)
+        {
+            lastTrackedPointerDownButton = evt.currentTarget as UITKButton;
+            lastTrackedPointerDownFrame = Time.frameCount;
+        }
+
+        private void InvokeFallbackButton(UITKButton button)
+        {
+            if (button == null || !button.enabledInHierarchy)
+            {
+                return;
+            }
+
+            if (button == pauseButton)
+            {
+                OnPauseClicked();
+            }
+            else if (button == abilityActionButton)
+            {
+                OnAbilityActionClicked();
+            }
+            else if (button == characterPrevButton)
+            {
+                OnCharacterPrevClicked();
+            }
+            else if (button == characterNextButton)
+            {
+                OnCharacterNextClicked();
+            }
+            else if (button == menuContinueButton)
+            {
+                OnContinueClicked();
+            }
+            else if (button == pauseCollectionButton || button == menuCollectionButton)
+            {
+                OnCollectionClicked();
+            }
+            else if (button == menuStartButton)
+            {
+                OnStartClicked();
+            }
+            else if (button == menuLeaderboardButton)
+            {
+                OnLeaderboardClicked();
+            }
+            else if (button == menuSettingsButton)
+            {
+                OnSettingsClicked();
+            }
+            else if (button == menuExitButton || button == pauseExitButton)
+            {
+                OnExitClicked();
+            }
+            else if (button == pauseMainMenuButton)
+            {
+                OnPauseMainMenuClicked();
+            }
+            else if (button == gameOverRestartButton)
+            {
+                OnGameOverRestartClicked();
+            }
+            else if (button == gameOverMainMenuButton)
+            {
+                OnGameOverMainMenuClicked();
+            }
+            else if (button == gameOverExitButton)
+            {
+                OnGameOverExitClicked();
+            }
+            else if (button == settingsApplyButton)
+            {
+                OnSettingsApplyClicked();
+            }
+            else if (button == settingsMainMenuButton)
+            {
+                OnSettingsMainMenuClicked();
+            }
+            else if (button == settingsCloseButton)
+            {
+                OnSettingsCloseClicked();
+            }
+            else if (button == codexCloseButton)
+            {
+                OnCodexCloseClicked();
+            }
+            else if (button == codexTabCreaturesButton)
+            {
+                OnCodexCreaturesClicked();
+            }
+            else if (button == codexTabObstaclesButton)
+            {
+                OnCodexObstaclesClicked();
+            }
+            else if (button == codexTabCollectionsButton)
+            {
+                OnCodexCollectionsClicked();
+            }
+        }
+
         private void OnStateChanged(GameState state)
         {
             if (!useToolkit)
@@ -456,18 +958,26 @@ namespace EndlessRunner
             bool showMainMenu = state == GameState.Menu;
             bool showMainMenuOnlyButtons = showMainMenu && IsMainMenuSceneActive();
             bool canShowSettings = state == GameState.Menu || state == GameState.Paused;
+            bool canShowCodex = state == GameState.Menu || state == GameState.Paused;
             if (!canShowSettings)
             {
                 settingsPanelRequested = false;
             }
 
+            if (!canShowCodex)
+            {
+                codexPanelRequested = false;
+            }
+
             SetAbilityButtonVisible(state == GameState.Running);
-            SetDisplay(menuPanelElement, showMainMenu || showPauseMenu);
+            RefreshMenuPanelVisibility();
             SetDisplay(gameOverPanelElement, state == GameState.GameOver);
             SetSettingsPanelVisible(canShowSettings && settingsPanelRequested);
+            SetCodexPanelVisible(canShowCodex && codexPanelRequested);
             SetPauseButtonVisible(state == GameState.Running);
             SetContinueButtonVisible(showPauseMenu);
             SetPauseActionButtonsVisible(showPauseMenu);
+            SetPauseCollectionButtonVisible(showPauseMenu);
             SetCharacterSelectionVisible(showMainMenu);
             SetMenuOptionButtonsVisible(showMainMenuOnlyButtons);
             SetStartButtonVisible(showMainMenu);
@@ -486,6 +996,7 @@ namespace EndlessRunner
         private void CacheToolkitElements(bool logErrors)
         {
             useToolkit = false;
+            EnsureRuntimeDefaultFieldValues();
             EnsureUiDocument();
 
             if (uiDocument == null)
@@ -517,6 +1028,7 @@ namespace EndlessRunner
             abilityActionContainer = root.Q<VisualElement>(abilityActionContainerName);
             abilityActionButton = root.Q<UITKButton>(abilityActionButtonName);
             menuPanelElement = root.Q<VisualElement>(menuPanelName);
+            pausePanelElement = root.Q<VisualElement>(pausePanelName);
             menuTitleLabel = root.Q<Label>(menuTitleLabelName);
             characterSelectionElement = root.Q<VisualElement>(characterSelectionName);
             characterNameLabel = root.Q<Label>(characterNameLabelName);
@@ -530,7 +1042,9 @@ namespace EndlessRunner
             fxLowHealthElement = root.Q<VisualElement>(fxLowHealthName);
             fxAbilityPulseElement = root.Q<VisualElement>(fxAbilityPulseName);
             menuHintLabel = root.Q<Label>(menuHintLabelName);
+            pauseHintLabel = root.Q<Label>(pauseHintLabelName);
             menuContinueButton = root.Q<UITKButton>(menuContinueButtonName);
+            pauseCollectionButton = root.Q<UITKButton>(pauseCollectionButtonName);
             menuStartButton = root.Q<UITKButton>(menuStartButtonName);
             menuLeaderboardButton = root.Q<UITKButton>(menuLeaderboardButtonName);
             menuCollectionButton = root.Q<UITKButton>(menuCollectionButtonName);
@@ -548,6 +1062,13 @@ namespace EndlessRunner
             settingsApplyButton = root.Q<UITKButton>(settingsApplyButtonName);
             settingsMainMenuButton = root.Q<UITKButton>(settingsMainMenuButtonName);
             settingsCloseButton = root.Q<UITKButton>(settingsCloseButtonName);
+            codexPanelElement = root.Q<VisualElement>(codexPanelName);
+            codexProgressLabel = root.Q<Label>(codexProgressLabelName);
+            codexListElement = root.Q<VisualElement>(codexListName);
+            codexCloseButton = root.Q<UITKButton>(codexCloseButtonName);
+            codexTabCreaturesButton = root.Q<UITKButton>(codexTabCreaturesButtonName);
+            codexTabObstaclesButton = root.Q<UITKButton>(codexTabObstaclesButtonName);
+            codexTabCollectionsButton = root.Q<UITKButton>(codexTabCollectionsButtonName);
 
             List<string> missingElements = new List<string>();
             if (scoreLabel == null) missingElements.Add(scoreLabelName);
@@ -558,6 +1079,7 @@ namespace EndlessRunner
             if (abilityActionContainer == null) missingElements.Add(abilityActionContainerName);
             if (abilityActionButton == null) missingElements.Add(abilityActionButtonName);
             if (menuPanelElement == null) missingElements.Add(menuPanelName);
+            if (pausePanelElement == null) missingElements.Add(pausePanelName);
             if (menuTitleLabel == null) missingElements.Add(menuTitleLabelName);
             if (characterSelectionElement == null) missingElements.Add(characterSelectionName);
             if (characterNameLabel == null) missingElements.Add(characterNameLabelName);
@@ -590,6 +1112,12 @@ namespace EndlessRunner
             {
                 Debug.LogError(
                     $"HUDController could not bind required UI Toolkit elements. Missing: {string.Join(", ", missingElements)}",
+                    this);
+            }
+            else if (logErrors && !HasCodexUi())
+            {
+                Debug.LogWarning(
+                    "HUDController initialized without complete codex UI. Pause/menu will still work, but Manual is unavailable until the codex panel elements are present.",
                     this);
             }
 
@@ -658,6 +1186,75 @@ namespace EndlessRunner
             }
         }
 
+        private void EnsureRuntimeDefaultFieldValues()
+        {
+            if (string.IsNullOrWhiteSpace(pausePanelName))
+            {
+                pausePanelName = DefaultPausePanelName;
+            }
+
+            if (string.IsNullOrWhiteSpace(pauseHintLabelName))
+            {
+                pauseHintLabelName = DefaultPauseHintLabelName;
+            }
+
+            if (string.IsNullOrWhiteSpace(pauseCollectionButtonName))
+            {
+                pauseCollectionButtonName = DefaultPauseCollectionButtonName;
+            }
+
+            if (string.IsNullOrWhiteSpace(codexPanelName))
+            {
+                codexPanelName = DefaultCodexPanelName;
+            }
+
+            if (string.IsNullOrWhiteSpace(codexProgressLabelName))
+            {
+                codexProgressLabelName = DefaultCodexProgressLabelName;
+            }
+
+            if (string.IsNullOrWhiteSpace(codexListName))
+            {
+                codexListName = DefaultCodexListName;
+            }
+
+            if (string.IsNullOrWhiteSpace(codexCloseButtonName))
+            {
+                codexCloseButtonName = DefaultCodexCloseButtonName;
+            }
+
+            if (string.IsNullOrWhiteSpace(codexTabCreaturesButtonName))
+            {
+                codexTabCreaturesButtonName = DefaultCodexTabCreaturesButtonName;
+            }
+
+            if (string.IsNullOrWhiteSpace(codexTabObstaclesButtonName))
+            {
+                codexTabObstaclesButtonName = DefaultCodexTabObstaclesButtonName;
+            }
+
+            if (string.IsNullOrWhiteSpace(codexTabCollectionsButtonName))
+            {
+                codexTabCollectionsButtonName = DefaultCodexTabCollectionsButtonName;
+            }
+        }
+
+        private static void EnsureEventSystem()
+        {
+            if (FindAnyObjectByType<EventSystem>() != null)
+            {
+                return;
+            }
+
+            GameObject eventSystemObject = new GameObject("EventSystem");
+            eventSystemObject.AddComponent<EventSystem>();
+#if ENABLE_INPUT_SYSTEM
+            eventSystemObject.AddComponent<InputSystemUIInputModule>();
+#else
+            eventSystemObject.AddComponent<StandaloneInputModule>();
+#endif
+        }
+
         /// <summary>
         /// Runtime hook: allows character manager to replace the active runner.
         /// Keeps health UI/event wiring in sync.
@@ -695,6 +1292,7 @@ namespace EndlessRunner
             BindMenuButtons();
             RefreshCharacterSelectionUI();
             EnsureSettingsInitialized();
+            SetCodexCategory(currentCodexCategory);
             if (disableLegacyCanvasOnToolkit)
             {
                 DisableLegacyUI();
@@ -723,11 +1321,14 @@ namespace EndlessRunner
         private void ShowMenuFallback()
         {
             SetDisplay(menuPanelElement, true);
+            SetDisplay(pausePanelElement, false);
             SetDisplay(gameOverPanelElement, false);
             SetSettingsPanelVisible(false);
+            SetCodexPanelVisible(false);
             SetPauseButtonVisible(false);
             SetContinueButtonVisible(false);
             SetPauseActionButtonsVisible(false);
+            SetPauseCollectionButtonVisible(false);
             SetCharacterSelectionVisible(true);
             SetMenuOptionButtonsVisible(IsMainMenuSceneActive());
             SetStartButtonVisible(true);
@@ -777,60 +1378,113 @@ namespace EndlessRunner
 
             pauseButton.clicked -= OnPauseClicked;
             pauseButton.clicked += OnPauseClicked;
+            RegisterTrackedButton(pauseButton);
 
             if (abilityActionButton != null)
             {
                 abilityActionButton.clicked -= OnAbilityActionClicked;
                 abilityActionButton.clicked += OnAbilityActionClicked;
+                RegisterTrackedButton(abilityActionButton);
             }
 
             characterPrevButton.clicked -= OnCharacterPrevClicked;
             characterPrevButton.clicked += OnCharacterPrevClicked;
+            RegisterTrackedButton(characterPrevButton);
 
             characterNextButton.clicked -= OnCharacterNextClicked;
             characterNextButton.clicked += OnCharacterNextClicked;
+            RegisterTrackedButton(characterNextButton);
 
             menuContinueButton.clicked -= OnContinueClicked;
             menuContinueButton.clicked += OnContinueClicked;
+            RegisterTrackedButton(menuContinueButton);
+
+            if (pauseCollectionButton != null)
+            {
+                pauseCollectionButton.clicked -= OnCollectionClicked;
+                pauseCollectionButton.clicked += OnCollectionClicked;
+                RegisterTrackedButton(pauseCollectionButton);
+            }
 
             menuStartButton.clicked -= OnStartClicked;
             menuStartButton.clicked += OnStartClicked;
+            RegisterTrackedButton(menuStartButton);
 
             menuLeaderboardButton.clicked -= OnLeaderboardClicked;
             menuLeaderboardButton.clicked += OnLeaderboardClicked;
+            RegisterTrackedButton(menuLeaderboardButton);
 
             menuCollectionButton.clicked -= OnCollectionClicked;
             menuCollectionButton.clicked += OnCollectionClicked;
+            RegisterTrackedButton(menuCollectionButton);
 
             menuSettingsButton.clicked -= OnSettingsClicked;
             menuSettingsButton.clicked += OnSettingsClicked;
+            RegisterTrackedButton(menuSettingsButton);
 
             menuExitButton.clicked -= OnExitClicked;
             menuExitButton.clicked += OnExitClicked;
+            RegisterTrackedButton(menuExitButton);
 
             pauseMainMenuButton.clicked -= OnPauseMainMenuClicked;
             pauseMainMenuButton.clicked += OnPauseMainMenuClicked;
+            RegisterTrackedButton(pauseMainMenuButton);
 
             pauseExitButton.clicked -= OnPauseExitClicked;
             pauseExitButton.clicked += OnPauseExitClicked;
+            RegisterTrackedButton(pauseExitButton);
 
             gameOverRestartButton.clicked -= OnGameOverRestartClicked;
             gameOverRestartButton.clicked += OnGameOverRestartClicked;
+            RegisterTrackedButton(gameOverRestartButton);
 
             gameOverMainMenuButton.clicked -= OnGameOverMainMenuClicked;
             gameOverMainMenuButton.clicked += OnGameOverMainMenuClicked;
+            RegisterTrackedButton(gameOverMainMenuButton);
 
             gameOverExitButton.clicked -= OnGameOverExitClicked;
             gameOverExitButton.clicked += OnGameOverExitClicked;
+            RegisterTrackedButton(gameOverExitButton);
 
             settingsApplyButton.clicked -= OnSettingsApplyClicked;
             settingsApplyButton.clicked += OnSettingsApplyClicked;
+            RegisterTrackedButton(settingsApplyButton);
 
             settingsMainMenuButton.clicked -= OnSettingsMainMenuClicked;
             settingsMainMenuButton.clicked += OnSettingsMainMenuClicked;
+            RegisterTrackedButton(settingsMainMenuButton);
 
             settingsCloseButton.clicked -= OnSettingsCloseClicked;
             settingsCloseButton.clicked += OnSettingsCloseClicked;
+            RegisterTrackedButton(settingsCloseButton);
+
+            if (codexCloseButton != null)
+            {
+                codexCloseButton.clicked -= OnCodexCloseClicked;
+                codexCloseButton.clicked += OnCodexCloseClicked;
+                RegisterTrackedButton(codexCloseButton);
+            }
+
+            if (codexTabCreaturesButton != null)
+            {
+                codexTabCreaturesButton.clicked -= OnCodexCreaturesClicked;
+                codexTabCreaturesButton.clicked += OnCodexCreaturesClicked;
+                RegisterTrackedButton(codexTabCreaturesButton);
+            }
+
+            if (codexTabObstaclesButton != null)
+            {
+                codexTabObstaclesButton.clicked -= OnCodexObstaclesClicked;
+                codexTabObstaclesButton.clicked += OnCodexObstaclesClicked;
+                RegisterTrackedButton(codexTabObstaclesButton);
+            }
+
+            if (codexTabCollectionsButton != null)
+            {
+                codexTabCollectionsButton.clicked -= OnCodexCollectionsClicked;
+                codexTabCollectionsButton.clicked += OnCodexCollectionsClicked;
+                RegisterTrackedButton(codexTabCollectionsButton);
+            }
 
             settingsVolumeSlider.UnregisterValueChangedCallback(OnSettingsVolumeChanged);
             settingsVolumeSlider.RegisterValueChangedCallback(OnSettingsVolumeChanged);
@@ -849,91 +1503,139 @@ namespace EndlessRunner
             if (menuStartButton != null)
             {
                 menuStartButton.clicked -= OnStartClicked;
+                UnregisterTrackedButton(menuStartButton);
             }
 
             if (pauseButton != null)
             {
                 pauseButton.clicked -= OnPauseClicked;
+                UnregisterTrackedButton(pauseButton);
             }
 
             if (abilityActionButton != null)
             {
                 abilityActionButton.clicked -= OnAbilityActionClicked;
+                UnregisterTrackedButton(abilityActionButton);
             }
 
             if (characterPrevButton != null)
             {
                 characterPrevButton.clicked -= OnCharacterPrevClicked;
+                UnregisterTrackedButton(characterPrevButton);
             }
 
             if (characterNextButton != null)
             {
                 characterNextButton.clicked -= OnCharacterNextClicked;
+                UnregisterTrackedButton(characterNextButton);
             }
 
             if (menuContinueButton != null)
             {
                 menuContinueButton.clicked -= OnContinueClicked;
+                UnregisterTrackedButton(menuContinueButton);
+            }
+
+            if (pauseCollectionButton != null)
+            {
+                pauseCollectionButton.clicked -= OnCollectionClicked;
+                UnregisterTrackedButton(pauseCollectionButton);
             }
 
             if (menuLeaderboardButton != null)
             {
                 menuLeaderboardButton.clicked -= OnLeaderboardClicked;
+                UnregisterTrackedButton(menuLeaderboardButton);
             }
 
             if (menuCollectionButton != null)
             {
                 menuCollectionButton.clicked -= OnCollectionClicked;
+                UnregisterTrackedButton(menuCollectionButton);
             }
 
             if (menuSettingsButton != null)
             {
                 menuSettingsButton.clicked -= OnSettingsClicked;
+                UnregisterTrackedButton(menuSettingsButton);
             }
 
             if (menuExitButton != null)
             {
                 menuExitButton.clicked -= OnExitClicked;
+                UnregisterTrackedButton(menuExitButton);
             }
 
             if (pauseMainMenuButton != null)
             {
                 pauseMainMenuButton.clicked -= OnPauseMainMenuClicked;
+                UnregisterTrackedButton(pauseMainMenuButton);
             }
 
             if (pauseExitButton != null)
             {
                 pauseExitButton.clicked -= OnPauseExitClicked;
+                UnregisterTrackedButton(pauseExitButton);
             }
 
             if (gameOverRestartButton != null)
             {
                 gameOverRestartButton.clicked -= OnGameOverRestartClicked;
+                UnregisterTrackedButton(gameOverRestartButton);
             }
 
             if (gameOverMainMenuButton != null)
             {
                 gameOverMainMenuButton.clicked -= OnGameOverMainMenuClicked;
+                UnregisterTrackedButton(gameOverMainMenuButton);
             }
 
             if (gameOverExitButton != null)
             {
                 gameOverExitButton.clicked -= OnGameOverExitClicked;
+                UnregisterTrackedButton(gameOverExitButton);
             }
 
             if (settingsApplyButton != null)
             {
                 settingsApplyButton.clicked -= OnSettingsApplyClicked;
+                UnregisterTrackedButton(settingsApplyButton);
             }
 
             if (settingsMainMenuButton != null)
             {
                 settingsMainMenuButton.clicked -= OnSettingsMainMenuClicked;
+                UnregisterTrackedButton(settingsMainMenuButton);
             }
 
             if (settingsCloseButton != null)
             {
                 settingsCloseButton.clicked -= OnSettingsCloseClicked;
+                UnregisterTrackedButton(settingsCloseButton);
+            }
+
+            if (codexCloseButton != null)
+            {
+                codexCloseButton.clicked -= OnCodexCloseClicked;
+                UnregisterTrackedButton(codexCloseButton);
+            }
+
+            if (codexTabCreaturesButton != null)
+            {
+                codexTabCreaturesButton.clicked -= OnCodexCreaturesClicked;
+                UnregisterTrackedButton(codexTabCreaturesButton);
+            }
+
+            if (codexTabObstaclesButton != null)
+            {
+                codexTabObstaclesButton.clicked -= OnCodexObstaclesClicked;
+                UnregisterTrackedButton(codexTabObstaclesButton);
+            }
+
+            if (codexTabCollectionsButton != null)
+            {
+                codexTabCollectionsButton.clicked -= OnCodexCollectionsClicked;
+                UnregisterTrackedButton(codexTabCollectionsButton);
             }
 
             if (settingsVolumeSlider != null)
@@ -978,9 +1680,13 @@ namespace EndlessRunner
         {
             if (gameManager == null || gameManager.State != GameState.Running)
             {
+                Debug.LogWarning(
+                    $"HUDController ignored pause click. GameManager present: {gameManager != null}, state: {(gameManager != null ? gameManager.State.ToString() : "null")}",
+                    this);
                 return;
             }
 
+            CloseOverlaySubpanels();
             pauseMenuRequested = true;
             gameManager.RequestPause(this);
         }
@@ -992,16 +1698,14 @@ namespace EndlessRunner
                 return;
             }
 
-            settingsPanelRequested = false;
-            SetSettingsPanelVisible(false);
+            CloseOverlaySubpanels();
             pauseMenuRequested = false;
             gameManager.ReleasePause(this);
         }
 
         private void OnStartClicked()
         {
-            settingsPanelRequested = false;
-            SetSettingsPanelVisible(false);
+            CloseOverlaySubpanels();
             pauseMenuRequested = false;
             ApplySelectedCharacter();
             gameManager?.BeginRun();
@@ -1018,19 +1722,43 @@ namespace EndlessRunner
 
         private void OnCollectionClicked()
         {
-            int unlockedCount = RunProgressStore.GetUnlockedCollectionCount();
-            CodexDatabase database = CodexDatabase.Load();
-            int totalCount = database != null ? database.GetEntryCount(CodexCategory.Collection) : 0;
-            string progress = totalCount > 0 ? $"{unlockedCount}/{totalCount}" : unlockedCount.ToString();
-            SetMenuHint($"Codex unlocked: {progress}");
+            if (gameManager == null)
+            {
+                return;
+            }
+
+            if (!HasCodexUi())
+            {
+                SetMenuHint("Codex UI is unavailable in the current GameUI layout.");
+                return;
+            }
+
+            if (gameManager.State != GameState.Paused && gameManager.State != GameState.Menu)
+            {
+                int unlockedCount = RunProgressStore.GetUnlockedCollectionCount();
+                CodexDatabase database = GetCodexDatabase();
+                int totalCount = database != null ? database.GetEntryCount(CodexCategory.Collection) : 0;
+                string progress = totalCount > 0 ? $"{unlockedCount}/{totalCount}" : unlockedCount.ToString();
+                SetMenuHint($"Codex unlocked: {progress}");
+                return;
+            }
+
+            CloseSettingsPanel();
+            codexPanelRequested = true;
+            SetCodexCategory(currentCodexCategory);
+            SetCodexPanelVisible(true);
+            RefreshMenuPanelVisibility();
+            SetMenuHint("Codex opened.");
         }
 
         private void OnSettingsClicked()
         {
             EnsureSettingsInitialized();
+            CloseCodexPanel();
             settingsPanelRequested = true;
             RefreshSettingsPanel();
             SetSettingsPanelVisible(true);
+            RefreshMenuPanelVisibility();
             SetMenuHint("Settings panel opened.");
         }
 
@@ -1052,20 +1780,43 @@ namespace EndlessRunner
         private void OnPauseMainMenuClicked()
         {
             pauseMenuRequested = false;
-            settingsPanelRequested = false;
-            SetSettingsPanelVisible(false);
+            CloseOverlaySubpanels();
             if (gameManager != null)
             {
                 gameManager.LoadMainMenuScene();
                 return;
             }
 
-            SceneManager.LoadScene("MainMenuScene");
+            if (!SceneTransitionOverlay.TryLoadScene("MainMenuScene"))
+            {
+                SceneManager.LoadScene("MainMenuScene");
+            }
         }
 
         private void OnPauseExitClicked()
         {
             OnExitClicked();
+        }
+
+        private void OnCodexCloseClicked()
+        {
+            CloseCodexPanel();
+            SetMenuHint(gameManager != null && gameManager.State == GameState.Paused ? "Game paused." : "Codex closed.");
+        }
+
+        private void OnCodexCreaturesClicked()
+        {
+            SetCodexCategory(CodexCategory.Creature);
+        }
+
+        private void OnCodexObstaclesClicked()
+        {
+            SetCodexCategory(CodexCategory.Obstacle);
+        }
+
+        private void OnCodexCollectionsClicked()
+        {
+            SetCodexCategory(CodexCategory.Collection);
         }
 
         private void OnGameOverRestartClicked()
@@ -1078,7 +1829,7 @@ namespace EndlessRunner
             }
 
             Scene active = SceneManager.GetActiveScene();
-            if (active.IsValid())
+            if (active.IsValid() && !SceneTransitionOverlay.TryLoadScene(active.name))
             {
                 SceneManager.LoadScene(active.name);
             }
@@ -1135,18 +1886,24 @@ namespace EndlessRunner
             }
 
             PlayerPrefs.Save();
-            settingsPanelRequested = false;
-            SetSettingsPanelVisible(false);
+            CloseSettingsPanel();
         }
 
         private void OnSettingsCloseClicked()
         {
             PlayerPrefs.Save();
-            settingsPanelRequested = false;
-            SetSettingsPanelVisible(false);
-            if (gameManager != null && gameManager.State == GameState.Menu)
+            CloseSettingsPanel();
+            if (gameManager != null && gameManager.State == GameState.Paused)
+            {
+                SetMenuHint("Game paused.");
+            }
+            else if (gameManager != null && gameManager.State == GameState.Menu)
             {
                 SetMenuHint("Choose a loadout, then begin the descent.");
+            }
+            else
+            {
+                SetMenuHint("Settings closed.");
             }
         }
 
@@ -1187,14 +1944,135 @@ namespace EndlessRunner
             }
         }
 
-        private void SetMenuHint(string message)
+        private void BuildCodexPage()
         {
-            if (menuHintLabel == null)
+            if (codexListElement == null || codexProgressLabel == null)
             {
                 return;
             }
 
-            menuHintLabel.text = message;
+            codexListElement.Clear();
+            CodexDatabase database = GetCodexDatabase();
+            IReadOnlyList<CodexEntry> entries = database != null ? database.GetEntries(currentCodexCategory) : null;
+            int unlockedCount = 0;
+            int totalCollectedCount = 0;
+            int totalCount = entries != null ? entries.Count : 0;
+
+            if (entries != null)
+            {
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    CodexEntry entry = entries[i];
+                    if (entry == null)
+                    {
+                        continue;
+                    }
+
+                    bool unlocked = RunProgressStore.IsCodexEntryUnlocked(currentCodexCategory, entry.id);
+                    int ownedCount = RunProgressStore.GetCodexEntryCount(currentCodexCategory, entry.id);
+                    if (unlocked)
+                    {
+                        unlockedCount++;
+                    }
+
+                    totalCollectedCount += ownedCount;
+                    codexListElement.Add(CreateCodexEntryElement(entry, currentCodexCategory, unlocked, ownedCount));
+                }
+            }
+
+            codexProgressLabel.text = currentCodexCategory == CodexCategory.Collection
+                ? $"Unlocked {unlockedCount}/{Mathf.Max(1, totalCount)} | Total Collected: {totalCollectedCount}"
+                : $"Unlocked {unlockedCount}/{Mathf.Max(1, totalCount)}";
+        }
+
+        private CodexDatabase GetCodexDatabase()
+        {
+            if (codexDatabase == null)
+            {
+                codexDatabase = CodexDatabase.Load();
+            }
+
+            return codexDatabase;
+        }
+
+        private void SetCodexCategory(CodexCategory category)
+        {
+            currentCodexCategory = category;
+            UpdateCodexTabVisuals();
+            BuildCodexPage();
+        }
+
+        private void UpdateCodexTabVisuals()
+        {
+            SetTabActive(codexTabCreaturesButton, currentCodexCategory == CodexCategory.Creature);
+            SetTabActive(codexTabObstaclesButton, currentCodexCategory == CodexCategory.Obstacle);
+            SetTabActive(codexTabCollectionsButton, currentCodexCategory == CodexCategory.Collection);
+        }
+
+        private static void SetTabActive(VisualElement button, bool active)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.EnableInClassList(TabActiveClass, active);
+        }
+
+        private VisualElement CreateCodexEntryElement(CodexEntry entry, CodexCategory category, bool unlocked, int ownedCount)
+        {
+            VisualElement row = new VisualElement();
+            row.AddToClassList("collection-entry");
+            if (!unlocked)
+            {
+                row.AddToClassList(LockedClass);
+            }
+
+            string title = unlocked && !string.IsNullOrWhiteSpace(entry.title) ? entry.title : "???";
+            Label titleLabel = new Label(title);
+            titleLabel.AddToClassList("collection-entry-title");
+            row.Add(titleLabel);
+
+            string statusText;
+            if (unlocked)
+            {
+                statusText = category == CodexCategory.Collection
+                    ? $"Collected x{Mathf.Max(1, ownedCount)}"
+                    : "Unlocked";
+            }
+            else
+            {
+                string unlockHint = string.IsNullOrWhiteSpace(entry.unlockHint)
+                    ? "Keep exploring."
+                    : entry.unlockHint;
+                statusText = $"Locked - {unlockHint}";
+            }
+
+            Label statusLabel = new Label(statusText);
+            statusLabel.AddToClassList("collection-entry-status");
+            row.Add(statusLabel);
+
+            string description = unlocked
+                ? (string.IsNullOrWhiteSpace(entry.description) ? "No description recorded yet." : entry.description)
+                : "Keep exploring to unlock this entry.";
+            Label descriptionLabel = new Label(description);
+            descriptionLabel.AddToClassList("collection-entry-desc");
+            row.Add(descriptionLabel);
+
+            return row;
+        }
+
+        private void SetMenuHint(string message)
+        {
+            if (menuHintLabel != null)
+            {
+                menuHintLabel.text = message;
+            }
+
+            if (pauseHintLabel != null)
+            {
+                pauseHintLabel.text = message;
+            }
         }
 
         private void SetPauseButtonVisible(bool visible)
@@ -1227,6 +2105,16 @@ namespace EndlessRunner
             menuContinueButton.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
+        private void SetPauseCollectionButtonVisible(bool visible)
+        {
+            if (pauseCollectionButton == null)
+            {
+                return;
+            }
+
+            pauseCollectionButton.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
         private void SetStartButtonVisible(bool visible)
         {
             if (menuStartButton == null)
@@ -1250,6 +2138,56 @@ namespace EndlessRunner
             {
                 pauseExitButton.style.display = display;
             }
+        }
+
+        private void SetCodexPanelVisible(bool visible)
+        {
+            SetDisplay(codexPanelElement, visible);
+        }
+
+        private bool HasCodexUi()
+        {
+            return codexPanelElement != null &&
+                   codexProgressLabel != null &&
+                   codexListElement != null &&
+                   codexCloseButton != null &&
+                   codexTabCreaturesButton != null &&
+                   codexTabObstaclesButton != null &&
+                   codexTabCollectionsButton != null;
+        }
+
+        private void CloseSettingsPanel()
+        {
+            settingsPanelRequested = false;
+            SetSettingsPanelVisible(false);
+            RefreshMenuPanelVisibility();
+        }
+
+        private void CloseCodexPanel()
+        {
+            codexPanelRequested = false;
+            SetCodexPanelVisible(false);
+            RefreshMenuPanelVisibility();
+        }
+
+        private void CloseOverlaySubpanels()
+        {
+            CloseSettingsPanel();
+            CloseCodexPanel();
+        }
+
+        private void RefreshMenuPanelVisibility()
+        {
+            if (gameManager == null)
+            {
+                return;
+            }
+
+            bool showPauseMenu = pauseMenuRequested && gameManager.State == GameState.Paused;
+            bool showMainMenu = gameManager.State == GameState.Menu;
+            bool overlayOpen = settingsPanelRequested || codexPanelRequested;
+            SetDisplay(menuPanelElement, showMainMenu && !overlayOpen);
+            SetDisplay(pausePanelElement, showPauseMenu && !overlayOpen);
         }
 
         private void SetMenuOptionButtonsVisible(bool visible)
@@ -1622,6 +2560,15 @@ namespace EndlessRunner
         private bool SupportsRuntimeResolutionSelection()
         {
             return !Application.isMobilePlatform;
+        }
+
+        private static bool IsEscapePressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+#else
+            return Input.GetKeyDown(KeyCode.Escape);
+#endif
         }
 
         private static bool IsMainMenuSceneActive()

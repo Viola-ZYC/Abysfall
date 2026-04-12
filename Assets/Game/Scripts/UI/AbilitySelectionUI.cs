@@ -408,7 +408,10 @@ namespace EndlessRunner
             }
 
             Time.timeScale = 1f;
-            SceneManager.LoadScene("MainMenuScene");
+            if (!SceneTransitionOverlay.TryLoadScene("MainMenuScene"))
+            {
+                SceneManager.LoadScene("MainMenuScene");
+            }
         }
 
         private GameObject CreatePanel(Transform parent)

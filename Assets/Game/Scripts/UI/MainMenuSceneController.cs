@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 #endif
 using UITKButton = UnityEngine.UIElements.Button;
 using UITKDropdownField = UnityEngine.UIElements.DropdownField;
@@ -35,6 +37,15 @@ namespace EndlessRunner
             public string description;
             public int current;
             public int target;
+        }
+
+        private enum MainMenuOverlay
+        {
+            None,
+            Manual,
+            Achievements,
+            Leaderboard,
+            Settings
         }
 
         [SerializeField] private string mainMenuSceneName = "MainMenuScene";
@@ -133,13 +144,10 @@ namespace EndlessRunner
         private UITKDropdownField settingsResolutionDropdown;
         private UITKDropdownField gameModeDropdown;
         private bool isBound;
-        private bool isCollectionVisible;
-        private bool isAchievementVisible;
-        private bool isLeaderboardVisible;
-        private bool isSettingsVisible;
         private bool settingsInitialized;
         private bool suppressSettingsEvents;
         private CodexCategory currentManualCategory = CodexCategory.Creature;
+        private MainMenuOverlay activeOverlay = MainMenuOverlay.None;
         private int selectedResolutionIndex = -1;
         private string pendingSelectedModeId = RunProgressStore.ModeClassic;
         private Rect lastSafeArea = Rect.zero;
@@ -152,6 +160,7 @@ namespace EndlessRunner
         private const string VisibleClass = "is-visible";
         private const string LockedClass = "is-locked";
         private const string GlowClass = "is-glow";
+        private const string TabActiveClass = "is-active";
         private Coroutine glowRoutine;
         private const string MasterVolumePrefKey = "settings.master_volume";
         private const string ResolutionPrefKey = "settings.resolution_index";
@@ -165,11 +174,13 @@ namespace EndlessRunner
                 return;
             }
 
+            EnsureEventSystem();
             EnsureUiDocument();
         }
 
         private void OnEnable()
         {
+            EnsureEventSystem();
             TryBindButtons();
         }
 
@@ -186,29 +197,7 @@ namespace EndlessRunner
                 return;
             }
 
-            if (IsEscapePressed())
-            {
-                if (isSettingsVisible)
-                {
-                    SetSettingsOverlayVisible(false);
-                    SetHint("Settings closed.");
-                }
-                else if (isAchievementVisible)
-                {
-                    SetAchievementOverlayVisible(false);
-                    SetHint("Achievements closed.");
-                }
-                else if (isCollectionVisible)
-                {
-                    SetCollectionOverlayVisible(false);
-                    SetHint("Codex closed.");
-                }
-                else if (isLeaderboardVisible)
-                {
-                    SetLeaderboardOverlayVisible(false);
-                    SetHint("Leaderboard closed.");
-                }
-            }
+            HandleOverlayBackInput();
 
             if (applySafeArea)
             {
@@ -248,6 +237,22 @@ namespace EndlessRunner
             {
                 uiDocument.visualTreeAsset = Resources.Load<VisualTreeAsset>(visualTreeResource);
             }
+        }
+
+        private static void EnsureEventSystem()
+        {
+            if (FindAnyObjectByType<EventSystem>() != null)
+            {
+                return;
+            }
+
+            GameObject eventSystemObject = new GameObject("EventSystem");
+            eventSystemObject.AddComponent<EventSystem>();
+#if ENABLE_INPUT_SYSTEM
+            eventSystemObject.AddComponent<InputSystemUIInputModule>();
+#else
+            eventSystemObject.AddComponent<StandaloneInputModule>();
+#endif
         }
 
         private void TryBindButtons()
@@ -314,8 +319,53 @@ namespace EndlessRunner
             settingsVolumeSlider = root.Q<UITKSlider>(settingsVolumeSliderName);
             settingsResolutionDropdown = root.Q<UITKDropdownField>(settingsResolutionDropdownName);
             gameModeDropdown = root.Q<UITKDropdownField>(gameModeDropdownName);
-            if (playButton == null || leaderboardButton == null || collectionButton == null || achievementButton == null || settingsButton == null || exitButton == null)
+
+            List<string> missingElements = new List<string>();
+            if (playButton == null) missingElements.Add(playButtonName);
+            if (leaderboardButton == null) missingElements.Add(leaderboardButtonName);
+            if (collectionButton == null) missingElements.Add(collectionButtonName);
+            if (achievementButton == null) missingElements.Add(achievementButtonName);
+            if (settingsButton == null) missingElements.Add(settingsButtonName);
+            if (exitButton == null) missingElements.Add(exitButtonName);
+            if (collectionBackButton == null) missingElements.Add(collectionBackButtonName);
+            if (collectionCloseButton == null) missingElements.Add(collectionCloseButtonName);
+            if (manualTabCreaturesButton == null) missingElements.Add(manualTabCreaturesButtonName);
+            if (manualTabObstaclesButton == null) missingElements.Add(manualTabObstaclesButtonName);
+            if (manualTabCollectionsButton == null) missingElements.Add(manualTabCollectionsButtonName);
+            if (achievementBackButton == null) missingElements.Add(achievementBackButtonName);
+            if (achievementCloseButton == null) missingElements.Add(achievementCloseButtonName);
+            if (leaderboardBackButton == null) missingElements.Add(leaderboardBackButtonName);
+            if (leaderboardCloseButton == null) missingElements.Add(leaderboardCloseButtonName);
+            if (settingsApplyButton == null) missingElements.Add(settingsApplyButtonName);
+            if (settingsBackButton == null) missingElements.Add(settingsBackButtonName);
+            if (settingsCloseButton == null) missingElements.Add(settingsCloseButtonName);
+            if (hintLabel == null) missingElements.Add(hintLabelName);
+            if (collectionOverlay == null) missingElements.Add(collectionOverlayName);
+            if (achievementOverlay == null) missingElements.Add(achievementOverlayName);
+            if (leaderboardOverlay == null) missingElements.Add(leaderboardOverlayName);
+            if (settingsOverlay == null) missingElements.Add(settingsOverlayName);
+            if (collectionList == null) missingElements.Add(collectionListName);
+            if (achievementList == null) missingElements.Add(achievementListName);
+            if (collectionProgressLabel == null) missingElements.Add(collectionProgressLabelName);
+            if (achievementProgressLabel == null) missingElements.Add(achievementProgressLabelName);
+            if (leaderboardBestScoreLabel == null) missingElements.Add(leaderboardBestScoreLabelName);
+            if (leaderboardLastScoreLabel == null) missingElements.Add(leaderboardLastScoreLabelName);
+            if (leaderboardTotalRunsLabel == null) missingElements.Add(leaderboardTotalRunsLabelName);
+            if (leaderboardAverageScoreLabel == null) missingElements.Add(leaderboardAverageScoreLabelName);
+            if (leaderboardModeProgressLabel == null) missingElements.Add(leaderboardModeProgressLabelName);
+            if (leaderboardTopScoresLabel == null) missingElements.Add(leaderboardTopScoresLabelName);
+            if (settingsVolumeSlider == null) missingElements.Add(settingsVolumeSliderName);
+            if (settingsVolumeValueLabel == null) missingElements.Add(settingsVolumeValueLabelName);
+            if (settingsResolutionDropdown == null) missingElements.Add(settingsResolutionDropdownName);
+            if (settingsResolutionHintLabel == null) missingElements.Add(settingsResolutionHintLabelName);
+            if (gameModeDropdown == null) missingElements.Add(gameModeDropdownName);
+            if (gameModeHintLabel == null) missingElements.Add(gameModeHintLabelName);
+
+            if (missingElements.Count > 0)
             {
+                Debug.LogError(
+                    $"MainMenuSceneController could not bind required UI Toolkit elements. Missing: {string.Join(", ", missingElements)}",
+                    this);
                 return;
             }
 
@@ -411,10 +461,7 @@ namespace EndlessRunner
             BuildAchievementPage();
             RefreshLeaderboardPanel();
             EnsureSettingsInitialized();
-            SetCollectionOverlayVisible(false);
-            SetAchievementOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
+            CloseAllOverlays();
             SetHint("Choose where to dive next.");
             ApplySafeAreaIfNeeded();
             isBound = true;
@@ -521,10 +568,7 @@ namespace EndlessRunner
                 gameModeDropdown.UnregisterValueChangedCallback(OnGameModeChanged);
             }
 
-            SetCollectionOverlayVisible(false);
-            SetAchievementOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
+            CloseAllOverlays();
             isBound = false;
             StopGlowLoop();
         }
@@ -570,10 +614,7 @@ namespace EndlessRunner
 
         private void OnPlayClicked()
         {
-            SetCollectionOverlayVisible(false);
-            SetAchievementOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
+            CloseAllOverlays();
             GameManager gameManager = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
             if (gameManager != null)
             {
@@ -583,16 +624,16 @@ namespace EndlessRunner
 
             if (!string.IsNullOrWhiteSpace(gameplaySceneName))
             {
-                SceneManager.LoadScene(gameplaySceneName);
+                if (!SceneTransitionOverlay.TryLoadScene(gameplaySceneName))
+                {
+                    SceneManager.LoadScene(gameplaySceneName);
+                }
             }
         }
 
         private void OnExitClicked()
         {
-            SetCollectionOverlayVisible(false);
-            SetAchievementOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
+            CloseAllOverlays();
             GameManager gameManager = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
             if (gameManager != null)
             {
@@ -610,20 +651,14 @@ namespace EndlessRunner
         private void OnLeaderboardClicked()
         {
             RefreshLeaderboardPanel();
-            SetCollectionOverlayVisible(false);
-            SetAchievementOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
-            SetLeaderboardOverlayVisible(true);
+            OpenOverlay(MainMenuOverlay.Leaderboard);
             SetHint("Leaderboard opened.");
         }
 
         private void OnCollectionClicked()
         {
             SetManualCategory(CodexCategory.Creature);
-            SetAchievementOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
-            SetCollectionOverlayVisible(true);
+            OpenOverlay(MainMenuOverlay.Manual);
             SetHint("Codex opened.");
         }
 
@@ -646,37 +681,31 @@ namespace EndlessRunner
         private void OnAchievementClicked()
         {
             BuildAchievementPage();
-            SetCollectionOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
-            SetAchievementOverlayVisible(true);
+            OpenOverlay(MainMenuOverlay.Achievements);
             SetHint("Achievements opened.");
         }
 
         private void OnCollectionCloseClicked()
         {
-            SetCollectionOverlayVisible(false);
+            CloseActiveOverlay();
             SetHint("Codex closed.");
         }
 
         private void OnAchievementCloseClicked()
         {
-            SetAchievementOverlayVisible(false);
+            CloseActiveOverlay();
             SetHint("Achievements closed.");
         }
 
         private void OnBackToMainInterfaceClicked()
         {
-            SetCollectionOverlayVisible(false);
-            SetAchievementOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(false);
+            CloseAllOverlays();
             SetHint("Returned to the main menu.");
         }
 
         private void OnLeaderboardCloseClicked()
         {
-            SetLeaderboardOverlayVisible(false);
+            CloseActiveOverlay();
             SetHint("Leaderboard closed.");
         }
 
@@ -684,10 +713,7 @@ namespace EndlessRunner
         {
             EnsureSettingsInitialized();
             RefreshSettingsPanel();
-            SetCollectionOverlayVisible(false);
-            SetAchievementOverlayVisible(false);
-            SetLeaderboardOverlayVisible(false);
-            SetSettingsOverlayVisible(true);
+            OpenOverlay(MainMenuOverlay.Settings);
             SetHint("Settings opened.");
         }
 
@@ -728,13 +754,13 @@ namespace EndlessRunner
             }
 
             PlayerPrefs.Save();
-            SetSettingsOverlayVisible(false);
+            CloseActiveOverlay();
             SetHint("Settings saved.");
         }
 
         private void OnSettingsCloseClicked()
         {
-            SetSettingsOverlayVisible(false);
+            CloseActiveOverlay();
             SetHint("Settings closed.");
         }
 
@@ -796,48 +822,71 @@ namespace EndlessRunner
 #endif
         }
 
-        private void SetCollectionOverlayVisible(bool visible)
+        private void HandleOverlayBackInput()
         {
-            isCollectionVisible = visible;
-            if (collectionOverlay == null)
+            if (!IsEscapePressed())
             {
                 return;
             }
 
-            collectionOverlay.EnableInClassList(VisibleClass, visible);
+            TryHandleOverlayBackAction();
         }
 
-        private void SetAchievementOverlayVisible(bool visible)
+        private bool TryHandleOverlayBackAction()
         {
-            isAchievementVisible = visible;
-            if (achievementOverlay == null)
+            switch (activeOverlay)
             {
-                return;
+                case MainMenuOverlay.Settings:
+                    OnSettingsCloseClicked();
+                    return true;
+                case MainMenuOverlay.Achievements:
+                    OnAchievementCloseClicked();
+                    return true;
+                case MainMenuOverlay.Manual:
+                    OnCollectionCloseClicked();
+                    return true;
+                case MainMenuOverlay.Leaderboard:
+                    OnLeaderboardCloseClicked();
+                    return true;
+                default:
+                    return false;
             }
-
-            achievementOverlay.EnableInClassList(VisibleClass, visible);
         }
 
-        private void SetLeaderboardOverlayVisible(bool visible)
+        private void OpenOverlay(MainMenuOverlay overlay)
         {
-            isLeaderboardVisible = visible;
-            if (leaderboardOverlay == null)
-            {
-                return;
-            }
-
-            leaderboardOverlay.EnableInClassList(VisibleClass, visible);
+            activeOverlay = overlay;
+            RefreshOverlayVisibility();
         }
 
-        private void SetSettingsOverlayVisible(bool visible)
+        private void CloseActiveOverlay()
         {
-            isSettingsVisible = visible;
-            if (settingsOverlay == null)
+            activeOverlay = MainMenuOverlay.None;
+            RefreshOverlayVisibility();
+        }
+
+        private void CloseAllOverlays()
+        {
+            activeOverlay = MainMenuOverlay.None;
+            RefreshOverlayVisibility();
+        }
+
+        private void RefreshOverlayVisibility()
+        {
+            SetOverlayVisible(collectionOverlay, activeOverlay == MainMenuOverlay.Manual);
+            SetOverlayVisible(achievementOverlay, activeOverlay == MainMenuOverlay.Achievements);
+            SetOverlayVisible(leaderboardOverlay, activeOverlay == MainMenuOverlay.Leaderboard);
+            SetOverlayVisible(settingsOverlay, activeOverlay == MainMenuOverlay.Settings);
+        }
+
+        private void SetOverlayVisible(VisualElement overlay, bool visible)
+        {
+            if (overlay == null)
             {
                 return;
             }
 
-            settingsOverlay.EnableInClassList(VisibleClass, visible);
+            overlay.EnableInClassList(VisibleClass, visible);
         }
 
         private void BuildCollectionPage()
@@ -930,7 +979,7 @@ namespace EndlessRunner
                 return;
             }
 
-            button.EnableInClassList("is-active", active);
+            button.EnableInClassList(TabActiveClass, active);
         }
 
         private CollectionEntry[] GetCollectionEntries()

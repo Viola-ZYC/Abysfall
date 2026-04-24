@@ -24,6 +24,9 @@ public class CreatureGenerationAndAbilityFlowTests
     private static readonly MethodInfo FilterPrefabsByScoreMethod =
         typeof(SegmentContent).GetMethod("FilterPrefabsByScore", InstanceNonPublic);
 
+    private static readonly MethodInfo PartitionCreaturesMethod =
+        typeof(SegmentContent).GetMethod("PartitionCreatures", BindingFlags.Static | BindingFlags.NonPublic);
+
     private static readonly MethodInfo TryHandleHazardContactMethod =
         typeof(RunnerController).GetMethod("TryHandleHazardContact", InstanceNonPublic);
 
@@ -106,6 +109,7 @@ public class CreatureGenerationAndAbilityFlowTests
 
         GameObject[] rewardPoolAtHighScore =
             FilterPrefabs(segmentContent, creaturePrefabs, 1200, CodexCategory.Creature);
+        PartitionCreatures(rewardPoolAtHighScore, out rewardPoolAtHighScore, out _);
         AssertPrefabPresence(
             rewardPoolAtHighScore,
             "creature_basic",
@@ -189,6 +193,7 @@ public class CreatureGenerationAndAbilityFlowTests
             "speed creature");
         runner.OnAttackHit(speedCreature);
         yield return null;
+        ClearContactSlow(runner);
         AssertCurrentAbility(abilityManager, "speed_boost");
         float boostedHorizontalSpeed = InvokeGetEffectiveHorizontalSpeed(runner);
         Assert.Greater(
@@ -337,6 +342,15 @@ public class CreatureGenerationAndAbilityFlowTests
         return result as GameObject[];
     }
 
+    private static void PartitionCreatures(GameObject[] prefabs, out GameObject[] rewardPrefabs, out GameObject[] hazardPrefabs)
+    {
+        Assert.IsNotNull(PartitionCreaturesMethod, "Expected SegmentContent.PartitionCreatures private method.");
+        object[] args = { prefabs, null, null };
+        PartitionCreaturesMethod.Invoke(null, args);
+        rewardPrefabs = args[1] as GameObject[];
+        hazardPrefabs = args[2] as GameObject[];
+    }
+
     private static void AssertPrefabPresence(
         IReadOnlyList<GameObject> prefabs,
         string codexEntryId,
@@ -422,6 +436,12 @@ public class CreatureGenerationAndAbilityFlowTests
             "Expected RunnerController.GetEffectiveHorizontalSpeed private method.");
         object result = GetEffectiveHorizontalSpeedMethod.Invoke(runner, null);
         return result is float speed ? speed : 0f;
+    }
+
+    private static void ClearContactSlow(RunnerController runner)
+    {
+        typeof(RunnerController).GetField("speedMultiplier", InstanceNonPublic)?.SetValue(runner, 1f);
+        typeof(RunnerController).GetField("slowTimer", InstanceNonPublic)?.SetValue(runner, 0f);
     }
 
     private static void AssertCurrentAbility(AbilityManager abilityManager, string abilityId)

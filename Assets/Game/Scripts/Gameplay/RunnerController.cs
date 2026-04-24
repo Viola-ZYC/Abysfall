@@ -820,7 +820,7 @@ namespace EndlessRunner
             }
 
             ApplyDamage(1);
-            ApplyContactSlow();
+            ResetToInitialMotionState();
             creature.OnHitByAttack();
             return true;
         }

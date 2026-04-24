@@ -558,7 +558,7 @@ namespace EndlessRunner
 
             if (card != null)
             {
-                card.transform.scale = new Vector3(scale, scale, 1f);
+                card.style.scale = new Scale(new Vector3(scale, scale, 1f));
             }
         }
 

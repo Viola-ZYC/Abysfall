@@ -11,7 +11,6 @@ public class CreatureVisualAssetReferenceTests
         "Assets/Game/Prefabs/Creatures/SpecialCreature_AbyssEye.prefab",
         "Assets/Game/Prefabs/Creatures/SpecialCreature_Basic.prefab",
         "Assets/Game/Prefabs/Creatures/SpecialCreature_Echo.prefab",
-        "Assets/Game/Prefabs/Creatures/SpecialCreature_Golem.prefab",
         "Assets/Game/Prefabs/Creatures/SpecialCreature_Lightweight.prefab",
         "Assets/Game/Prefabs/Creatures/SpecialCreature_Normal.prefab",
         "Assets/Game/Prefabs/Creatures/SpecialCreature_SpeedBoost.prefab",

@@ -41,6 +41,11 @@ ArtSources/
 
 # Local test outputs
 UnityLogs/
+CodexArtifacts/
+
+# Unity local recovery and generated schemas
+Assets/_Recovery/
+UIElementsSchema/
 
 # Codex local backups
 .codex-backup/

@@ -254,7 +254,7 @@
     margin-bottom: 0;
 }
 
-.mainmenu-action-stack .mainmenu-button:first-child {
+.mainmenu-action-stack .mainmenu-action-first {
     margin-top: 0;
 }
 
@@ -445,7 +445,7 @@
     font-size: 16px;
 }
 
-.manual-tab-button:last-child {
+.manual-tab-last {
     margin-right: 0;
 }
 

@@ -22,7 +22,7 @@
                         <ui:VisualElement class="mainmenu-section-rule"/>
                     </ui:VisualElement>
                     <ui:VisualElement class="mainmenu-action-stack">
-                        <ui:Button name="mainmenu-leaderboard-button" text="Leaderboard" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons10&quot;); background-size: 50px 50px;"/>
+                        <ui:Button name="mainmenu-leaderboard-button" text="Leaderboard" class="mainmenu-button mainmenu-home-button mainmenu-action-first" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons10&quot;); background-size: 50px 50px;"/>
                         <ui:Button name="mainmenu-collection-button" text="Manual" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons13&quot;); background-size: 50px 50px;"/>
                         <ui:Button name="mainmenu-achievement-button" text="Achievements" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12&quot;); background-size: 50px 50px;"/>
                         <ui:Button name="mainmenu-settings-button" text="Settings" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons1&quot;); background-size: 50px 50px;"/>
@@ -40,7 +40,7 @@
                     <ui:Label name="mainmenu-collection-progress-label" text="Unlocked 0/0" class="mainmenu-collection-progress"/>
                     <ui:VisualElement class="manual-tabs">
                         <ui:Button name="mainmenu-manual-tab-creatures" text="Creatures" class="manual-tab-button"/>
-                        <ui:Button name="mainmenu-manual-tab-collections" text="Collections" class="manual-tab-button"/>
+                        <ui:Button name="mainmenu-manual-tab-collections" text="Collections" class="manual-tab-button manual-tab-last"/>
                     </ui:VisualElement>
                     <ui:ScrollView name="mainmenu-collection-scroll" class="mainmenu-collection-scroll">
                         <ui:VisualElement name="mainmenu-collection-list" class="mainmenu-collection-list"/>

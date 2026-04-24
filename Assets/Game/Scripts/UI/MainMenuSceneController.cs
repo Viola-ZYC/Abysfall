@@ -25,12 +25,6 @@ namespace EndlessRunner
             public string unlockHint;
         }
 
-        private struct ResolutionOption
-        {
-            public int width;
-            public int height;
-        }
-
         private struct AchievementEntry
         {
             public string title;
@@ -68,7 +62,6 @@ namespace EndlessRunner
         [SerializeField] private string collectionBackButtonName = "mainmenu-collection-back-button";
         [SerializeField] private string collectionCloseButtonName = "mainmenu-collection-close-button";
         [SerializeField] private string manualTabCreaturesButtonName = "mainmenu-manual-tab-creatures";
-        [SerializeField] private string manualTabObstaclesButtonName = "mainmenu-manual-tab-obstacles";
         [SerializeField] private string manualTabCollectionsButtonName = "mainmenu-manual-tab-collections";
         [SerializeField] private string achievementOverlayName = "mainmenu-achievement-overlay";
         [SerializeField] private string achievementProgressLabelName = "mainmenu-achievement-progress-label";
@@ -87,13 +80,12 @@ namespace EndlessRunner
         [SerializeField] private string settingsOverlayName = "mainmenu-settings-overlay";
         [SerializeField] private string settingsVolumeSliderName = "mainmenu-settings-volume-slider";
         [SerializeField] private string settingsVolumeValueLabelName = "mainmenu-settings-volume-value-label";
-        [SerializeField] private string settingsResolutionDropdownName = "mainmenu-settings-resolution-dropdown";
-        [SerializeField] private string settingsResolutionHintLabelName = "mainmenu-settings-resolution-hint-label";
         [SerializeField] private string gameModeDropdownName = "mainmenu-game-mode-dropdown";
         [SerializeField] private string gameModeHintLabelName = "mainmenu-game-mode-hint-label";
         [SerializeField] private string settingsApplyButtonName = "mainmenu-settings-apply-button";
         [SerializeField] private string settingsBackButtonName = "mainmenu-settings-back-button";
         [SerializeField] private string settingsCloseButtonName = "mainmenu-settings-close-button";
+        [SerializeField] private string tutorialButtonName = "mainmenu-tutorial-button";
         [SerializeField] private CollectionEntry[] collectionEntries;
         [SerializeField] private CodexDatabase codexDatabase;
         [SerializeField] private bool applySafeArea = true;
@@ -111,7 +103,6 @@ namespace EndlessRunner
         private UITKButton collectionBackButton;
         private UITKButton collectionCloseButton;
         private UITKButton manualTabCreaturesButton;
-        private UITKButton manualTabObstaclesButton;
         private UITKButton manualTabCollectionsButton;
         private UITKButton achievementBackButton;
         private UITKButton achievementCloseButton;
@@ -120,6 +111,7 @@ namespace EndlessRunner
         private UITKButton settingsApplyButton;
         private UITKButton settingsBackButton;
         private UITKButton settingsCloseButton;
+        private UITKButton tutorialButton;
         private Label hintLabel;
         private Label collectionProgressLabel;
         private Label achievementProgressLabel;
@@ -130,7 +122,6 @@ namespace EndlessRunner
         private Label leaderboardModeProgressLabel;
         private Label leaderboardTopScoresLabel;
         private Label settingsVolumeValueLabel;
-        private Label settingsResolutionHintLabel;
         private Label gameModeHintLabel;
         private VisualElement safeAreaElement;
         private VisualElement mainMenuCard;
@@ -141,20 +132,16 @@ namespace EndlessRunner
         private VisualElement collectionList;
         private VisualElement achievementList;
         private UITKSlider settingsVolumeSlider;
-        private UITKDropdownField settingsResolutionDropdown;
         private UITKDropdownField gameModeDropdown;
         private bool isBound;
         private bool settingsInitialized;
         private bool suppressSettingsEvents;
         private CodexCategory currentManualCategory = CodexCategory.Creature;
         private MainMenuOverlay activeOverlay = MainMenuOverlay.None;
-        private int selectedResolutionIndex = -1;
         private string pendingSelectedModeId = RunProgressStore.ModeClassic;
         private Rect lastSafeArea = Rect.zero;
         private Vector2Int lastScreenSize = Vector2Int.zero;
         private Vector2 lastPanelSize = Vector2.zero;
-        private readonly List<ResolutionOption> availableResolutions = new List<ResolutionOption>();
-        private readonly List<string> availableResolutionLabels = new List<string>();
         private readonly List<string> availableModeIds = new List<string>();
         private readonly List<string> availableModeLabels = new List<string>();
         private const string VisibleClass = "is-visible";
@@ -163,8 +150,6 @@ namespace EndlessRunner
         private const string TabActiveClass = "is-active";
         private Coroutine glowRoutine;
         private const string MasterVolumePrefKey = "settings.master_volume";
-        private const string ResolutionPrefKey = "settings.resolution_index";
-        private const string AutoResolutionLabel = "Auto (Recommended)";
 
         private void Awake()
         {
@@ -218,9 +203,16 @@ namespace EndlessRunner
 
         private void EnsureUiDocument()
         {
+            if (uiDocument != null &&
+                (uiDocument.gameObject == gameObject || string.Equals(uiDocument.gameObject.name, "MainMenuUI", StringComparison.Ordinal)))
+            {
+                return;
+            }
+
+            uiDocument = GetComponent<UIDocument>();
             if (uiDocument == null)
             {
-                uiDocument = GetComponent<UIDocument>();
+                uiDocument = UIDocumentLocator.FindMainMenuDocument();
             }
 
             if (uiDocument == null)
@@ -287,7 +279,6 @@ namespace EndlessRunner
             collectionBackButton = root.Q<UITKButton>(collectionBackButtonName);
             collectionCloseButton = root.Q<UITKButton>(collectionCloseButtonName);
             manualTabCreaturesButton = root.Q<UITKButton>(manualTabCreaturesButtonName);
-            manualTabObstaclesButton = root.Q<UITKButton>(manualTabObstaclesButtonName);
             manualTabCollectionsButton = root.Q<UITKButton>(manualTabCollectionsButtonName);
             achievementBackButton = root.Q<UITKButton>(achievementBackButtonName);
             achievementCloseButton = root.Q<UITKButton>(achievementCloseButtonName);
@@ -296,6 +287,7 @@ namespace EndlessRunner
             settingsApplyButton = root.Q<UITKButton>(settingsApplyButtonName);
             settingsBackButton = root.Q<UITKButton>(settingsBackButtonName);
             settingsCloseButton = root.Q<UITKButton>(settingsCloseButtonName);
+            tutorialButton = root.Q<UITKButton>(tutorialButtonName);
             hintLabel = root.Q<Label>(hintLabelName);
             collectionProgressLabel = root.Q<Label>(collectionProgressLabelName);
             achievementProgressLabel = root.Q<Label>(achievementProgressLabelName);
@@ -306,7 +298,6 @@ namespace EndlessRunner
             leaderboardModeProgressLabel = root.Q<Label>(leaderboardModeProgressLabelName);
             leaderboardTopScoresLabel = root.Q<Label>(leaderboardTopScoresLabelName);
             settingsVolumeValueLabel = root.Q<Label>(settingsVolumeValueLabelName);
-            settingsResolutionHintLabel = root.Q<Label>(settingsResolutionHintLabelName);
             gameModeHintLabel = root.Q<Label>(gameModeHintLabelName);
             safeAreaElement = root.Q<VisualElement>(safeAreaElementName);
             mainMenuCard = root.Q<VisualElement>(mainMenuCardName);
@@ -317,7 +308,6 @@ namespace EndlessRunner
             collectionList = root.Q<VisualElement>(collectionListName);
             achievementList = root.Q<VisualElement>(achievementListName);
             settingsVolumeSlider = root.Q<UITKSlider>(settingsVolumeSliderName);
-            settingsResolutionDropdown = root.Q<UITKDropdownField>(settingsResolutionDropdownName);
             gameModeDropdown = root.Q<UITKDropdownField>(gameModeDropdownName);
 
             List<string> missingElements = new List<string>();
@@ -330,7 +320,6 @@ namespace EndlessRunner
             if (collectionBackButton == null) missingElements.Add(collectionBackButtonName);
             if (collectionCloseButton == null) missingElements.Add(collectionCloseButtonName);
             if (manualTabCreaturesButton == null) missingElements.Add(manualTabCreaturesButtonName);
-            if (manualTabObstaclesButton == null) missingElements.Add(manualTabObstaclesButtonName);
             if (manualTabCollectionsButton == null) missingElements.Add(manualTabCollectionsButtonName);
             if (achievementBackButton == null) missingElements.Add(achievementBackButtonName);
             if (achievementCloseButton == null) missingElements.Add(achievementCloseButtonName);
@@ -356,8 +345,6 @@ namespace EndlessRunner
             if (leaderboardTopScoresLabel == null) missingElements.Add(leaderboardTopScoresLabelName);
             if (settingsVolumeSlider == null) missingElements.Add(settingsVolumeSliderName);
             if (settingsVolumeValueLabel == null) missingElements.Add(settingsVolumeValueLabelName);
-            if (settingsResolutionDropdown == null) missingElements.Add(settingsResolutionDropdownName);
-            if (settingsResolutionHintLabel == null) missingElements.Add(settingsResolutionHintLabelName);
             if (gameModeDropdown == null) missingElements.Add(gameModeDropdownName);
             if (gameModeHintLabel == null) missingElements.Add(gameModeHintLabelName);
 
@@ -381,11 +368,6 @@ namespace EndlessRunner
             {
                 manualTabCreaturesButton.clicked -= OnManualCreaturesClicked;
                 manualTabCreaturesButton.clicked += OnManualCreaturesClicked;
-            }
-            if (manualTabObstaclesButton != null)
-            {
-                manualTabObstaclesButton.clicked -= OnManualObstaclesClicked;
-                manualTabObstaclesButton.clicked += OnManualObstaclesClicked;
             }
             if (manualTabCollectionsButton != null)
             {
@@ -444,11 +426,6 @@ namespace EndlessRunner
                 settingsVolumeSlider.UnregisterValueChangedCallback(OnSettingsVolumeChanged);
                 settingsVolumeSlider.RegisterValueChangedCallback(OnSettingsVolumeChanged);
             }
-            if (settingsResolutionDropdown != null)
-            {
-                settingsResolutionDropdown.UnregisterValueChangedCallback(OnSettingsResolutionChanged);
-                settingsResolutionDropdown.RegisterValueChangedCallback(OnSettingsResolutionChanged);
-            }
             if (gameModeDropdown != null)
             {
                 gameModeDropdown.UnregisterValueChangedCallback(OnGameModeChanged);
@@ -457,12 +434,18 @@ namespace EndlessRunner
 
             exitButton.clicked -= OnExitClicked;
             exitButton.clicked += OnExitClicked;
+            if (tutorialButton != null)
+            {
+                tutorialButton.clicked -= OnTutorialClicked;
+                tutorialButton.clicked += OnTutorialClicked;
+            }
+
             SetManualCategory(CodexCategory.Creature);
             BuildAchievementPage();
             RefreshLeaderboardPanel();
             EnsureSettingsInitialized();
             CloseAllOverlays();
-            SetHint("Choose where to dive next.");
+            SetHint("Select an option.");
             ApplySafeAreaIfNeeded();
             isBound = true;
             StartGlowLoopIfReady();
@@ -493,10 +476,6 @@ namespace EndlessRunner
             if (manualTabCreaturesButton != null)
             {
                 manualTabCreaturesButton.clicked -= OnManualCreaturesClicked;
-            }
-            if (manualTabObstaclesButton != null)
-            {
-                manualTabObstaclesButton.clicked -= OnManualObstaclesClicked;
             }
             if (manualTabCollectionsButton != null)
             {
@@ -554,15 +533,16 @@ namespace EndlessRunner
                 settingsBackButton.clicked -= OnBackToMainInterfaceClicked;
             }
 
+            if (tutorialButton != null)
+            {
+                tutorialButton.clicked -= OnTutorialClicked;
+            }
+
             if (settingsVolumeSlider != null)
             {
                 settingsVolumeSlider.UnregisterValueChangedCallback(OnSettingsVolumeChanged);
             }
 
-            if (settingsResolutionDropdown != null)
-            {
-                settingsResolutionDropdown.UnregisterValueChangedCallback(OnSettingsResolutionChanged);
-            }
             if (gameModeDropdown != null)
             {
                 gameModeDropdown.UnregisterValueChangedCallback(OnGameModeChanged);
@@ -614,7 +594,30 @@ namespace EndlessRunner
 
         private void OnPlayClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseAllOverlays();
+            GameManager gameManager = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.LoadGameplayScene();
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(gameplaySceneName))
+            {
+                if (!SceneTransitionOverlay.TryLoadScene(gameplaySceneName))
+                {
+                    SceneManager.LoadScene(gameplaySceneName);
+                }
+            }
+        }
+
+        private void OnTutorialClicked()
+        {
+            AudioManager.Instance?.PlayButtonClick();
+            CloseAllOverlays();
+            TutorialOverlayController.ForceNextRun = true;
+            SetHint("Loading tutorial...");
             GameManager gameManager = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
             if (gameManager != null)
             {
@@ -633,6 +636,7 @@ namespace EndlessRunner
 
         private void OnExitClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseAllOverlays();
             GameManager gameManager = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
             if (gameManager != null)
@@ -650,6 +654,7 @@ namespace EndlessRunner
 
         private void OnLeaderboardClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             RefreshLeaderboardPanel();
             OpenOverlay(MainMenuOverlay.Leaderboard);
             SetHint("Leaderboard opened.");
@@ -657,29 +662,27 @@ namespace EndlessRunner
 
         private void OnCollectionClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             SetManualCategory(CodexCategory.Creature);
             OpenOverlay(MainMenuOverlay.Manual);
-            SetHint("Codex opened.");
+            SetHint("Manual opened.");
         }
 
         private void OnManualCreaturesClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             SetManualCategory(CodexCategory.Creature);
         }
 
-        private void OnManualObstaclesClicked()
-        {
-            SetManualCategory(CodexCategory.Obstacle);
-        }
-
-
         private void OnManualCollectionsClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             SetManualCategory(CodexCategory.Collection);
         }
 
         private void OnAchievementClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             BuildAchievementPage();
             OpenOverlay(MainMenuOverlay.Achievements);
             SetHint("Achievements opened.");
@@ -687,30 +690,35 @@ namespace EndlessRunner
 
         private void OnCollectionCloseClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseActiveOverlay();
-            SetHint("Codex closed.");
+            SetHint("Manual closed.");
         }
 
         private void OnAchievementCloseClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseActiveOverlay();
             SetHint("Achievements closed.");
         }
 
         private void OnBackToMainInterfaceClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseAllOverlays();
-            SetHint("Returned to the main menu.");
+            SetHint("Returned to main interface.");
         }
 
         private void OnLeaderboardCloseClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseActiveOverlay();
             SetHint("Leaderboard closed.");
         }
 
         private void OnSettingsClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             EnsureSettingsInitialized();
             RefreshSettingsPanel();
             OpenOverlay(MainMenuOverlay.Settings);
@@ -719,30 +727,10 @@ namespace EndlessRunner
 
         private void OnSettingsApplyClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             if (settingsVolumeSlider != null)
             {
                 ApplyMasterVolume(settingsVolumeSlider.value, true);
-            }
-
-            if (SupportsRuntimeResolutionSelection())
-            {
-                ResolutionOption resolution;
-                if (selectedResolutionIndex >= 0 && selectedResolutionIndex < availableResolutions.Count)
-                {
-                    resolution = availableResolutions[selectedResolutionIndex];
-                    PlayerPrefs.SetInt(ResolutionPrefKey, selectedResolutionIndex);
-                }
-                else
-                {
-                    resolution = GetAutoResolution();
-                    PlayerPrefs.SetInt(ResolutionPrefKey, -1);
-                }
-
-                Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
-            }
-            else
-            {
-                PlayerPrefs.SetInt(ResolutionPrefKey, -1);
             }
 
             if (!RunProgressStore.TrySetSelectedMode(pendingSelectedModeId, out string reason))
@@ -760,6 +748,7 @@ namespace EndlessRunner
 
         private void OnSettingsCloseClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseActiveOverlay();
             SetHint("Settings closed.");
         }
@@ -773,27 +762,6 @@ namespace EndlessRunner
 
             ApplyMasterVolume(evt.newValue, true);
             RefreshVolumeValueText(evt.newValue);
-        }
-
-        private void OnSettingsResolutionChanged(ChangeEvent<string> evt)
-        {
-            if (suppressSettingsEvents)
-            {
-                return;
-            }
-
-            int dropdownIndex = availableResolutionLabels.IndexOf(evt.newValue);
-            if (dropdownIndex <= 0)
-            {
-                selectedResolutionIndex = -1;
-                return;
-            }
-
-            selectedResolutionIndex = dropdownIndex - 1;
-            if (selectedResolutionIndex >= availableResolutions.Count)
-            {
-                selectedResolutionIndex = -1;
-            }
         }
 
         private void OnGameModeChanged(ChangeEvent<string> evt)
@@ -968,7 +936,6 @@ namespace EndlessRunner
         private void UpdateManualTabVisuals()
         {
             SetTabActive(manualTabCreaturesButton, currentManualCategory == CodexCategory.Creature);
-            SetTabActive(manualTabObstaclesButton, currentManualCategory == CodexCategory.Obstacle);
             SetTabActive(manualTabCollectionsButton, currentManualCategory == CodexCategory.Collection);
         }
 
@@ -1038,12 +1005,14 @@ namespace EndlessRunner
             }
 
             achievementList.Clear();
+            AchievementManager.AchievementDefinition[] defs = AchievementManager.GetDefinitions();
             AchievementEntry[] entries = BuildAchievementEntries();
             int completedCount = 0;
             for (int i = 0; i < entries.Length; i++)
             {
                 AchievementEntry entry = entries[i];
-                bool completed = entry.current >= entry.target;
+                bool completed = RunProgressStore.IsAchievementCompleted(defs[i].Id)
+                              || entry.current >= entry.target;
                 if (completed)
                 {
                     completedCount++;
@@ -1057,78 +1026,21 @@ namespace EndlessRunner
 
         private AchievementEntry[] BuildAchievementEntries()
         {
-            int totalRuns = RunProgressStore.GetTotalRuns();
-            int bestScore = RunProgressStore.GetBestScore();
-            int unlockedCollections = RunProgressStore.GetUnlockedCollectionCount();
-            int totalCollectedRelics = RunProgressStore.GetTotalCollectionPickups();
-            CodexDatabase database = GetCodexDatabase();
-            int totalCollectionEntries = database != null
-                ? Mathf.Max(1, database.GetEntryCount(CodexCategory.Collection))
-                : Mathf.Max(1, GetCollectionEntries().Length);
-
-            List<RunProgressStore.GameModeProgress> modeProgress = RunProgressStore.GetGameModeProgress();
-            int unlockedModes = 0;
-            for (int i = 0; i < modeProgress.Count; i++)
+            AchievementManager.AchievementDefinition[] defs = AchievementManager.GetDefinitions();
+            AchievementEntry[] entries = new AchievementEntry[defs.Length];
+            for (int i = 0; i < defs.Length; i++)
             {
-                if (modeProgress[i].Unlocked)
+                AchievementManager.AchievementDefinition def = defs[i];
+                entries[i] = new AchievementEntry
                 {
-                    unlockedModes++;
-                }
+                    title = def.Title,
+                    description = def.Description,
+                    current = def.GetCurrentValue != null ? def.GetCurrentValue() : 0,
+                    target = AchievementManager.GetTarget(def)
+                };
             }
 
-            int totalModes = Mathf.Max(1, modeProgress.Count);
-            return new[]
-            {
-                new AchievementEntry
-                {
-                    title = "First Dive",
-                    description = "Complete your first run.",
-                    current = totalRuns,
-                    target = 1
-                },
-                new AchievementEntry
-                {
-                    title = "Seasoned Runner",
-                    description = "Complete 10 runs.",
-                    current = totalRuns,
-                    target = 10
-                },
-                new AchievementEntry
-                {
-                    title = "Deep Scout",
-                    description = "Reach a best score of 600.",
-                    current = bestScore,
-                    target = 600
-                },
-                new AchievementEntry
-                {
-                    title = "Abyss Challenger",
-                    description = "Reach a best score of 1200.",
-                    current = bestScore,
-                    target = 1200
-                },
-                new AchievementEntry
-                {
-                    title = "Collector",
-                    description = "Unlock all collection entries.",
-                    current = unlockedCollections,
-                    target = totalCollectionEntries
-                },
-                new AchievementEntry
-                {
-                    title = "Relic Hoarder",
-                    description = "Collect 15 relics in total.",
-                    current = totalCollectedRelics,
-                    target = 15
-                },
-                new AchievementEntry
-                {
-                    title = "Mode Pioneer",
-                    description = "Unlock all game modes.",
-                    current = unlockedModes,
-                    target = totalModes
-                }
-            };
+            return entries;
         }
 
         private VisualElement CreateAchievementEntryElement(AchievementEntry entry, bool completed)
@@ -1289,7 +1201,7 @@ namespace EndlessRunner
 
         private void EnsureSettingsInitialized()
         {
-            if (settingsVolumeSlider == null || settingsResolutionDropdown == null || gameModeDropdown == null)
+            if (settingsVolumeSlider == null || gameModeDropdown == null)
             {
                 return;
             }
@@ -1300,76 +1212,34 @@ namespace EndlessRunner
                 return;
             }
 
-            PopulateResolutionOptions();
             PopulateGameModeOptions();
-            if (PlayerPrefs.HasKey(ResolutionPrefKey))
+            pendingSelectedModeId = RunProgressStore.GetSelectedModeId();
+            float savedVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MasterVolumePrefKey, 1f));
+            if (AudioManager.Instance != null)
             {
-                int savedIndex = PlayerPrefs.GetInt(ResolutionPrefKey, -1);
-                if (savedIndex >= 0 && savedIndex < availableResolutions.Count)
-                {
-                    selectedResolutionIndex = savedIndex;
-                }
-                else
-                {
-                    selectedResolutionIndex = -1;
-                }
+                AudioManager.Instance.SetMasterVolume(savedVolume);
             }
             else
             {
-                selectedResolutionIndex = -1;
+                AudioListener.volume = savedVolume;
             }
-
-            pendingSelectedModeId = RunProgressStore.GetSelectedModeId();
-            float savedVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MasterVolumePrefKey, 1f));
-            AudioListener.volume = savedVolume;
             settingsInitialized = true;
             RefreshSettingsPanel();
         }
 
         private void RefreshSettingsPanel()
         {
-            if (settingsVolumeSlider == null || settingsResolutionDropdown == null || gameModeDropdown == null)
+            if (settingsVolumeSlider == null || gameModeDropdown == null)
             {
                 return;
             }
 
             suppressSettingsEvents = true;
-            float currentVolume = Mathf.Clamp01(AudioListener.volume);
+            float currentVolume = AudioManager.Instance != null
+                ? AudioManager.Instance.GetMasterVolume()
+                : Mathf.Clamp01(AudioListener.volume);
             settingsVolumeSlider.SetValueWithoutNotify(currentVolume);
             RefreshVolumeValueText(currentVolume);
-
-            settingsResolutionDropdown.choices = availableResolutionLabels;
-            if (availableResolutionLabels.Count > 0)
-            {
-                string selectedLabel = AutoResolutionLabel;
-                if (selectedResolutionIndex >= 0 && selectedResolutionIndex < availableResolutions.Count)
-                {
-                    int dropdownIndex = Mathf.Clamp(selectedResolutionIndex + 1, 1, availableResolutionLabels.Count - 1);
-                    selectedLabel = availableResolutionLabels[dropdownIndex];
-                }
-
-                settingsResolutionDropdown.SetValueWithoutNotify(selectedLabel);
-            }
-
-            bool canChangeResolution = SupportsRuntimeResolutionSelection() && availableResolutionLabels.Count > 0;
-            settingsResolutionDropdown.SetEnabled(canChangeResolution);
-            if (settingsResolutionHintLabel != null)
-            {
-                if (canChangeResolution)
-                {
-                    settingsResolutionHintLabel.text = selectedResolutionIndex < 0
-                        ? $"Current Resolution: {Screen.width} x {Screen.height} (Auto)"
-                        : $"Current Resolution: {Screen.width} x {Screen.height}";
-                }
-                else if (Application.isMobilePlatform)
-                {
-                    settingsResolutionHintLabel.text = "Mobile uses system resolution.";
-                }
-                else
-                {
-                    settingsResolutionHintLabel.text = "No available resolution options detected.";
-                }
-            }
 
             PopulateGameModeOptions();
             gameModeDropdown.choices = availableModeLabels;
@@ -1403,67 +1273,21 @@ namespace EndlessRunner
         private void ApplyMasterVolume(float volume, bool persist)
         {
             float clamped = Mathf.Clamp01(volume);
-            AudioListener.volume = clamped;
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.SetMasterVolume(clamped);
+            }
+            else
+            {
+                AudioListener.volume = clamped;
+            }
+
             if (!persist)
             {
                 return;
             }
 
             PlayerPrefs.SetFloat(MasterVolumePrefKey, clamped);
-        }
-
-        private void PopulateResolutionOptions()
-        {
-            availableResolutions.Clear();
-            availableResolutionLabels.Clear();
-            availableResolutionLabels.Add(AutoResolutionLabel);
-
-            HashSet<string> uniqueSizes = new HashSet<string>();
-            Resolution[] resolutions = Screen.resolutions;
-            if (resolutions != null)
-            {
-                for (int i = 0; i < resolutions.Length; i++)
-                {
-                    Resolution resolution = resolutions[i];
-                    string key = $"{resolution.width}x{resolution.height}";
-                    if (!uniqueSizes.Add(key))
-                    {
-                        continue;
-                    }
-
-                    availableResolutions.Add(new ResolutionOption
-                    {
-                        width = resolution.width,
-                        height = resolution.height
-                    });
-                }
-            }
-
-            if (availableResolutions.Count == 0)
-            {
-                availableResolutions.Add(new ResolutionOption
-                {
-                    width = Screen.width,
-                    height = Screen.height
-                });
-            }
-
-            availableResolutions.Sort((a, b) =>
-            {
-                int areaCompare = (a.width * a.height).CompareTo(b.width * b.height);
-                if (areaCompare != 0)
-                {
-                    return areaCompare;
-                }
-
-                return a.width.CompareTo(b.width);
-            });
-
-            for (int i = 0; i < availableResolutions.Count; i++)
-            {
-                ResolutionOption option = availableResolutions[i];
-                availableResolutionLabels.Add($"{option.width} x {option.height}");
-            }
         }
 
         private void PopulateGameModeOptions()
@@ -1512,35 +1336,6 @@ namespace EndlessRunner
             }
 
             gameModeHintLabel.text = "Select a mode.";
-        }
-
-        private ResolutionOption GetAutoResolution()
-        {
-            if (availableResolutions.Count > 0)
-            {
-                return availableResolutions[availableResolutions.Count - 1];
-            }
-
-            Resolution screenResolution = Screen.currentResolution;
-            if (screenResolution.width > 0 && screenResolution.height > 0)
-            {
-                return new ResolutionOption
-                {
-                    width = screenResolution.width,
-                    height = screenResolution.height
-                };
-            }
-
-            return new ResolutionOption
-            {
-                width = Mathf.Max(Screen.width, 1),
-                height = Mathf.Max(Screen.height, 1)
-            };
-        }
-
-        private bool SupportsRuntimeResolutionSelection()
-        {
-            return !Application.isMobilePlatform;
         }
 
         private void SetHint(string message)

@@ -11,7 +11,6 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 #endif
 using UITKButton = UnityEngine.UIElements.Button;
-using UITKDropdownField = UnityEngine.UIElements.DropdownField;
 using UITKSlider = UnityEngine.UIElements.Slider;
 
 namespace EndlessRunner
@@ -28,12 +27,6 @@ namespace EndlessRunner
             public CharacterAbilityType abilityType;
             public float airJumpImpulse;
             public int airJumpCharges;
-        }
-
-        private struct ResolutionOption
-        {
-            public int width;
-            public int height;
         }
 
         [SerializeField] private ScoreManager scoreManager;
@@ -87,13 +80,10 @@ namespace EndlessRunner
         [SerializeField] private string codexListName = "codex-list";
         [SerializeField] private string codexCloseButtonName = "codex-close-button";
         [SerializeField] private string codexTabCreaturesButtonName = "codex-tab-creatures";
-        [SerializeField] private string codexTabObstaclesButtonName = "codex-tab-obstacles";
         [SerializeField] private string codexTabCollectionsButtonName = "codex-tab-collections";
         [SerializeField] private string settingsPanelName = "settings-panel";
         [SerializeField] private string settingsVolumeSliderName = "settings-volume-slider";
         [SerializeField] private string settingsVolumeValueLabelName = "settings-volume-value-label";
-        [SerializeField] private string settingsResolutionDropdownName = "settings-resolution-dropdown";
-        [SerializeField] private string settingsResolutionHintLabelName = "settings-resolution-hint-label";
         [SerializeField] private string settingsApplyButtonName = "settings-apply-button";
         [SerializeField] private string settingsMainMenuButtonName = "settings-mainmenu-button";
         [SerializeField] private string settingsCloseButtonName = "settings-close-button";
@@ -129,7 +119,6 @@ namespace EndlessRunner
         private Label pauseHintLabel;
         private Label codexProgressLabel;
         private Label settingsVolumeValueLabel;
-        private Label settingsResolutionHintLabel;
         private UITKButton pauseButton;
         private UITKButton abilityActionButton;
         private UITKButton characterPrevButton;
@@ -151,10 +140,8 @@ namespace EndlessRunner
         private UITKButton settingsCloseButton;
         private UITKButton codexCloseButton;
         private UITKButton codexTabCreaturesButton;
-        private UITKButton codexTabObstaclesButton;
         private UITKButton codexTabCollectionsButton;
         private UITKSlider settingsVolumeSlider;
-        private UITKDropdownField settingsResolutionDropdown;
         private VisualElement codexPanelElement;
         private VisualElement codexListElement;
         private Rect lastSafeArea = Rect.zero;
@@ -172,14 +159,14 @@ namespace EndlessRunner
         private bool settingsInitialized;
         private bool suppressSettingsEvents;
         private CodexCategory currentCodexCategory = CodexCategory.Creature;
-        private int selectedResolutionIndex = -1;
         private int selectedCharacterIndex;
         private int lastHealth = -1;
         private int lastHealthMax = -1;
         private Coroutine hitFlashRoutine;
         private Coroutine abilityPulseRoutine;
-        private readonly List<ResolutionOption> availableResolutions = new List<ResolutionOption>();
-        private readonly List<string> availableResolutionLabels = new List<string>();
+        private VisualElement chargeProgressTrack;
+        private VisualElement chargeProgressFill;
+        private ScoreChargeTracker activeChargeTracker;
         private readonly List<UITKButton> trackedButtons = new List<UITKButton>();
         private Coroutine pendingPointerFallbackRoutine;
         private UITKButton lastTrackedPointerDownButton;
@@ -188,10 +175,11 @@ namespace EndlessRunner
         private const string FxActiveClass = "is-active";
         private const string TabActiveClass = "is-active";
         private const string LockedClass = "is-locked";
+        private const string AbilityButtonEmptyClass = "is-empty";
+        private const string AbilityButtonPassiveClass = "is-passive";
+        private const string AbilityButtonActiveClass = "is-active";
         private const int ToolkitRetryLogFrame = 60;
         private const string MasterVolumePrefKey = "settings.master_volume";
-        private const string ResolutionPrefKey = "settings.resolution_index";
-        private const string AutoResolutionLabel = "Auto (Recommended)";
         private static readonly string[] FallbackCharacterNames = { "Balanced Loadout", "Mobility Module", "Defense Kit" };
         private static readonly string[] FallbackCharacterDescriptions =
         {
@@ -213,7 +201,6 @@ namespace EndlessRunner
         private const string DefaultCodexListName = "codex-list";
         private const string DefaultCodexCloseButtonName = "codex-close-button";
         private const string DefaultCodexTabCreaturesButtonName = "codex-tab-creatures";
-        private const string DefaultCodexTabObstaclesButtonName = "codex-tab-obstacles";
         private const string DefaultCodexTabCollectionsButtonName = "codex-tab-collections";
 
         private void Awake()
@@ -317,6 +304,7 @@ namespace EndlessRunner
             }
 
             RefreshMotionMetrics();
+            UpdateChargeProgress();
             HandleOverlayBackInput();
             HandlePointerFallbackInput();
 
@@ -339,7 +327,8 @@ namespace EndlessRunner
         private void OnAbilityChanged(AbilityDefinition ability, AbilityManager.AbilityChangeType changeType, int stacks)
         {
             RefreshAbilityButtonState();
-            if (changeType == AbilityManager.AbilityChangeType.Acquired)
+            if (changeType == AbilityManager.AbilityChangeType.Acquired ||
+                changeType == AbilityManager.AbilityChangeType.Replaced)
             {
                 TriggerAbilityPulse();
             }
@@ -353,18 +342,120 @@ namespace EndlessRunner
             }
 
             AbilityDefinition ability = abilityManager != null ? abilityManager.CurrentAbility : null;
+            bool hasAbility = ability != null;
+            bool isPassive = hasAbility && (ability.isPassive || ability.activeEffect == null);
+
+            abilityActionButton.EnableInClassList(AbilityButtonEmptyClass, !hasAbility);
+            abilityActionButton.EnableInClassList(AbilityButtonPassiveClass, hasAbility && isPassive);
+            abilityActionButton.EnableInClassList(AbilityButtonActiveClass, hasAbility && !isPassive);
+
+            activeChargeTracker = null;
+            if (hasAbility && !isPassive && runner != null)
+            {
+                ScoreChargeTracker[] trackers = runner.GetComponents<ScoreChargeTracker>();
+                foreach (ScoreChargeTracker tracker in trackers)
+                {
+                    if (tracker != null)
+                    {
+                        activeChargeTracker = tracker;
+                        break;
+                    }
+                }
+            }
+
             if (ability == null)
             {
                 abilityActionButton.text = "No Ability";
                 abilityActionButton.SetEnabled(false);
+                SetChargeProgressVisible(false);
                 return;
             }
 
-            bool isPassive = ability.isPassive || ability.activeEffect == null;
-            abilityActionButton.text = isPassive
-                ? $"{ability.displayName} (Passive)"
-                : ability.displayName;
-            abilityActionButton.SetEnabled(!isPassive);
+            string abilityName = string.IsNullOrWhiteSpace(ability.displayName) ? "Ability" : ability.displayName;
+            if (isPassive)
+            {
+                abilityActionButton.text = $"Passive: {abilityName}";
+                abilityActionButton.SetEnabled(false);
+                SetChargeProgressVisible(false);
+                return;
+            }
+
+            UpdateActiveAbilityButtonText(abilityName);
+            abilityActionButton.SetEnabled(true);
+            EnsureChargeProgressBar();
+            SetChargeProgressVisible(true);
+        }
+
+        private void UpdateActiveAbilityButtonText(string abilityName)
+        {
+            if (activeChargeTracker != null)
+            {
+                int charges = activeChargeTracker.Charges;
+                abilityActionButton.text = charges > 0
+                    ? $"{abilityName} [{charges}]"
+                    : $"{abilityName} [0]";
+            }
+            else
+            {
+                abilityActionButton.text = $"Use {abilityName}";
+            }
+        }
+
+        private void EnsureChargeProgressBar()
+        {
+            if (chargeProgressTrack != null)
+            {
+                return;
+            }
+
+            chargeProgressTrack = new VisualElement();
+            chargeProgressTrack.name = "charge-progress-track";
+            chargeProgressTrack.style.position = Position.Absolute;
+            chargeProgressTrack.style.left = 0;
+            chargeProgressTrack.style.right = 0;
+            chargeProgressTrack.style.bottom = 0;
+            chargeProgressTrack.style.height = 6;
+            chargeProgressTrack.style.backgroundColor = new Color(0f, 0f, 0f, 0.4f);
+            chargeProgressTrack.pickingMode = PickingMode.Ignore;
+
+            chargeProgressFill = new VisualElement();
+            chargeProgressFill.name = "charge-progress-fill";
+            chargeProgressFill.style.position = Position.Absolute;
+            chargeProgressFill.style.left = 0;
+            chargeProgressFill.style.top = 0;
+            chargeProgressFill.style.bottom = 0;
+            chargeProgressFill.style.width = new StyleLength(new Length(0, LengthUnit.Percent));
+            chargeProgressFill.style.backgroundColor = new Color(0.31f, 0.63f, 1f, 0.85f);
+            chargeProgressFill.pickingMode = PickingMode.Ignore;
+
+            chargeProgressTrack.Add(chargeProgressFill);
+            abilityActionButton.Add(chargeProgressTrack);
+        }
+
+        private void SetChargeProgressVisible(bool visible)
+        {
+            if (chargeProgressTrack != null)
+            {
+                chargeProgressTrack.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+
+        private void UpdateChargeProgress()
+        {
+            if (activeChargeTracker == null || chargeProgressFill == null || abilityActionButton == null)
+            {
+                return;
+            }
+
+            float progress = activeChargeTracker.ChargeProgress;
+            chargeProgressFill.style.width = new StyleLength(new Length(progress * 100f, LengthUnit.Percent));
+
+            AbilityDefinition ability = abilityManager != null ? abilityManager.CurrentAbility : null;
+            if (ability != null)
+            {
+                string abilityName = string.IsNullOrWhiteSpace(ability.displayName) ? "Ability" : ability.displayName;
+                UpdateActiveAbilityButtonText(abilityName);
+            }
         }
 
         private void OnAbilityActionClicked()
@@ -374,8 +465,10 @@ namespace EndlessRunner
                 return;
             }
 
-            abilityManager.TryActivateCurrentAbility();
-            TriggerAbilityPulse();
+            if (abilityManager.TryActivateCurrentAbility())
+            {
+                TriggerAbilityPulse();
+            }
         }
 
         private void OnHealthChanged(int current, int max)
@@ -817,7 +910,6 @@ namespace EndlessRunner
                    button == settingsCloseButton ||
                    button == codexCloseButton ||
                    button == codexTabCreaturesButton ||
-                   button == codexTabObstaclesButton ||
                    button == codexTabCollectionsButton;
         }
 
@@ -937,10 +1029,6 @@ namespace EndlessRunner
             {
                 OnCodexCreaturesClicked();
             }
-            else if (button == codexTabObstaclesButton)
-            {
-                OnCodexObstaclesClicked();
-            }
             else if (button == codexTabCollectionsButton)
             {
                 OnCodexCollectionsClicked();
@@ -981,7 +1069,7 @@ namespace EndlessRunner
             SetCharacterSelectionVisible(showMainMenu);
             SetMenuOptionButtonsVisible(showMainMenuOnlyButtons);
             SetStartButtonVisible(showMainMenu);
-            SetMenuTitle(showPauseMenu ? "Paused" : "Loadout Select");
+            SetMenuTitle("Character Select");
 
             if (showPauseMenu)
             {
@@ -989,7 +1077,7 @@ namespace EndlessRunner
             }
             else if (state == GameState.Menu)
             {
-                SetMenuHint("Choose a loadout, then begin the descent.");
+                SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
             }
         }
 
@@ -1057,8 +1145,6 @@ namespace EndlessRunner
             gameOverExitButton = root.Q<UITKButton>(gameOverExitButtonName);
             settingsVolumeSlider = root.Q<UITKSlider>(settingsVolumeSliderName);
             settingsVolumeValueLabel = root.Q<Label>(settingsVolumeValueLabelName);
-            settingsResolutionDropdown = root.Q<UITKDropdownField>(settingsResolutionDropdownName);
-            settingsResolutionHintLabel = root.Q<Label>(settingsResolutionHintLabelName);
             settingsApplyButton = root.Q<UITKButton>(settingsApplyButtonName);
             settingsMainMenuButton = root.Q<UITKButton>(settingsMainMenuButtonName);
             settingsCloseButton = root.Q<UITKButton>(settingsCloseButtonName);
@@ -1067,7 +1153,6 @@ namespace EndlessRunner
             codexListElement = root.Q<VisualElement>(codexListName);
             codexCloseButton = root.Q<UITKButton>(codexCloseButtonName);
             codexTabCreaturesButton = root.Q<UITKButton>(codexTabCreaturesButtonName);
-            codexTabObstaclesButton = root.Q<UITKButton>(codexTabObstaclesButtonName);
             codexTabCollectionsButton = root.Q<UITKButton>(codexTabCollectionsButtonName);
 
             List<string> missingElements = new List<string>();
@@ -1101,8 +1186,6 @@ namespace EndlessRunner
             if (gameOverExitButton == null) missingElements.Add(gameOverExitButtonName);
             if (settingsVolumeSlider == null) missingElements.Add(settingsVolumeSliderName);
             if (settingsVolumeValueLabel == null) missingElements.Add(settingsVolumeValueLabelName);
-            if (settingsResolutionDropdown == null) missingElements.Add(settingsResolutionDropdownName);
-            if (settingsResolutionHintLabel == null) missingElements.Add(settingsResolutionHintLabelName);
             if (settingsApplyButton == null) missingElements.Add(settingsApplyButtonName);
             if (settingsMainMenuButton == null) missingElements.Add(settingsMainMenuButtonName);
             if (settingsCloseButton == null) missingElements.Add(settingsCloseButtonName);
@@ -1129,23 +1212,13 @@ namespace EndlessRunner
 
         private void EnsureUiDocument()
         {
-            if (uiDocument != null)
+            if (uiDocument != null &&
+                (uiDocument.gameObject == gameObject || string.Equals(uiDocument.gameObject.name, "GameUI", StringComparison.Ordinal)))
             {
                 return;
             }
 
-            GameObject gameUi = GameObject.Find("GameUI");
-            if (gameUi != null)
-            {
-                uiDocument = gameUi.GetComponent<UIDocument>();
-            }
-
-            if (uiDocument != null)
-            {
-                return;
-            }
-
-            uiDocument = FindAnyObjectByType<UIDocument>();
+            uiDocument = UIDocumentLocator.FindGameplayDocument();
             if (uiDocument != null || !createUiDocumentIfMissing)
             {
                 return;
@@ -1226,11 +1299,6 @@ namespace EndlessRunner
             if (string.IsNullOrWhiteSpace(codexTabCreaturesButtonName))
             {
                 codexTabCreaturesButtonName = DefaultCodexTabCreaturesButtonName;
-            }
-
-            if (string.IsNullOrWhiteSpace(codexTabObstaclesButtonName))
-            {
-                codexTabObstaclesButtonName = DefaultCodexTabObstaclesButtonName;
             }
 
             if (string.IsNullOrWhiteSpace(codexTabCollectionsButtonName))
@@ -1332,8 +1400,8 @@ namespace EndlessRunner
             SetCharacterSelectionVisible(true);
             SetMenuOptionButtonsVisible(IsMainMenuSceneActive());
             SetStartButtonVisible(true);
-            SetMenuTitle("Loadout Select");
-            SetMenuHint("Choose a loadout, then begin the descent.");
+            SetMenuTitle("Character Select");
+            SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
         }
 
         private void DisableLegacyUI()
@@ -1472,13 +1540,6 @@ namespace EndlessRunner
                 RegisterTrackedButton(codexTabCreaturesButton);
             }
 
-            if (codexTabObstaclesButton != null)
-            {
-                codexTabObstaclesButton.clicked -= OnCodexObstaclesClicked;
-                codexTabObstaclesButton.clicked += OnCodexObstaclesClicked;
-                RegisterTrackedButton(codexTabObstaclesButton);
-            }
-
             if (codexTabCollectionsButton != null)
             {
                 codexTabCollectionsButton.clicked -= OnCodexCollectionsClicked;
@@ -1489,12 +1550,9 @@ namespace EndlessRunner
             settingsVolumeSlider.UnregisterValueChangedCallback(OnSettingsVolumeChanged);
             settingsVolumeSlider.RegisterValueChangedCallback(OnSettingsVolumeChanged);
 
-            settingsResolutionDropdown.UnregisterValueChangedCallback(OnSettingsResolutionChanged);
-            settingsResolutionDropdown.RegisterValueChangedCallback(OnSettingsResolutionChanged);
-
             RefreshCharacterSelectionUI();
             EnsureSettingsInitialized();
-            SetMenuHint("Choose a loadout, then begin the descent.");
+            SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
             RefreshAbilityButtonState();
         }
 
@@ -1626,12 +1684,6 @@ namespace EndlessRunner
                 UnregisterTrackedButton(codexTabCreaturesButton);
             }
 
-            if (codexTabObstaclesButton != null)
-            {
-                codexTabObstaclesButton.clicked -= OnCodexObstaclesClicked;
-                UnregisterTrackedButton(codexTabObstaclesButton);
-            }
-
             if (codexTabCollectionsButton != null)
             {
                 codexTabCollectionsButton.clicked -= OnCodexCollectionsClicked;
@@ -1641,11 +1693,6 @@ namespace EndlessRunner
             if (settingsVolumeSlider != null)
             {
                 settingsVolumeSlider.UnregisterValueChangedCallback(OnSettingsVolumeChanged);
-            }
-
-            if (settingsResolutionDropdown != null)
-            {
-                settingsResolutionDropdown.UnregisterValueChangedCallback(OnSettingsResolutionChanged);
             }
         }
 
@@ -1678,6 +1725,7 @@ namespace EndlessRunner
 
         private void OnPauseClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             if (gameManager == null || gameManager.State != GameState.Running)
             {
                 Debug.LogWarning(
@@ -1693,6 +1741,7 @@ namespace EndlessRunner
 
         private void OnContinueClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             if (gameManager == null || gameManager.State != GameState.Paused)
             {
                 return;
@@ -1705,6 +1754,7 @@ namespace EndlessRunner
 
         private void OnStartClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseOverlaySubpanels();
             pauseMenuRequested = false;
             ApplySelectedCharacter();
@@ -1722,6 +1772,7 @@ namespace EndlessRunner
 
         private void OnCollectionClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             if (gameManager == null)
             {
                 return;
@@ -1729,7 +1780,7 @@ namespace EndlessRunner
 
             if (!HasCodexUi())
             {
-                SetMenuHint("Codex UI is unavailable in the current GameUI layout.");
+                SetMenuHint("Manual UI is unavailable in the current GameUI layout.");
                 return;
             }
 
@@ -1739,7 +1790,7 @@ namespace EndlessRunner
                 CodexDatabase database = GetCodexDatabase();
                 int totalCount = database != null ? database.GetEntryCount(CodexCategory.Collection) : 0;
                 string progress = totalCount > 0 ? $"{unlockedCount}/{totalCount}" : unlockedCount.ToString();
-                SetMenuHint($"Codex unlocked: {progress}");
+                SetMenuHint($"Manual unlocked: {progress}");
                 return;
             }
 
@@ -1748,11 +1799,12 @@ namespace EndlessRunner
             SetCodexCategory(currentCodexCategory);
             SetCodexPanelVisible(true);
             RefreshMenuPanelVisibility();
-            SetMenuHint("Codex opened.");
+            SetMenuHint("Manual opened.");
         }
 
         private void OnSettingsClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             EnsureSettingsInitialized();
             CloseCodexPanel();
             settingsPanelRequested = true;
@@ -1764,6 +1816,7 @@ namespace EndlessRunner
 
         private void OnExitClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             if (gameManager != null)
             {
                 gameManager.QuitGame();
@@ -1779,6 +1832,7 @@ namespace EndlessRunner
 
         private void OnPauseMainMenuClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             pauseMenuRequested = false;
             CloseOverlaySubpanels();
             if (gameManager != null)
@@ -1800,27 +1854,26 @@ namespace EndlessRunner
 
         private void OnCodexCloseClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             CloseCodexPanel();
-            SetMenuHint(gameManager != null && gameManager.State == GameState.Paused ? "Game paused." : "Codex closed.");
+            SetMenuHint(gameManager != null && gameManager.State == GameState.Paused ? "Game paused." : "Manual closed.");
         }
 
         private void OnCodexCreaturesClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             SetCodexCategory(CodexCategory.Creature);
-        }
-
-        private void OnCodexObstaclesClicked()
-        {
-            SetCodexCategory(CodexCategory.Obstacle);
         }
 
         private void OnCodexCollectionsClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             SetCodexCategory(CodexCategory.Collection);
         }
 
         private void OnGameOverRestartClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             if (gameManager != null)
             {
                 // 需求：等价于重新点一次 Play，直接重载游戏场景。
@@ -1847,43 +1900,12 @@ namespace EndlessRunner
 
         private void OnSettingsApplyClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             if (settingsVolumeSlider != null)
             {
                 ApplyMasterVolume(settingsVolumeSlider.value, true);
             }
-
-            if (SupportsRuntimeResolutionSelection())
-            {
-                ResolutionOption resolution;
-                if (selectedResolutionIndex >= 0 && selectedResolutionIndex < availableResolutions.Count)
-                {
-                    resolution = availableResolutions[selectedResolutionIndex];
-                    PlayerPrefs.SetInt(ResolutionPrefKey, selectedResolutionIndex);
-                }
-                else
-                {
-                    resolution = GetAutoResolution();
-                    PlayerPrefs.SetInt(ResolutionPrefKey, -1);
-                }
-
-                Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
-                if (selectedResolutionIndex >= 0)
-                {
-                    SetMenuHint($"Resolution applied: {resolution.width} x {resolution.height}");
-                }
-                else
-                {
-                    SetMenuHint($"Auto resolution applied: {resolution.width} x {resolution.height}");
-                }
-            }
-            else if (Application.isMobilePlatform)
-            {
-                SetMenuHint("Volume saved. Mobile resolution is managed by the system.");
-            }
-            else
-            {
-                SetMenuHint("Settings saved.");
-            }
+            SetMenuHint("Settings saved.");
 
             PlayerPrefs.Save();
             CloseSettingsPanel();
@@ -1891,6 +1913,7 @@ namespace EndlessRunner
 
         private void OnSettingsCloseClicked()
         {
+            AudioManager.Instance?.PlayButtonClick();
             PlayerPrefs.Save();
             CloseSettingsPanel();
             if (gameManager != null && gameManager.State == GameState.Paused)
@@ -1899,7 +1922,7 @@ namespace EndlessRunner
             }
             else if (gameManager != null && gameManager.State == GameState.Menu)
             {
-                SetMenuHint("Choose a loadout, then begin the descent.");
+                SetMenuHint("Choose an ability/loadout, then tap Confirm Start.");
             }
             else
             {
@@ -1921,27 +1944,6 @@ namespace EndlessRunner
 
             ApplyMasterVolume(evt.newValue, true);
             RefreshVolumeValueText(evt.newValue);
-        }
-
-        private void OnSettingsResolutionChanged(ChangeEvent<string> evt)
-        {
-            if (suppressSettingsEvents)
-            {
-                return;
-            }
-
-            int dropdownIndex = availableResolutionLabels.IndexOf(evt.newValue);
-            if (dropdownIndex <= 0)
-            {
-                selectedResolutionIndex = -1;
-                return;
-            }
-
-            selectedResolutionIndex = dropdownIndex - 1;
-            if (selectedResolutionIndex >= availableResolutions.Count)
-            {
-                selectedResolutionIndex = -1;
-            }
         }
 
         private void BuildCodexPage()
@@ -2005,7 +2007,6 @@ namespace EndlessRunner
         private void UpdateCodexTabVisuals()
         {
             SetTabActive(codexTabCreaturesButton, currentCodexCategory == CodexCategory.Creature);
-            SetTabActive(codexTabObstaclesButton, currentCodexCategory == CodexCategory.Obstacle);
             SetTabActive(codexTabCollectionsButton, currentCodexCategory == CodexCategory.Collection);
         }
 
@@ -2152,7 +2153,6 @@ namespace EndlessRunner
                    codexListElement != null &&
                    codexCloseButton != null &&
                    codexTabCreaturesButton != null &&
-                   codexTabObstaclesButton != null &&
                    codexTabCollectionsButton != null;
         }
 
@@ -2378,26 +2378,6 @@ namespace EndlessRunner
                 return;
             }
 
-            PopulateResolutionOptions();
-
-            if (PlayerPrefs.HasKey(ResolutionPrefKey))
-            {
-                int preferredResolutionIndex = PlayerPrefs.GetInt(ResolutionPrefKey, -1);
-                if (preferredResolutionIndex >= 0 && preferredResolutionIndex < availableResolutions.Count)
-                {
-                    selectedResolutionIndex = preferredResolutionIndex;
-                }
-                else
-                {
-                    selectedResolutionIndex = -1;
-                }
-            }
-            else
-            {
-                // 默认使用自动调整模式，适配不同显示器/窗口尺寸。
-                selectedResolutionIndex = -1;
-            }
-
             settingsInitialized = true;
             RefreshSettingsPanel();
         }
@@ -2405,13 +2385,28 @@ namespace EndlessRunner
         private void LoadSavedMasterVolume()
         {
             float savedVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MasterVolumePrefKey, 1f));
-            AudioListener.volume = savedVolume;
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.SetMasterVolume(savedVolume);
+            }
+            else
+            {
+                AudioListener.volume = savedVolume;
+            }
         }
 
         private void ApplyMasterVolume(float volume, bool persist)
         {
             float clamped = Mathf.Clamp01(volume);
-            AudioListener.volume = clamped;
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.SetMasterVolume(clamped);
+            }
+            else
+            {
+                AudioListener.volume = clamped;
+            }
+
             if (!persist)
             {
                 return;
@@ -2432,134 +2427,20 @@ namespace EndlessRunner
 
         private void RefreshSettingsPanel()
         {
-            if (settingsVolumeSlider == null || settingsResolutionDropdown == null)
+            if (settingsVolumeSlider == null)
             {
                 return;
             }
 
             suppressSettingsEvents = true;
 
-            float currentVolume = Mathf.Clamp01(AudioListener.volume);
+            float currentVolume = AudioManager.Instance != null
+                ? AudioManager.Instance.GetMasterVolume()
+                : Mathf.Clamp01(AudioListener.volume);
             settingsVolumeSlider.SetValueWithoutNotify(currentVolume);
             RefreshVolumeValueText(currentVolume);
 
-            settingsResolutionDropdown.choices = availableResolutionLabels;
-            if (availableResolutionLabels.Count > 0)
-            {
-                string selectedLabel = AutoResolutionLabel;
-                if (selectedResolutionIndex >= 0 && selectedResolutionIndex < availableResolutions.Count)
-                {
-                    int dropdownIndex = Mathf.Clamp(selectedResolutionIndex + 1, 1, availableResolutionLabels.Count - 1);
-                    selectedLabel = availableResolutionLabels[dropdownIndex];
-                }
-
-                settingsResolutionDropdown.SetValueWithoutNotify(selectedLabel);
-            }
-
-            bool canChangeResolution = SupportsRuntimeResolutionSelection() && availableResolutionLabels.Count > 0;
-            settingsResolutionDropdown.SetEnabled(canChangeResolution);
-            if (settingsResolutionHintLabel != null)
-            {
-                if (canChangeResolution)
-                {
-                    settingsResolutionHintLabel.text = selectedResolutionIndex < 0
-                        ? $"Current Resolution: {Screen.width} x {Screen.height} (Auto)"
-                        : $"Current Resolution: {Screen.width} x {Screen.height}";
-                }
-                else if (Application.isMobilePlatform)
-                {
-                    settingsResolutionHintLabel.text = "Mobile uses system resolution; no manual switch needed.";
-                }
-                else
-                {
-                    settingsResolutionHintLabel.text = "No available resolution options detected.";
-                }
-            }
-
             suppressSettingsEvents = false;
-        }
-
-        private void PopulateResolutionOptions()
-        {
-            availableResolutions.Clear();
-            availableResolutionLabels.Clear();
-            availableResolutionLabels.Add(AutoResolutionLabel);
-
-            HashSet<string> uniqueSizes = new HashSet<string>();
-            Resolution[] resolutions = Screen.resolutions;
-            if (resolutions != null)
-            {
-                for (int i = 0; i < resolutions.Length; i++)
-                {
-                    Resolution resolution = resolutions[i];
-                    string key = $"{resolution.width}x{resolution.height}";
-                    if (!uniqueSizes.Add(key))
-                    {
-                        continue;
-                    }
-
-                    availableResolutions.Add(new ResolutionOption
-                    {
-                        width = resolution.width,
-                        height = resolution.height
-                    });
-                }
-            }
-
-            if (availableResolutions.Count == 0)
-            {
-                availableResolutions.Add(new ResolutionOption
-                {
-                    width = Screen.width,
-                    height = Screen.height
-                });
-            }
-
-            availableResolutions.Sort((a, b) =>
-            {
-                int areaCompare = (a.width * a.height).CompareTo(b.width * b.height);
-                if (areaCompare != 0)
-                {
-                    return areaCompare;
-                }
-
-                return a.width.CompareTo(b.width);
-            });
-
-            for (int i = 0; i < availableResolutions.Count; i++)
-            {
-                ResolutionOption option = availableResolutions[i];
-                availableResolutionLabels.Add($"{option.width} x {option.height}");
-            }
-        }
-
-        private ResolutionOption GetAutoResolution()
-        {
-            if (availableResolutions.Count > 0)
-            {
-                return availableResolutions[availableResolutions.Count - 1];
-            }
-
-            Resolution screenResolution = Screen.currentResolution;
-            if (screenResolution.width > 0 && screenResolution.height > 0)
-            {
-                return new ResolutionOption
-                {
-                    width = screenResolution.width,
-                    height = screenResolution.height
-                };
-            }
-
-            return new ResolutionOption
-            {
-                width = Mathf.Max(Screen.width, 1),
-                height = Mathf.Max(Screen.height, 1)
-            };
-        }
-
-        private bool SupportsRuntimeResolutionSelection()
-        {
-            return !Application.isMobilePlatform;
         }
 
         private static bool IsEscapePressed()

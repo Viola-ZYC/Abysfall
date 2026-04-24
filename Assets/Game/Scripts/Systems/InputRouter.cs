@@ -22,12 +22,14 @@ namespace EndlessRunner
         public event Action TouchReleased;
 
         public float Horizontal { get; private set; }
+        public bool HasMovementPointer { get; private set; }
+        public Vector2 MovementPointerScreenPosition { get; private set; }
 
 #if ENABLE_INPUT_SYSTEM
         [SerializeField] private InputActionReference moveLeftAction;
         [SerializeField] private InputActionReference moveRightAction;
 #endif
-        [SerializeField] private bool useKeyboardFallback = true;
+        [SerializeField] private bool useKeyboardFallback = false;
         [SerializeField] private bool useTouchInput = true;
         [SerializeField] private bool simulateTouchWithMouse = true;
         [SerializeField] private bool touchMoveByScreenPosition = true;
@@ -84,11 +86,15 @@ namespace EndlessRunner
 
         private void Update()
         {
+            HasMovementPointer = false;
+            MovementPointerScreenPosition = Vector2.zero;
+
             if (useTouchInput && UpdateTouchInput())
             {
                 return;
             }
 
+            Horizontal = 0f;
             UpdateActionInput();
             if (useKeyboardFallback)
             {
@@ -202,6 +208,8 @@ namespace EndlessRunner
                 activeTouchId = -1;
                 activePointerUsesMouse = false;
                 uiPointerActive = true;
+                HasMovementPointer = false;
+                MovementPointerScreenPosition = Vector2.zero;
                 Horizontal = 0f;
                 return true;
             }
@@ -218,6 +226,8 @@ namespace EndlessRunner
                     pointerStart = position;
                 }
 
+                HasMovementPointer = true;
+                MovementPointerScreenPosition = position;
                 Horizontal = GetTouchMoveAxis(position);
                 return true;
             }
@@ -225,6 +235,8 @@ namespace EndlessRunner
             if (uiPointerActive)
             {
                 uiPointerActive = false;
+                HasMovementPointer = false;
+                MovementPointerScreenPosition = Vector2.zero;
                 Horizontal = 0f;
                 return true;
             }
@@ -234,6 +246,8 @@ namespace EndlessRunner
                 pointerActive = false;
                 activeTouchId = -1;
                 activePointerUsesMouse = false;
+                HasMovementPointer = false;
+                MovementPointerScreenPosition = Vector2.zero;
                 Horizontal = 0f;
                 TouchReleased?.Invoke();
                 return true;

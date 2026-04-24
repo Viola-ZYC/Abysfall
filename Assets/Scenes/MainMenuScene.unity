@@ -302,6 +302,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.GameManager
   initialState: 1
   forcePortrait: 1
+  useSceneBasedMainMenu: 1
+  allowGameOverQuickRestart: 0
+  mainMenuSceneName: MainMenuScene
+  gameplaySceneName: SampleScene
   runner: {fileID: 0}
   trackManager: {fileID: 0}
   scoreManager: {fileID: 0}
@@ -349,8 +353,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: ec9485fdcb7a4f71a071313d3ab46f02, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: 8ecdb44dc0905ef4cafa2d3cc73e9408, type: 3}
@@ -372,8 +376,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e88e4260e821084bacbd9da85821050, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   mainMenuSceneName: MainMenuScene
   gameplaySceneName: SampleScene
   panelSettingsResource: UI/GamePanelSettings
@@ -413,8 +417,6 @@ MonoBehaviour:
   settingsOverlayName: mainmenu-settings-overlay
   settingsVolumeSliderName: mainmenu-settings-volume-slider
   settingsVolumeValueLabelName: mainmenu-settings-volume-value-label
-  settingsResolutionDropdownName: mainmenu-settings-resolution-dropdown
-  settingsResolutionHintLabelName: mainmenu-settings-resolution-hint-label
   gameModeDropdownName: mainmenu-game-mode-dropdown
   gameModeHintLabelName: mainmenu-game-mode-hint-label
   settingsApplyButtonName: mainmenu-settings-apply-button

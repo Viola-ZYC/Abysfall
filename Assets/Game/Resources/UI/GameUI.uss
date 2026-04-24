@@ -6,46 +6,10 @@
     top: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0);
-    overflow: hidden;
-}
-
-.ui-ambient-layer {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    pointer-events: none;
-}
-
-.ui-ambient-glow {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 680px;
-    height: 680px;
-    margin-left: -340px;
-    margin-top: -340px;
-    border-width: 1px;
-    border-color: rgba(255, 92, 108, 0.16);
-    border-radius: 2px;
-    background-color: rgba(30, 8, 14, 0.08);
-}
-
-.ui-ambient-frame {
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    top: 16px;
-    bottom: 16px;
-    border-width: 1px;
-    border-color: rgba(255, 92, 108, 0.12);
-    border-radius: 2px;
 }
 
 .safe-area {
     flex-grow: 1;
-    position: relative;
 }
 
 .hud {
@@ -53,7 +17,7 @@
     left: 0;
     right: 0;
     top: 0;
-    padding: 18px;
+    padding: 24px;
     flex-direction: column;
 }
 
@@ -61,7 +25,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 18px;
+    bottom: 24px;
     align-items: center;
     justify-content: center;
     min-height: 84px;
@@ -114,14 +78,12 @@
 
 .fx-ability-pulse {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 320px;
-    height: 320px;
-    margin-left: -160px;
-    margin-top: -160px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     border-width: 2px;
-    border-color: rgba(255, 90, 100, 0.85);
+    border-color: rgba(80, 160, 255, 0.85);
     border-radius: 2px;
     opacity: 0;
     transition-property: opacity;
@@ -135,14 +97,13 @@
 
 .ability-button {
     width: 360px;
-    max-width: 86%;
     height: 84px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.8);
+    border-color: rgba(210, 215, 225, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 18px;
+    font-size: 26px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1px;
@@ -154,6 +115,28 @@
     color: rgba(200, 200, 200, 0.6);
 }
 
+.ability-button.is-active {
+    background-color: rgba(34, 10, 18, 0.98);
+    border-color: rgb(230, 230, 240);
+    color: rgb(255, 247, 247);
+}
+
+.ability-button.is-active:hover {
+    background-color: rgba(210, 215, 225, 0.18);
+    border-color: rgb(240, 240, 245);
+}
+
+.ability-button.is-active:active {
+    background-color: rgba(210, 215, 225, 0.28);
+}
+
+.ability-button.is-passive:disabled {
+    background-color: rgba(12, 46, 38, 0.96);
+    border-color: rgba(92, 224, 176, 0.95);
+    color: rgba(241, 250, 247, 0.98);
+    opacity: 1;
+}
+
 .hud-row {
     width: 100%;
     position: relative;
@@ -163,50 +146,81 @@
 }
 
 .hud-card {
-    min-width: 280px;
-    background-color: rgba(6, 7, 10, 0.78);
-    border-width: 2px;
-    border-color: rgba(255, 72, 88, 0.72);
+    width: 520px;
+    flex-shrink: 0;
+    background-color: rgba(6, 6, 8, 0);
+    border-width: 0;
     border-radius: 2px;
-    padding: 12px 14px;
+    padding: 10px 16px;
+}
+
+.hud-frame-words15 {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    background-image: resource("Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Words15");
+    -unity-slice-scale: 3px;
+    -unity-slice-type: sliced;
+    -unity-slice-left: 2;
+    -unity-slice-top: 3;
+    -unity-slice-right: 2;
+    -unity-slice-bottom: 3;
+    background-color: rgba(6, 6, 8, 0);
+}
+
+.hud-pause-frame {
+    width: 280px;
+    min-height: 84px;
+    flex-shrink: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
 .hud-text {
-    font-size: 24px;
+    font-size: 32px;
     color: rgb(245, 245, 245);
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     letter-spacing: 1px;
     -unity-font-style: bold;
 }
 
 .hud-metric-text {
-    font-size: 14px;
+    font-size: 22px;
     color: rgba(232, 232, 232, 0.95);
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     letter-spacing: 0.5px;
     -unity-font-style: bold;
 }
 
 .pause-button {
+    width: 100%;
     height: 84px;
     min-width: 220px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.8);
+    border-color: rgba(210, 215, 225, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 16px;
+    font-size: 24px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
 }
 
 .pause-button:hover {
-    background-color: rgba(255, 60, 80, 0.2);
-    border-color: rgba(255, 90, 100, 1);
+    background-color: rgba(210, 215, 225, 0.15);
+    border-color: rgb(235, 235, 240);
 }
 
 .pause-button:active {
-    background-color: rgba(255, 60, 80, 0.35);
+    background-color: rgba(210, 215, 225, 0.25);
 }
 
 .overlay {
@@ -216,7 +230,7 @@
     top: 0;
     bottom: 0;
     display: none;
-    background-color: rgba(1, 1, 2, 0.84);
+    background-color: rgba(0, 0, 0, 0.75);
     align-items: center;
     justify-content: center;
     opacity: 0;
@@ -235,18 +249,24 @@
 }
 
 .overlay-card {
-    background-color: rgba(10, 11, 14, 0.96);
-    border-width: 2px;
-    border-color: rgba(255, 72, 88, 0.82);
+    background-color: rgba(12, 12, 14, 0);
+    border-width: 0;
     border-radius: 2px;
-    padding: 24px 28px;
+    padding: 28px 36px;
     align-items: center;
     justify-content: center;
+    background-image: resource("Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Words15");
+    -unity-slice-left: 2;
+    -unity-slice-top: 3;
+    -unity-slice-right: 2;
+    -unity-slice-bottom: 3;
+    -unity-slice-scale: 3px;
+    -unity-slice-type: sliced;
 }
 
 .overlay-card-wide {
-    width: 92%;
-    max-width: 820px;
+    width: 80%;
+    max-width: 900px;
 }
 
 .pause-card {
@@ -254,7 +274,7 @@
 }
 
 .overlay-text {
-    font-size: 32px;
+    font-size: 44px;
     color: rgb(245, 245, 245);
     unity-text-align: middle-center;
     -unity-font-style: bold;
@@ -267,9 +287,9 @@
 }
 
 .overlay-title {
-    font-size: 24px;
+    font-size: 36px;
     color: rgb(245, 245, 245);
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1.2px;
@@ -285,7 +305,7 @@
 }
 
 .ability-acquired-desc {
-    font-size: 16px;
+    font-size: 22px;
     color: rgba(230, 230, 230, 0.95);
     unity-text-align: middle-center;
     margin-bottom: 14px;
@@ -301,55 +321,29 @@
 }
 
 .ability-acquired-hint {
-    font-size: 12px;
+    font-size: 18px;
     color: rgba(210, 210, 210, 0.8);
     unity-text-align: middle-center;
 }
 
-.choice-list {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-.choice-button {
-    height: 72px;
-    margin-top: 10px;
-    background-color: rgba(18, 18, 20, 0.98);
-    border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.8);
-    border-radius: 2px;
-    color: rgb(245, 245, 245);
-    font-size: 18px;
-    unity-text-align: middle-center;
-    -unity-font-style: bold;
-    letter-spacing: 1px;
-    transition-property: background-color, border-color;
-    transition-duration: 0.08s;
-    transition-timing-function: ease-out;
-}
-
-.choice-button:hover {
-    background-color: rgba(255, 60, 80, 0.2);
-    border-color: rgba(255, 90, 100, 1);
-}
-
-.choice-button:active {
-    background-color: rgba(255, 60, 80, 0.35);
-}
-
 .character-selection {
     width: 100%;
-    margin-bottom: 12px;
-    padding: 12px;
-    background-color: rgba(16, 16, 19, 0.9);
-    border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.55);
+    margin-bottom: 14px;
+    padding: 14px;
+    background-color: rgba(16, 16, 19, 0);
+    border-width: 0;
     border-radius: 2px;
+    background-image: resource("Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Words15");
+    -unity-slice-left: 2;
+    -unity-slice-top: 3;
+    -unity-slice-right: 2;
+    -unity-slice-bottom: 3;
+    -unity-slice-scale: 3px;
+    -unity-slice-type: sliced;
 }
 
 .character-title {
-    font-size: 18px;
+    font-size: 26px;
     color: rgb(245, 245, 245);
     margin-bottom: 10px;
     unity-text-align: middle-center;
@@ -364,24 +358,24 @@
 }
 
 .character-nav-button {
-    width: 58px;
-    height: 58px;
-    background-color: rgba(24, 24, 28, 1);
+    width: 72px;
+    height: 72px;
+    background-color: rgb(24, 24, 28);
     border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.8);
+    border-color: rgba(210, 215, 225, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 24px;
+    font-size: 36px;
     -unity-font-style: bold;
     unity-text-align: middle-center;
 }
 
 .character-nav-button:hover {
-    background-color: rgba(255, 60, 80, 0.2);
+    background-color: rgba(210, 215, 225, 0.15);
 }
 
 .character-nav-button:active {
-    background-color: rgba(255, 60, 80, 0.35);
+    background-color: rgba(210, 215, 225, 0.25);
 }
 
 .character-info {
@@ -392,7 +386,7 @@
 }
 
 .character-name {
-    font-size: 22px;
+    font-size: 32px;
     color: rgb(245, 245, 245);
     -unity-font-style: bold;
     unity-text-align: middle-center;
@@ -400,7 +394,7 @@
 
 .character-desc {
     margin-top: 4px;
-    font-size: 12px;
+    font-size: 18px;
     color: rgba(230, 230, 230, 0.9);
     unity-text-align: middle-center;
 }
@@ -412,14 +406,14 @@
 }
 
 .menu-button {
-    height: 72px;
-    margin-top: 10px;
+    height: 84px;
+    margin-top: 12px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.8);
+    border-color: rgba(210, 215, 225, 0.8);
     border-radius: 2px;
     color: rgb(245, 245, 245);
-    font-size: 18px;
+    font-size: 28px;
     unity-text-align: middle-center;
     -unity-font-style: bold;
     letter-spacing: 1px;
@@ -429,16 +423,16 @@
 }
 
 .menu-button:hover {
-    background-color: rgba(255, 60, 80, 0.2);
-    border-color: rgba(255, 90, 100, 1);
+    background-color: rgba(210, 215, 225, 0.15);
+    border-color: rgb(235, 235, 240);
 }
 
 .menu-button:active {
-    background-color: rgba(255, 60, 80, 0.35);
+    background-color: rgba(210, 215, 225, 0.25);
 }
 
 .menu-button-exit {
-    border-color: rgba(255, 110, 60, 0.9);
+    border-color: rgba(210, 215, 225, 0.9);
 }
 
 .menu-button-secondary {
@@ -450,24 +444,30 @@
 }
 
 .menu-hint {
-    margin-top: 14px;
-    font-size: 12px;
+    margin-top: 16px;
+    font-size: 22px;
     color: rgba(220, 220, 220, 0.95);
     unity-text-align: middle-center;
 }
 
 .settings-card {
-    max-width: 700px;
+    max-width: 760px;
 }
 
 .settings-section {
     width: 100%;
-    margin-bottom: 16px;
-    padding: 12px;
-    background-color: rgba(16, 16, 19, 0.9);
-    border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.45);
+    margin-bottom: 20px;
+    padding: 14px;
+    background-color: rgba(16, 16, 19, 0);
+    border-width: 0;
     border-radius: 2px;
+    background-image: resource("Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Words15");
+    -unity-slice-left: 2;
+    -unity-slice-top: 3;
+    -unity-slice-right: 2;
+    -unity-slice-bottom: 3;
+    -unity-slice-scale: 3px;
+    -unity-slice-type: sliced;
 }
 
 .settings-row {
@@ -478,31 +478,31 @@
 }
 
 .settings-label {
-    font-size: 18px;
+    font-size: 26px;
     color: rgb(245, 245, 245);
     -unity-font-style: bold;
 }
 
 .settings-value-label {
-    font-size: 14px;
+    font-size: 24px;
     color: rgba(230, 230, 230, 0.95);
 }
 
 .settings-slider {
     margin-top: 10px;
-    height: 32px;
+    height: 36px;
 }
 
 .settings-dropdown {
     margin-top: 10px;
-    height: 48px;
-    font-size: 14px;
+    height: 56px;
+    font-size: 22px;
     color: rgb(245, 245, 245);
 }
 
 .settings-hint {
     margin-top: 10px;
-    font-size: 11px;
+    font-size: 18px;
     color: rgba(220, 220, 220, 0.92);
 }
 
@@ -541,7 +541,7 @@
     margin-right: 8px;
     background-color: rgba(18, 18, 20, 0.98);
     border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.5);
+    border-color: rgba(210, 215, 225, 0.5);
     border-radius: 2px;
     color: rgb(235, 235, 235);
     font-size: 14px;
@@ -553,12 +553,12 @@
 }
 
 .manual-tab-button:hover {
-    background-color: rgba(255, 60, 80, 0.2);
+    background-color: rgba(210, 215, 225, 0.15);
 }
 
 .manual-tab-button.is-active {
-    background-color: rgba(255, 60, 80, 0.35);
-    border-color: rgba(255, 90, 100, 1);
+    background-color: rgba(210, 215, 225, 0.25);
+    border-color: rgb(235, 235, 240);
     color: rgb(255, 255, 255);
 }
 
@@ -585,10 +585,16 @@
 .collection-entry {
     margin-bottom: 10px;
     padding: 12px 14px;
-    background-color: rgba(18, 18, 20, 0.9);
-    border-width: 2px;
-    border-color: rgba(255, 60, 80, 0.35);
+    background-color: rgba(18, 18, 20, 0);
+    border-width: 0;
     border-radius: 2px;
+    background-image: resource("Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Words15");
+    -unity-slice-left: 2;
+    -unity-slice-top: 3;
+    -unity-slice-right: 2;
+    -unity-slice-bottom: 3;
+    -unity-slice-scale: 3px;
+    -unity-slice-type: sliced;
 }
 
 .collection-entry.is-locked {
@@ -634,7 +640,6 @@
 #settings-apply-button,
 #settings-mainmenu-button,
 #settings-close-button,
-#ability-mainmenu-button,
 #codex-close-button {
     padding-left: 52px;
     background-position: 16px 50%;
@@ -675,11 +680,91 @@
 
 #pause-mainmenu-button,
 #gameover-mainmenu-button,
-#settings-mainmenu-button,
-#ability-mainmenu-button {
+#settings-mainmenu-button {
     background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons16.png");
 }
 
 #settings-apply-button {
     background-image: url("Assets/Game/Resources/Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons8.png");
+}
+
+.over {
+}
+
+.overlay {
+}
+
+.overlay-tutorial {
+    background-color: rgba(0, 0, 0, 0.82);
+}
+
+.tutorial-card {
+    max-width: 720px;
+}
+
+.tutorial-step-label {
+    margin-bottom: 12px;
+    font-size: 18px;
+    color: rgba(255, 120, 130, 0.95);
+    unity-text-align: middle-center;
+    letter-spacing: 1.6px;
+    -unity-font-style: bold;
+}
+
+.tutorial-title {
+    margin-bottom: 18px;
+}
+
+.tutorial-body {
+    font-size: 22px;
+    color: rgba(230, 230, 230, 0.95);
+    unity-text-align: middle-center;
+    margin-bottom: 24px;
+    max-width: 640px;
+    white-space: normal;
+}
+
+.tutorial-hint {
+    font-size: 18px;
+    color: rgba(210, 210, 210, 0.8);
+    unity-text-align: middle-center;
+}
+
+.tutorial-hint.is-waiting {
+    color: rgba(255, 200, 80, 0.95);
+}
+
+.achievement-toast {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    align-items: center;
+    padding: 14px 20px;
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+}
+
+.achievement-toast.is-visible {
+    display: flex;
+    opacity: 1;
+}
+
+.achievement-toast-title {
+    font-size: 22px;
+    color: rgb(255, 215, 80);
+    -unity-font-style: bold;
+    unity-text-align: middle-center;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+}
+
+.achievement-toast-desc {
+    font-size: 17px;
+    color: rgba(230, 230, 230, 0.9);
+    unity-text-align: middle-center;
 }

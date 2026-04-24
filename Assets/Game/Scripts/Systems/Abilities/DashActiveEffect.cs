@@ -72,10 +72,10 @@ namespace EndlessRunner
             if (resetHorizontalVelocity)
             {
                 velocity.x = 0f;
+                body.linearVelocity = velocity;
             }
 
-            body.linearVelocity = velocity;
-            body.AddForce(new Vector2(dashImpulse * direction, 0f), ForceMode2D.Impulse);
+            context.Runner.ApplyHorizontalImpulse(dashImpulse * direction);
             return true;
         }
 

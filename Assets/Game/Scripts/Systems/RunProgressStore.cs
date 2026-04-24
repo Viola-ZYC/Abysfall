@@ -10,7 +10,7 @@ namespace EndlessRunner
         [Serializable]
         private class SaveData
         {
-            public int version = 3;
+            public int version = 4;
             public int bestScore;
             public int lastScore;
             public int totalRuns;
@@ -19,12 +19,13 @@ namespace EndlessRunner
             public int collectionUnlockMask;
             public List<int> collectionEntryCounts = new List<int>();
             public List<string> unlockedCreatureIds = new List<string>();
-            public List<string> unlockedObstacleIds = new List<string>();
             public List<string> unlockedAbilityIds = new List<string>();
             public List<CodexCountEntry> collectionCounts = new List<CodexCountEntry>();
             public string selectedModeId = ModeClassic;
             public List<ModeState> modeStates = new List<ModeState>();
             public List<LeaderboardEntry> leaderboardEntries = new List<LeaderboardEntry>();
+            public bool tutorialCompleted;
+            public List<string> completedAchievementIds = new List<string>();
         }
 
         [Serializable]
@@ -122,6 +123,59 @@ namespace EndlessRunner
         {
             SaveData data = GetData();
             return Mathf.Max(0, data.totalScore);
+        }
+
+        public static bool IsTutorialCompleted()
+        {
+            SaveData data = GetData();
+            return data.tutorialCompleted;
+        }
+
+        public static void SetTutorialCompleted()
+        {
+            SaveData data = GetData();
+            if (data.tutorialCompleted)
+            {
+                return;
+            }
+
+            data.tutorialCompleted = true;
+            SaveDataToDisk(data);
+        }
+
+        public static bool IsAchievementCompleted(string achievementId)
+        {
+            if (string.IsNullOrWhiteSpace(achievementId))
+            {
+                return false;
+            }
+
+            SaveData data = GetData();
+            return data.completedAchievementIds != null &&
+                   data.completedAchievementIds.Contains(achievementId);
+        }
+
+        public static bool CompleteAchievement(string achievementId)
+        {
+            if (string.IsNullOrWhiteSpace(achievementId))
+            {
+                return false;
+            }
+
+            SaveData data = GetData();
+            if (data.completedAchievementIds == null)
+            {
+                data.completedAchievementIds = new List<string>();
+            }
+
+            if (data.completedAchievementIds.Contains(achievementId))
+            {
+                return false;
+            }
+
+            data.completedAchievementIds.Add(achievementId);
+            SaveDataToDisk(data);
+            return true;
         }
 
         public static float GetAverageScore()
@@ -253,7 +307,6 @@ namespace EndlessRunner
             }
 
             data.unlockedCreatureIds?.Clear();
-            data.unlockedObstacleIds?.Clear();
             data.collectionCounts?.Clear();
             if (clearAbilityUnlocks)
             {
@@ -290,8 +343,6 @@ namespace EndlessRunner
             {
                 case CodexCategory.Creature:
                     return data.unlockedCreatureIds != null && data.unlockedCreatureIds.Contains(entryId);
-                case CodexCategory.Obstacle:
-                    return data.unlockedObstacleIds != null && data.unlockedObstacleIds.Contains(entryId);
                 case CodexCategory.Collection:
                     return GetCollectionCount(data, entryId) > 0;
                 default:
@@ -313,10 +364,6 @@ namespace EndlessRunner
             {
                 case CodexCategory.Creature:
                     newlyUnlocked = AddUnique(data.unlockedCreatureIds, entryId);
-                    changed = newlyUnlocked;
-                    break;
-                case CodexCategory.Obstacle:
-                    newlyUnlocked = AddUnique(data.unlockedObstacleIds, entryId);
                     changed = newlyUnlocked;
                     break;
                 case CodexCategory.Collection:
@@ -367,8 +414,6 @@ namespace EndlessRunner
             {
                 case CodexCategory.Creature:
                     return CountUnique(data.unlockedCreatureIds);
-                case CodexCategory.Obstacle:
-                    return CountUnique(data.unlockedObstacleIds);
                 case CodexCategory.Collection:
                     return CountCollectionUnlocked(data);
                 default:
@@ -618,11 +663,6 @@ namespace EndlessRunner
                 data.unlockedCreatureIds = new List<string>();
             }
 
-            if (data.unlockedObstacleIds == null)
-            {
-                data.unlockedObstacleIds = new List<string>();
-            }
-
             if (data.unlockedAbilityIds == null)
             {
                 data.unlockedAbilityIds = new List<string>();
@@ -634,7 +674,6 @@ namespace EndlessRunner
             }
 
             NormalizeUnlockedList(data.unlockedCreatureIds);
-            NormalizeUnlockedList(data.unlockedObstacleIds);
             NormalizeUnlockedList(data.unlockedAbilityIds);
             NormalizeCollectionCounts(data);
             MigrateLegacyCollectionsIfNeeded(data);
@@ -649,6 +688,11 @@ namespace EndlessRunner
             if (data.leaderboardEntries == null)
             {
                 data.leaderboardEntries = new List<LeaderboardEntry>();
+            }
+
+            if (data.completedAchievementIds == null)
+            {
+                data.completedAchievementIds = new List<string>();
             }
 
             UpdateModeUnlockStates(data);

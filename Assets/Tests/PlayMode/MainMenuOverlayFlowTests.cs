@@ -16,7 +16,6 @@ public class MainMenuOverlayFlowTests
     private const string LeaderboardOverlayName = "mainmenu-leaderboard-overlay";
     private const string SettingsOverlayName = "mainmenu-settings-overlay";
     private const string ManualCreaturesTabName = "mainmenu-manual-tab-creatures";
-    private const string ManualObstaclesTabName = "mainmenu-manual-tab-obstacles";
     private const string ManualCollectionsTabName = "mainmenu-manual-tab-collections";
     private const string ManualProgressLabelName = "mainmenu-collection-progress-label";
     private const string VisibleClass = "is-visible";
@@ -39,7 +38,7 @@ public class MainMenuOverlayFlowTests
     public IEnumerator Overlays_AreMutuallyExclusive_AndBackActionClosesCurrentOverlay()
     {
         MainMenuSceneController controller = Object.FindAnyObjectByType<MainMenuSceneController>();
-        UIDocument uiDocument = Object.FindAnyObjectByType<UIDocument>();
+        UIDocument uiDocument = UIDocumentLocator.FindMainMenuDocument();
 
         Assert.IsNotNull(controller, "MainMenuScene should contain MainMenuSceneController.");
         Assert.IsNotNull(uiDocument, "MainMenuScene should contain UIDocument.");
@@ -109,7 +108,7 @@ public class MainMenuOverlayFlowTests
     public IEnumerator ManualTabs_SwitchContent_WithoutClosingOverlay()
     {
         MainMenuSceneController controller = Object.FindAnyObjectByType<MainMenuSceneController>();
-        UIDocument uiDocument = Object.FindAnyObjectByType<UIDocument>();
+        UIDocument uiDocument = UIDocumentLocator.FindMainMenuDocument();
 
         Assert.IsNotNull(controller, "MainMenuScene should contain MainMenuSceneController.");
         Assert.IsNotNull(uiDocument, "MainMenuScene should contain UIDocument.");
@@ -117,13 +116,11 @@ public class MainMenuOverlayFlowTests
         VisualElement root = uiDocument.rootVisualElement;
         VisualElement manualOverlay = root.Q<VisualElement>(ManualOverlayName);
         Button creaturesTab = root.Q<Button>(ManualCreaturesTabName);
-        Button obstaclesTab = root.Q<Button>(ManualObstaclesTabName);
         Button collectionsTab = root.Q<Button>(ManualCollectionsTabName);
         Label progressLabel = root.Q<Label>(ManualProgressLabelName);
 
         Assert.IsNotNull(manualOverlay, "Manual overlay should exist in MainMenuUI.");
         Assert.IsNotNull(creaturesTab, "Creatures tab should exist in MainMenuUI.");
-        Assert.IsNotNull(obstaclesTab, "Obstacles tab should exist in MainMenuUI.");
         Assert.IsNotNull(collectionsTab, "Collections tab should exist in MainMenuUI.");
         Assert.IsNotNull(progressLabel, "Manual progress label should exist in MainMenuUI.");
 
@@ -132,23 +129,13 @@ public class MainMenuOverlayFlowTests
 
         AssertVisible(manualOverlay, "Manual overlay should stay open while switching tabs.");
         Assert.IsTrue(creaturesTab.ClassListContains(ActiveClass), "Creatures tab should be active when manual opens.");
-        Assert.IsFalse(obstaclesTab.ClassListContains(ActiveClass), "Obstacles tab should start inactive.");
         Assert.IsFalse(collectionsTab.ClassListContains(ActiveClass), "Collections tab should start inactive.");
-
-        InvokePrivate(controller, "OnManualObstaclesClicked");
-        yield return null;
-
-        AssertVisible(manualOverlay, "Switching to obstacles should not close the manual overlay.");
-        Assert.IsFalse(creaturesTab.ClassListContains(ActiveClass), "Creatures tab should deactivate after switching.");
-        Assert.IsTrue(obstaclesTab.ClassListContains(ActiveClass), "Obstacles tab should become active after switching.");
-        Assert.IsFalse(collectionsTab.ClassListContains(ActiveClass), "Collections tab should remain inactive after switching to obstacles.");
 
         InvokePrivate(controller, "OnManualCollectionsClicked");
         yield return null;
 
         AssertVisible(manualOverlay, "Switching to collections should not close the manual overlay.");
-        Assert.IsFalse(creaturesTab.ClassListContains(ActiveClass), "Creatures tab should remain inactive after switching to collections.");
-        Assert.IsFalse(obstaclesTab.ClassListContains(ActiveClass), "Obstacles tab should deactivate after switching to collections.");
+        Assert.IsFalse(creaturesTab.ClassListContains(ActiveClass), "Creatures tab should deactivate after switching to collections.");
         Assert.IsTrue(collectionsTab.ClassListContains(ActiveClass), "Collections tab should become active after switching.");
         StringAssert.Contains("Unlocked", progressLabel.text, "Manual progress label should refresh after tab switching.");
     }

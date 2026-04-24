@@ -16,6 +16,28 @@ namespace EndlessRunner
 
         public string ChargeId => chargeId;
         public int Charges => charges;
+        public int ScoreInterval => scoreInterval;
+
+        public float ChargeProgress
+        {
+            get
+            {
+                if (scoreInterval <= 0 || scoreManager == null)
+                {
+                    return 0f;
+                }
+
+                int current = scoreManager.Score;
+                int rangeStart = nextScore - scoreInterval;
+                if (current >= nextScore)
+                {
+                    return 1f;
+                }
+
+                int elapsed = current - rangeStart;
+                return Mathf.Clamp01((float)elapsed / scoreInterval);
+            }
+        }
 
         public void Configure(string id, ScoreManager manager, int interval, int maxChargeCount, bool resetProgress)
         {

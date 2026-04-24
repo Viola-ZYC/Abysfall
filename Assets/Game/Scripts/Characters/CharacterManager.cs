@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace EndlessRunner
 {
@@ -28,8 +29,8 @@ namespace EndlessRunner
         [SerializeField] private CameraFollow2D cameraFollow;
         [SerializeField] private HUDController hudController;
         [SerializeField] private AbilityManager abilityManager;
-        [SerializeField] private AbilitySelectionUI abilitySelectionUI;
-        [SerializeField] private ChestMilestoneSpawner chestMilestoneSpawner;
+        [FormerlySerializedAs("chestMilestoneSpawner")]
+        [SerializeField] private MilestoneSpawnController milestoneSpawnController;
 
         private RunnerController currentRunner;
         private int currentCharacterIndex = -1;
@@ -194,14 +195,9 @@ namespace EndlessRunner
                 abilityManager = FindAnyObjectByType<AbilityManager>();
             }
 
-            if (abilitySelectionUI == null)
+            if (milestoneSpawnController == null)
             {
-                abilitySelectionUI = FindAnyObjectByType<AbilitySelectionUI>();
-            }
-
-            if (chestMilestoneSpawner == null)
-            {
-                chestMilestoneSpawner = FindAnyObjectByType<ChestMilestoneSpawner>();
+                milestoneSpawnController = FindAnyObjectByType<MilestoneSpawnController>();
             }
 
             if (currentRunner == null)
@@ -225,8 +221,7 @@ namespace EndlessRunner
             cameraFollow?.SetTarget(runnerTransform, newRunner);
             hudController?.SetRunner(newRunner);
             abilityManager?.SetRunner(newRunner);
-            abilitySelectionUI?.SetRunner(newRunner);
-            chestMilestoneSpawner?.SetRunner(newRunner);
+            milestoneSpawnController?.SetRunner(newRunner);
         }
 
         private Vector3 ResolveSpawnPosition()

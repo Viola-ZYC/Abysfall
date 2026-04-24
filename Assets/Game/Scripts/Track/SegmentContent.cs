@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
-using System;
 using UnityEditor;
 #endif
 
@@ -11,33 +11,33 @@ namespace EndlessRunner
     {
         private struct SpawnPlan
         {
-            public GameObject[] obstaclePrefabs;
-            public int chestCount;
+            public GameObject[] rewardPrefabs;
+            public GameObject[] hazardPrefabs;
+            public int rewardCount;
+            public int hazardCount;
             public int collectibleCount;
-            public int enemyCount;
-            public int obstacleCount;
 
-            public int TotalCount => chestCount + collectibleCount + enemyCount + obstacleCount;
+            public int TotalCount => collectibleCount + rewardCount + hazardCount;
         }
 
-        [SerializeField] private GameObject[] obstaclePrefabs;
-        [SerializeField] private GameObject[] enemyPrefabs;
-        [SerializeField] private GameObject[] chestPrefabs;
-        [SerializeField] private bool enableChests = false;
+        [SerializeField] private GameObject[] creaturePrefabs;
         [SerializeField] private GameObject[] collectiblePrefabs;
         [SerializeField] private Transform[] spawnPoints;
         [SerializeField] private RunnerController runner;
         [SerializeField] private CodexDatabase codexDatabase;
         [SerializeField] private bool autoFitSpawnPointsToBounds = true;
         [SerializeField, Min(0f)] private float spawnInset = 0.4f;
+        [Header("Camera Spawn Filter")]
+        [SerializeField] private bool skipSpawnInsideCamera = true;
+        [SerializeField, Min(0f)] private float cameraSpawnPadding = 0.5f;
         [Header("Progress Formula (Deterministic Count)")]
         [SerializeField, Min(1f)] private float progressScoreScale = 180f;
-        [SerializeField, Min(0f)] private float hostileBaseCount = 1f;
-        [SerializeField, Min(0f)] private float hostileGrowth = 1.1f;
-        [SerializeField, Range(0f, 1f)] private float enemyRatioBase = 0.25f;
-        [SerializeField, Range(0f, 1f)] private float enemyRatioGrowth = 0.4f;
-        [SerializeField, Min(0f)] private float chestBaseCount = 0f;
-        [SerializeField, Min(0f)] private float chestGrowth = 0f;
+        [SerializeField, Min(0f)] private float creatureBaseCount = 2f;
+        [SerializeField, Min(0f)] private float creatureGrowth = 1.1f;
+        [Header("Hazard / Reward Ratio")]
+        [SerializeField, Range(0f, 1f)] private float hazardRatioStart = 0.167f;
+        [SerializeField, Range(0f, 1f)] private float hazardRatioEnd = 0.667f;
+        [SerializeField, Min(0)] private int hazardRatioScoreMax = 3000;
         [SerializeField, Min(0f)] private float collectibleBaseCount = 0f;
         [SerializeField, Min(0f)] private float collectibleGrowth = 0f;
         [SerializeField, Min(0f)] private float collectibleYOffset = 0.45f;
@@ -45,6 +45,7 @@ namespace EndlessRunner
 
         private readonly List<GameObject> spawned = new();
         private ObjectPool pool;
+        private Camera gameplayCamera;
         private static GameObject runtimeCollectiblePrefab;
         private static Sprite runtimeCollectibleSprite;
         private static int deterministicSpawnSerial;
@@ -54,14 +55,13 @@ namespace EndlessRunner
             pool = ObjectPool.Instance;
             ResolveRunner();
             ResolveCodex();
+            ResolveCamera();
         }
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            enemyPrefabs = SanitizePrefabs(enemyPrefabs, "Enemy");
-            obstaclePrefabs = SanitizePrefabs(obstaclePrefabs, "Obstacle");
-            chestPrefabs = FilterPrefabs(chestPrefabs);
+            creaturePrefabs = SanitizeCreaturePrefabs(creaturePrefabs);
             collectiblePrefabs = FilterPrefabs(collectiblePrefabs);
         }
 #endif
@@ -75,16 +75,17 @@ namespace EndlessRunner
 
             ResolveRunner();
             ResolveCodex();
+            ResolveCamera();
             ApplySpawnPointBounds();
-            SpawnObstacles();
+            SpawnContent();
         }
 
         public void OnDespawned()
         {
-            DespawnObstacles();
+            DespawnContent();
         }
 
-        private void SpawnObstacles()
+        private void SpawnContent()
         {
             if (pool == null || spawnPoints == null || spawnPoints.Length == 0)
             {
@@ -109,17 +110,17 @@ namespace EndlessRunner
 
             int seed = deterministicSpawnSerial * 97 + Mathf.FloorToInt(progress * 100f);
             List<int> pointOrder = BuildDeterministicPointOrder(pointCount, seed);
-            int cursor = 0;
+            HashSet<int> occupiedPoints = new();
+            Predicate<Transform> visibilityFilter = BuildVisibilityFilter();
 
-            SpawnCategory(chestPrefabs, plan.chestCount, points, pointOrder, ref cursor, 0f, seed + 11);
-            SpawnCollectibleCategory(plan.collectibleCount, points, pointOrder, ref cursor, seed + 23);
-            SpawnCategory(enemyPrefabs, plan.enemyCount, points, pointOrder, ref cursor, 0f, seed + 37);
-            SpawnCategory(plan.obstaclePrefabs, plan.obstacleCount, points, pointOrder, ref cursor, 0f, seed + 53);
+            SpawnCollectibleCategory(plan.collectibleCount, points, pointOrder, occupiedPoints, seed + 23);
+            SpawnCategory(plan.rewardPrefabs, plan.rewardCount, points, pointOrder, occupiedPoints, visibilityFilter, 0f, seed + 37);
+            SpawnCategory(plan.hazardPrefabs, plan.hazardCount, points, pointOrder, occupiedPoints, visibilityFilter, 0f, seed + 53);
 
             deterministicSpawnSerial++;
         }
 
-        private void DespawnObstacles()
+        private void DespawnContent()
         {
             if (pool == null)
             {
@@ -149,6 +150,48 @@ namespace EndlessRunner
             {
                 codexDatabase = CodexDatabase.Load();
             }
+        }
+
+        private void ResolveCamera()
+        {
+            if (gameplayCamera == null)
+            {
+                gameplayCamera = Camera.main;
+            }
+
+            if (gameplayCamera == null)
+            {
+                gameplayCamera = FindAnyObjectByType<Camera>();
+            }
+        }
+
+        private Predicate<Transform> BuildVisibilityFilter()
+        {
+            if (!skipSpawnInsideCamera)
+            {
+                return null;
+            }
+
+            ResolveCamera();
+            if (gameplayCamera == null)
+            {
+                return null;
+            }
+
+            float cameraBottomY;
+            if (gameplayCamera.orthographic)
+            {
+                cameraBottomY = gameplayCamera.transform.position.y - gameplayCamera.orthographicSize;
+            }
+            else
+            {
+                float depth = Mathf.Abs(transform.position.z - gameplayCamera.transform.position.z);
+                Vector3 bottom = gameplayCamera.ViewportToWorldPoint(new Vector3(0.5f, 0f, Mathf.Max(0.01f, depth)));
+                cameraBottomY = bottom.y;
+            }
+
+            float threshold = cameraBottomY - Mathf.Max(0f, cameraSpawnPadding);
+            return point => point != null && point.position.y < threshold;
         }
 
         private List<Transform> GetValidSpawnPoints()
@@ -197,13 +240,16 @@ namespace EndlessRunner
 
         private SpawnPlan BuildSpawnPlan(int score, float progress, int pointCount)
         {
+            GameObject[] eligible = FilterPrefabsByScore(creaturePrefabs, score, CodexCategory.Creature);
+            PartitionCreatures(eligible, out GameObject[] rewardPool, out GameObject[] hazardPool);
+
             SpawnPlan plan = new SpawnPlan
             {
-                obstaclePrefabs = FilterPrefabsByScore(obstaclePrefabs, score),
-                chestCount = 0,
+                rewardPrefabs = rewardPool,
+                hazardPrefabs = hazardPool,
                 collectibleCount = 0,
-                enemyCount = 0,
-                obstacleCount = 0
+                rewardCount = 0,
+                hazardCount = 0
             };
 
             if (pointCount <= 0)
@@ -211,34 +257,69 @@ namespace EndlessRunner
                 return plan;
             }
 
-            bool canSpawnChests = enableChests && chestPrefabs != null && chestPrefabs.Length > 0;
             bool canSpawnCollectibles = (collectiblePrefabs != null && collectiblePrefabs.Length > 0) || autoCreateRuntimeCollectiblePrefab;
-            bool canSpawnEnemies = enemyPrefabs != null && enemyPrefabs.Length > 0;
-            bool canSpawnObstacles = plan.obstaclePrefabs != null && plan.obstaclePrefabs.Length > 0;
-
-            plan.chestCount = canSpawnChests
-                ? ComputeProgressCount(chestBaseCount, chestGrowth, progress, pointCount)
-                : 0;
 
             plan.collectibleCount = canSpawnCollectibles
-                ? ComputeCollectibleCount(progress, pointCount - plan.chestCount)
+                ? ComputeCollectibleCount(progress, pointCount)
                 : 0;
 
-            int remainingForHostiles = Mathf.Max(0, pointCount - plan.chestCount - plan.collectibleCount);
-            int hostileCount = ComputeProgressCount(hostileBaseCount, hostileGrowth, progress, remainingForHostiles);
+            int remainingSlots = Mathf.Max(0, pointCount - plan.collectibleCount);
+            int totalCreatures = ComputeProgressCount(creatureBaseCount, creatureGrowth, progress, remainingSlots);
 
-            if (canSpawnEnemies || canSpawnObstacles)
+            if (totalCreatures > 0)
             {
-                float enemyRatio = Mathf.Clamp01(enemyRatioBase + enemyRatioGrowth * (1f - Mathf.Exp(-progress)));
-                plan.enemyCount = canSpawnEnemies ? Mathf.Clamp(Mathf.RoundToInt(hostileCount * enemyRatio), 0, hostileCount) : 0;
-                plan.obstacleCount = canSpawnObstacles ? hostileCount - plan.enemyCount : 0;
-                if (!canSpawnObstacles)
+                float t = hazardRatioScoreMax > 0 ? Mathf.Clamp01((float)score / hazardRatioScoreMax) : 1f;
+                float hazardFraction = Mathf.Lerp(hazardRatioStart, hazardRatioEnd, t);
+
+                int hazardCount = hazardPool.Length > 0 ? Mathf.Max(1, Mathf.RoundToInt(totalCreatures * hazardFraction)) : 0;
+                hazardCount = Mathf.Clamp(hazardCount, 0, totalCreatures);
+                int rewardCount = rewardPool.Length > 0 ? totalCreatures - hazardCount : 0;
+                hazardCount = totalCreatures - rewardCount;
+
+                if (rewardPool.Length == 0)
                 {
-                    plan.enemyCount = hostileCount;
+                    hazardCount = totalCreatures;
+                    rewardCount = 0;
                 }
+
+                plan.hazardCount = hazardCount;
+                plan.rewardCount = rewardCount;
             }
 
             return plan;
+        }
+
+        private static void PartitionCreatures(GameObject[] prefabs, out GameObject[] reward, out GameObject[] hazard)
+        {
+            if (prefabs == null || prefabs.Length == 0)
+            {
+                reward = Array.Empty<GameObject>();
+                hazard = Array.Empty<GameObject>();
+                return;
+            }
+
+            List<GameObject> rewardList = new();
+            List<GameObject> hazardList = new();
+
+            foreach (GameObject prefab in prefabs)
+            {
+                if (prefab == null) continue;
+
+                SpecialCreature creature = prefab.GetComponent<SpecialCreature>();
+                if (creature == null) continue;
+
+                if (creature.IsHazard())
+                {
+                    hazardList.Add(prefab);
+                }
+                else
+                {
+                    rewardList.Add(prefab);
+                }
+            }
+
+            reward = rewardList.ToArray();
+            hazard = hazardList.ToArray();
         }
 
         private void SpawnCategory(
@@ -246,7 +327,8 @@ namespace EndlessRunner
             int count,
             List<Transform> points,
             List<int> pointOrder,
-            ref int cursor,
+            HashSet<int> occupiedPoints,
+            Predicate<Transform> pointFilter,
             float yOffset,
             int seed)
         {
@@ -255,17 +337,27 @@ namespace EndlessRunner
                 return;
             }
 
-            int actualCount = Mathf.Min(count, pointOrder.Count - cursor);
-            for (int i = 0; i < actualCount; i++)
+            int spawnedCount = 0;
+            for (int i = 0; i < pointOrder.Count && spawnedCount < count; i++)
             {
-                int pointIndex = pointOrder[cursor++];
+                int pointIndex = pointOrder[i];
+                if (occupiedPoints != null && occupiedPoints.Contains(pointIndex))
+                {
+                    continue;
+                }
+
                 Transform point = points[pointIndex];
                 if (point == null)
                 {
                     continue;
                 }
 
-                GameObject prefab = GetDeterministicPrefab(prefabs, seed + i);
+                if (pointFilter != null && !pointFilter(point))
+                {
+                    continue;
+                }
+
+                GameObject prefab = GetDeterministicPrefab(prefabs, seed + spawnedCount);
                 if (prefab == null)
                 {
                     continue;
@@ -276,6 +368,8 @@ namespace EndlessRunner
                 if (instance != null)
                 {
                     spawned.Add(instance);
+                    occupiedPoints?.Add(pointIndex);
+                    spawnedCount++;
                 }
             }
         }
@@ -284,7 +378,7 @@ namespace EndlessRunner
             int count,
             List<Transform> points,
             List<int> pointOrder,
-            ref int cursor,
+            HashSet<int> occupiedPoints,
             int seed)
         {
             if (count <= 0 || points.Count == 0 || pointOrder.Count == 0)
@@ -292,17 +386,22 @@ namespace EndlessRunner
                 return;
             }
 
-            int actualCount = Mathf.Min(count, pointOrder.Count - cursor);
-            for (int i = 0; i < actualCount; i++)
+            int spawnedCount = 0;
+            for (int i = 0; i < pointOrder.Count && spawnedCount < count; i++)
             {
-                int pointIndex = pointOrder[cursor++];
+                int pointIndex = pointOrder[i];
+                if (occupiedPoints != null && occupiedPoints.Contains(pointIndex))
+                {
+                    continue;
+                }
+
                 Transform point = points[pointIndex];
                 if (point == null)
                 {
                     continue;
                 }
 
-                GameObject prefab = PickCollectiblePrefab(seed + i);
+                GameObject prefab = PickCollectiblePrefab(seed + spawnedCount);
                 if (prefab == null)
                 {
                     continue;
@@ -313,6 +412,8 @@ namespace EndlessRunner
                 if (instance != null)
                 {
                     spawned.Add(instance);
+                    occupiedPoints?.Add(pointIndex);
+                    spawnedCount++;
                 }
             }
         }
@@ -387,7 +488,7 @@ namespace EndlessRunner
             return runtimeCollectiblePrefab;
         }
 
-        private GameObject[] FilterPrefabsByScore(GameObject[] prefabs, int score)
+        private GameObject[] FilterPrefabsByScore(GameObject[] prefabs, int score, CodexCategory category)
         {
             if (prefabs == null || prefabs.Length == 0)
             {
@@ -399,11 +500,6 @@ namespace EndlessRunner
                 codexDatabase = CodexDatabase.Load();
             }
 
-            if (codexDatabase == null)
-            {
-                return prefabs;
-            }
-
             List<GameObject> filtered = new(prefabs.Length);
             foreach (GameObject prefab in prefabs)
             {
@@ -412,15 +508,18 @@ namespace EndlessRunner
                     continue;
                 }
 
-                Obstacle obstacle = prefab.GetComponent<Obstacle>();
-                string entryId = obstacle != null ? obstacle.CodexEntryId : string.Empty;
+                if (!TryResolveSpawnEntry(prefab, category, out CodexCategory entryCategory, out string entryId))
+                {
+                    continue;
+                }
+
                 if (string.IsNullOrWhiteSpace(entryId))
                 {
                     filtered.Add(prefab);
                     continue;
                 }
 
-                CodexEntry entry = codexDatabase.FindEntry(CodexCategory.Obstacle, entryId);
+                CodexEntry entry = codexDatabase != null ? codexDatabase.FindEntry(entryCategory, entryId) : null;
                 int minScore = entry != null ? Mathf.Max(0, entry.spawnScore) : 0;
                 if (score >= minScore)
                 {
@@ -429,6 +528,33 @@ namespace EndlessRunner
             }
 
             return filtered.ToArray();
+        }
+
+        private static bool TryResolveSpawnEntry(GameObject prefab, CodexCategory requestedCategory, out CodexCategory entryCategory, out string entryId)
+        {
+            entryCategory = requestedCategory;
+            entryId = string.Empty;
+            if (prefab == null)
+            {
+                return false;
+            }
+
+            switch (requestedCategory)
+            {
+                case CodexCategory.Creature:
+                    SpecialCreature creature = prefab.GetComponent<SpecialCreature>();
+                    if (creature == null)
+                    {
+                        return false;
+                    }
+
+                    entryCategory = CodexCategory.Creature;
+                    entryId = creature.CodexEntryId;
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         private static GameObject CreateRuntimeCollectiblePrefab()
@@ -499,20 +625,25 @@ namespace EndlessRunner
                 return;
             }
 
-            ordered.Sort((a, b) => a.position.x.CompareTo(b.position.x));
-            int count = ordered.Count;
-            for (int i = 0; i < count; i++)
+            foreach (Transform point in ordered)
             {
-                float t = count == 1 ? 0.5f : (float)i / (count - 1);
-                float x = Mathf.Lerp(left, right, t);
-                Vector3 position = ordered[i].position;
+                float x = UnityEngine.Random.Range(left, right);
+                Vector3 position = point.position;
                 position.x = x;
-                ordered[i].position = position;
+                point.position = position;
             }
         }
 
 #if UNITY_EDITOR
-        private static GameObject[] SanitizePrefabs(GameObject[] prefabs, string fallbackName)
+        private static GameObject[] SanitizeCreaturePrefabs(GameObject[] prefabs)
+        {
+            return SanitizePrefabs(
+                prefabs,
+                "Creature",
+                prefab => prefab.GetComponent<SpecialCreature>() != null);
+        }
+
+        private static GameObject[] SanitizePrefabs(GameObject[] prefabs, string fallbackName, Predicate<GameObject> isValidPrefab)
         {
             if (prefabs == null || prefabs.Length == 0)
             {
@@ -530,6 +661,11 @@ namespace EndlessRunner
                 if (prefab.GetType() != typeof(GameObject))
                 {
                     Debug.LogWarning("SegmentContent prefab reference is not a GameObject, removing it.", prefab);
+                    continue;
+                }
+
+                if (isValidPrefab != null && !isValidPrefab(prefab))
+                {
                     continue;
                 }
 
@@ -558,14 +694,9 @@ namespace EndlessRunner
 
         private static string GetFallbackPath(string name)
         {
-            if (string.Equals(name, "Enemy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(name, "Creature", StringComparison.OrdinalIgnoreCase))
             {
-                return "Assets/Game/Prefabs/Enemies/Enemy.prefab";
-            }
-
-            if (string.Equals(name, "Obstacle", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Assets/Game/Prefabs/Obstacles/Obstacle.prefab";
+                return "Assets/Game/Prefabs/Creatures/SpecialCreature_Normal.prefab";
             }
 
             return $"Assets/Game/Prefabs/{name}.prefab";

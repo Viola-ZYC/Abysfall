@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -25,19 +27,34 @@ namespace EndlessRunner
 
         [Header("UI Toolkit")]
         [SerializeField] private string panelName = "ability-acquired-panel";
+        [SerializeField] private string cardName = "ability-acquired-card";
         [SerializeField] private string titleLabelName = "ability-acquired-title";
         [SerializeField] private string descLabelName = "ability-acquired-desc";
         [SerializeField] private string hintLabelName = "ability-acquired-hint";
 
+        [Header("Popup Animation")]
+        [SerializeField, Min(0.01f)] private float popupOpenDuration = 0.26f;
+        [SerializeField, Min(0.01f)] private float popupCloseDuration = 0.22f;
+        [SerializeField, Range(0.5f, 0.98f)] private float popupHiddenScale = 0.82f;
+        [SerializeField, Range(0f, 2f)] private float popupOpenBounce = 0.9f;
+        [SerializeField, Range(0f, 2f)] private float popupCloseBounce = 0.65f;
+
         private readonly Queue<PopupRequest> popupQueue = new();
+        private readonly HashSet<string> shownAbilityPopupIds = new(StringComparer.Ordinal);
+        private readonly HashSet<string> shownCodexPopupKeys = new(StringComparer.Ordinal);
         private VisualElement panel;
+        private VisualElement card;
         private Label subtitleLabel;
         private Label titleLabel;
         private Label descLabel;
         private Label metaLabel;
         private Label hintLabel;
         private bool isOpen;
+        private bool isClosing;
         private bool pauseRequested;
+        private bool hasObservedGameState;
+        private GameState lastObservedGameState = GameState.Boot;
+        private Coroutine animationRoutine;
 
         private void Awake()
         {
@@ -50,6 +67,12 @@ namespace EndlessRunner
         {
             ResolveReferences();
             CacheElements();
+            if (gameManager != null)
+            {
+                gameManager.StateChanged += OnGameStateChanged;
+                OnGameStateChanged(gameManager.State);
+            }
+
             if (abilityManager != null)
             {
                 abilityManager.AbilityAcquired += OnAbilityAcquired;
@@ -63,6 +86,11 @@ namespace EndlessRunner
                 abilityManager.AbilityAcquired -= OnAbilityAcquired;
             }
 
+            if (gameManager != null)
+            {
+                gameManager.StateChanged -= OnGameStateChanged;
+            }
+
             DismissAll(releasePause: true);
         }
 
@@ -73,7 +101,8 @@ namespace EndlessRunner
                 return;
             }
 
-            if (!RunProgressStore.UnlockAbility(ability.abilityId))
+            RunProgressStore.UnlockAbility(ability.abilityId);
+            if (!TryRegisterAbilityPopup(ability))
             {
                 return;
             }
@@ -101,6 +130,16 @@ namespace EndlessRunner
             EnqueuePopup(BuildCodexPopup(category, entry));
         }
 
+        public void ShowCodexEntryOncePerRun(CodexCategory category, CodexEntry entry)
+        {
+            if (entry == null || !TryRegisterCodexPopup(category, entry.id))
+            {
+                return;
+            }
+
+            EnqueuePopup(BuildCodexPopup(category, entry));
+        }
+
         private PopupRequest BuildAbilityPopup(AbilityDefinition ability)
         {
             bool isPassive = ability.isPassive || ability.activeEffect == null;
@@ -112,7 +151,7 @@ namespace EndlessRunner
                     ? "A new power surges within you."
                     : ability.description,
                 meta = isPassive ? "Passive ability recorded." : "Active ability recorded.",
-                hint = "Tap to resume the run."
+                hint = "Tap anywhere to continue."
             };
         }
 
@@ -124,7 +163,6 @@ namespace EndlessRunner
                 {
                     CodexCategory.Creature => "New Creature Entry",
                     CodexCategory.Collection => "New Collectible Entry",
-                    CodexCategory.Obstacle => "New Obstacle Entry",
                     _ => "New Codex Entry"
                 },
                 title = string.IsNullOrWhiteSpace(entry.title) ? "Unknown Entry" : entry.title,
@@ -132,7 +170,7 @@ namespace EndlessRunner
                     ? "A new record has been added to the codex."
                     : entry.description,
                 meta = BuildCodexMeta(category, entry),
-                hint = "Tap to resume the run."
+                hint = "Tap anywhere to continue."
             };
         }
 
@@ -159,7 +197,6 @@ namespace EndlessRunner
             {
                 CodexCategory.Creature => "Creatures",
                 CodexCategory.Collection => "Collections",
-                CodexCategory.Obstacle => "Obstacles",
                 _ => "Codex"
             };
 
@@ -174,9 +211,38 @@ namespace EndlessRunner
             TryShowNextPopup();
         }
 
+        private bool TryRegisterAbilityPopup(AbilityDefinition ability)
+        {
+            if (ability == null)
+            {
+                return false;
+            }
+
+            string key = !string.IsNullOrWhiteSpace(ability.abilityId)
+                ? ability.abilityId
+                : ability.name;
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return true;
+            }
+
+            return shownAbilityPopupIds.Add(key);
+        }
+
+        private bool TryRegisterCodexPopup(CodexCategory category, string entryId)
+        {
+            if (string.IsNullOrWhiteSpace(entryId))
+            {
+                return false;
+            }
+
+            string key = $"{category}:{entryId}";
+            return shownCodexPopupKeys.Add(key);
+        }
+
         private void TryShowNextPopup()
         {
-            if (isOpen || popupQueue.Count == 0)
+            if (isOpen || animationRoutine != null || popupQueue.Count == 0)
             {
                 return;
             }
@@ -217,36 +283,35 @@ namespace EndlessRunner
                 hintLabel.text = request.hint;
             }
 
-            SetVisible(true);
+            StartShowAnimation();
             PauseGame();
         }
 
         private void Hide()
         {
-            if (!isOpen)
+            if (!isOpen || isClosing)
             {
                 return;
             }
 
-            SetVisible(false);
-
-            if (popupQueue.Count > 0)
-            {
-                TryShowNextPopup();
-                return;
-            }
-
-            ResumeGame();
+            StartHideAnimation();
         }
 
         private void DismissAll(bool releasePause)
         {
             popupQueue.Clear();
-            SetVisible(false);
+            HideImmediately();
             if (releasePause)
             {
                 ResumeGame();
             }
+        }
+
+        private void ResetRunPopupState()
+        {
+            popupQueue.Clear();
+            HideImmediately();
+            pauseRequested = false;
         }
 
         private void SetVisible(bool visible)
@@ -276,9 +341,9 @@ namespace EndlessRunner
 
         private void CacheElements()
         {
-            if (uiDocument == null)
+            if (uiDocument == null || !UIDocumentLocator.DocumentContainsElement(uiDocument, panelName))
             {
-                uiDocument = FindAnyObjectByType<UIDocument>();
+                uiDocument = UIDocumentLocator.FindGameplayDocument();
             }
 
             if (uiDocument == null)
@@ -293,6 +358,7 @@ namespace EndlessRunner
             }
 
             panel = root.Q<VisualElement>(panelName);
+            card = root.Q<VisualElement>(cardName);
             subtitleLabel = root.Q<Label>(DefaultSubtitleLabelName);
             titleLabel = root.Q<Label>(titleLabelName);
             descLabel = root.Q<Label>(descLabelName);
@@ -312,6 +378,11 @@ namespace EndlessRunner
 
             if (panel != null)
             {
+                ApplyAnimationState(isOpen ? 1f : 0f, isOpen ? 1f : popupHiddenScale);
+            }
+
+            if (panel != null)
+            {
                 TryShowNextPopup();
             }
         }
@@ -327,6 +398,29 @@ namespace EndlessRunner
             {
                 gameManager = GameManager.Instance != null ? GameManager.Instance : FindAnyObjectByType<GameManager>();
             }
+        }
+
+        private void OnGameStateChanged(GameState state)
+        {
+            bool shouldReset =
+                state == GameState.Menu ||
+                (state == GameState.Running &&
+                 (!hasObservedGameState ||
+                  lastObservedGameState == GameState.Boot ||
+                  lastObservedGameState == GameState.Menu ||
+                  lastObservedGameState == GameState.GameOver));
+
+            lastObservedGameState = state;
+            hasObservedGameState = true;
+
+            if (!shouldReset)
+            {
+                return;
+            }
+
+            shownAbilityPopupIds.Clear();
+            shownCodexPopupKeys.Clear();
+            ResetRunPopupState();
         }
 
         private void PauseGame()
@@ -361,6 +455,137 @@ namespace EndlessRunner
             }
 
             Time.timeScale = 1f;
+        }
+
+        private void StartShowAnimation()
+        {
+            StopCurrentAnimation();
+            isOpen = true;
+            isClosing = false;
+            SetVisible(true);
+            ApplyAnimationState(0f, popupHiddenScale);
+            animationRoutine = StartCoroutine(AnimateShow());
+        }
+
+        private void StartHideAnimation()
+        {
+            StopCurrentAnimation();
+            isClosing = true;
+            animationRoutine = StartCoroutine(AnimateHide());
+        }
+
+        private void HideImmediately()
+        {
+            StopCurrentAnimation();
+            isOpen = false;
+            isClosing = false;
+            SetVisible(false);
+            ApplyAnimationState(0f, popupHiddenScale);
+        }
+
+        private void StopCurrentAnimation()
+        {
+            if (animationRoutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(animationRoutine);
+            animationRoutine = null;
+        }
+
+        private IEnumerator AnimateShow()
+        {
+            float duration = Mathf.Max(0.01f, popupOpenDuration);
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float normalized = Mathf.Clamp01(elapsed / duration);
+                float opacity = EaseOutQuad(normalized);
+                float scale = Mathf.LerpUnclamped(
+                    popupHiddenScale,
+                    1f,
+                    EaseOutBack(normalized, popupOpenBounce));
+                ApplyAnimationState(opacity, scale);
+                yield return null;
+            }
+
+            ApplyAnimationState(1f, 1f);
+            animationRoutine = null;
+        }
+
+        private IEnumerator AnimateHide()
+        {
+            float duration = Mathf.Max(0.01f, popupCloseDuration);
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float normalized = Mathf.Clamp01(elapsed / duration);
+                float opacity = Mathf.Lerp(1f, 0f, EaseInQuad(normalized));
+                float scale = Mathf.LerpUnclamped(
+                    1f,
+                    popupHiddenScale,
+                    EaseInBack(normalized, popupCloseBounce));
+                ApplyAnimationState(opacity, scale);
+                yield return null;
+            }
+
+            ApplyAnimationState(0f, popupHiddenScale);
+            SetVisible(false);
+            isOpen = false;
+            isClosing = false;
+            animationRoutine = null;
+
+            if (popupQueue.Count > 0)
+            {
+                TryShowNextPopup();
+                yield break;
+            }
+
+            ResumeGame();
+        }
+
+        private void ApplyAnimationState(float opacity, float scale)
+        {
+            if (panel != null)
+            {
+                panel.style.opacity = Mathf.Clamp01(opacity);
+            }
+
+            if (card != null)
+            {
+                card.transform.scale = new Vector3(scale, scale, 1f);
+            }
+        }
+
+        private static float EaseOutQuad(float value)
+        {
+            float inverse = 1f - Mathf.Clamp01(value);
+            return 1f - inverse * inverse;
+        }
+
+        private static float EaseInQuad(float value)
+        {
+            float clamped = Mathf.Clamp01(value);
+            return clamped * clamped;
+        }
+
+        private static float EaseOutBack(float value, float strength)
+        {
+            float clamped = Mathf.Clamp01(value) - 1f;
+            float overshoot = Mathf.Max(0f, strength);
+            return 1f + (overshoot + 1f) * clamped * clamped * clamped + overshoot * clamped * clamped;
+        }
+
+        private static float EaseInBack(float value, float strength)
+        {
+            float clamped = Mathf.Clamp01(value);
+            float overshoot = Mathf.Max(0f, strength);
+            return (overshoot + 1f) * clamped * clamped * clamped - overshoot * clamped * clamped;
         }
     }
 }

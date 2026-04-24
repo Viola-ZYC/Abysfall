@@ -1,134 +1,127 @@
-<UXML xmlns="UnityEngine.UIElements">
-    <Style src="GameUI.uss" />
+<UXML xmlns="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Game/Resources/UI/GameUI.uss?fileID=7433441132597879392&amp;guid=7b1af86854b64fedb3f04a31e203f0b5&amp;type=3#GameUI"/>
     <VisualElement name="root" class="root">
-        <VisualElement class="ui-ambient-layer">
-            <VisualElement class="ui-ambient-glow" />
-            <VisualElement class="ui-ambient-frame" />
-        </VisualElement>
         <VisualElement name="safe-area" class="safe-area">
             <VisualElement name="hud" class="hud">
                 <VisualElement class="hud-row">
-                    <VisualElement class="hud-card">
-                        <Label name="score-label" text="0" class="hud-text" />
-                        <Label name="health-label" text="HP 3/3" class="hud-text" />
-                        <Label name="speed-label" text="SPD 0.00 m/s" class="hud-metric-text" />
-                        <Label name="acceleration-label" text="ACC 0.00 m/s2" class="hud-metric-text" />
+                    <VisualElement class="hud-card hud-frame-words15">
+                        <Label name="score-label" text="0" class="hud-text"/>
+                        <Label name="health-label" text="HP 3/3" class="hud-text"/>
+                        <Label name="speed-label" text="SPD 0.00 m/s" class="hud-metric-text"/>
+                        <Label name="acceleration-label" text="ACC 0.00 m/s2" class="hud-metric-text"/>
                     </VisualElement>
-                    <Button name="pause-button" text="Pause" class="pause-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons1&quot;); background-size: 40px 40px;" />
+                    <VisualElement name="hud-pause-frame" class="hud-pause-frame hud-frame-words15">
+                        <Button name="pause-button" text="Pause" class="pause-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons1&quot;); background-size: 40px 40px; background-color: rgba(18, 18, 20, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+                    </VisualElement>
                 </VisualElement>
             </VisualElement>
-            <VisualElement name="ability-action" class="ability-action">
-                <Button name="ability-action-button" text="No Ability" class="ability-button" />
+            <VisualElement name="ability-action" class="ability-action" style="background-color: rgba(0, 0, 0, 0);">
+                <Button name="ability-action-button" text="No Ability" class="ability-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Words15&quot;); -unity-slice-left: 2; -unity-slice-top: 3; -unity-slice-right: 2; -unity-slice-bottom: 3; -unity-slice-scale: 3px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; background-color: rgba(18, 18, 20, 0);"/>
             </VisualElement>
             <VisualElement name="fx-layer" class="fx-layer">
-                <VisualElement name="fx-hit-flash" class="fx-hit-flash" />
-                <VisualElement name="fx-low-health" class="fx-low-health" />
-                <VisualElement name="fx-ability-pulse" class="fx-ability-pulse" />
+                <VisualElement name="fx-hit-flash" class="fx-hit-flash"/>
+                <VisualElement name="fx-low-health" class="fx-low-health"/>
+                <VisualElement name="fx-ability-pulse" enabled="true" class="fx-ability-pulse"/>
             </VisualElement>
             <VisualElement name="menu-panel" class="overlay overlay-menu">
                 <VisualElement class="overlay-card overlay-card-wide">
-                    <Label name="menu-title-label" text="Loadout Select" class="overlay-title" />
+                    <Label name="menu-title-label" text="Character Select" class="overlay-title"/>
                     <VisualElement name="character-selection" class="character-selection">
-                        <Label text="Choose Loadout" class="character-title" />
+                        <Label text="Choose Ability / Loadout" name="Label" class="character-title"/>
                         <VisualElement class="character-row">
-                            <Button name="character-prev-button" text="&lt;" class="character-nav-button" />
+                            <Button name="character-prev-button" text="&lt;" class="character-nav-button"/>
                             <VisualElement class="character-info">
-                                <Label name="character-name-label" text="Balanced Loadout" class="character-name" />
-                                <Label name="character-desc-label" text="Standard setup for steady progress." class="character-desc" />
+                                <Label name="character-name-label" text="Balanced Loadout" class="character-name"/>
+                                <Label name="character-desc-label" text="Standard setup for steady progress." class="character-desc"/>
                             </VisualElement>
-                            <Button name="character-next-button" text="&gt;" class="character-nav-button" />
+                            <Button name="character-next-button" text="&gt;" class="character-nav-button"/>
                         </VisualElement>
                     </VisualElement>
-                    <VisualElement class="menu-list">
-                        <Button name="menu-start-button" text="Begin Run" class="menu-button" />
-                        <Button name="menu-leaderboard-button" text="Leaderboard" class="menu-button" />
-                        <Button name="menu-collection-button" text="Codex" class="menu-button" />
-                        <Button name="menu-settings-button" text="Settings" class="menu-button" />
-                        <Button name="menu-exit-button" text="Exit Game" class="menu-button menu-button-exit" />
+                    <VisualElement class="menu-list" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Words15&quot;); -unity-slice-left: 2; -unity-slice-top: 3; -unity-slice-right: 2; -unity-slice-bottom: 3; -unity-slice-scale: 3px; -unity-slice-type: tiled;">
+                        <Button name="menu-start-button" text="Confirm Start" class="menu-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons17&quot;); background-size: 32px 18px;"/>
+                        <Button name="menu-leaderboard-button" text="Leaderboard" class="menu-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons10&quot;); background-size: 32px 18px;"/>
+                        <Button name="menu-collection-button" text="Manual" class="menu-button" style="border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12&quot;);"/>
+                        <Button name="menu-settings-button" text="Settings" class="menu-button"/>
+                        <Button name="menu-exit-button" text="Exit Game" class="menu-button menu-button-exit" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons9&quot;); background-size: 32px 32px;"/>
                     </VisualElement>
-                    <Label name="menu-hint-label" text="Choose a loadout, then begin the descent." class="menu-hint" />
+                    <Label name="menu-hint-label" text="Select an option." class="menu-hint"/>
                 </VisualElement>
             </VisualElement>
             <VisualElement name="pause-panel" class="overlay overlay-menu">
                 <VisualElement class="overlay-card overlay-card-wide pause-card">
-                    <Label text="Paused" class="overlay-title" />
+                    <Label text="Paused" class="overlay-title"/>
                     <VisualElement class="menu-list">
-                        <Button name="menu-continue-button" text="Continue Game" class="menu-button menu-continue" />
-                        <Button name="pause-collection-button" text="Codex" class="menu-button" />
-                        <Button name="pause-mainmenu-button" text="Return to Main Menu" class="menu-button" />
-                        <Button name="pause-exit-button" text="Exit Game" class="menu-button menu-button-exit" />
+                        <Button name="menu-continue-button" text="Continue Game" class="menu-button menu-continue"/>
+                        <Button name="pause-collection-button" text="Manual" class="menu-button"/>
+                        <Button name="pause-mainmenu-button" text="Return to Main Menu" class="menu-button"/>
+                        <Button name="pause-exit-button" text="Exit Game" class="menu-button menu-button-exit"/>
                     </VisualElement>
-                    <Label name="pause-hint-label" text="Game paused." class="menu-hint" />
+                    <Label name="pause-hint-label" text="Game paused." class="menu-hint"/>
                 </VisualElement>
             </VisualElement>
             <VisualElement name="settings-panel" class="overlay overlay-settings">
                 <VisualElement class="overlay-card overlay-card-wide settings-card">
-                    <Label text="Settings" class="overlay-title" />
+                    <Label text="Settings" class="overlay-title"/>
                     <VisualElement class="settings-section">
                         <VisualElement class="settings-row">
-                            <Label text="Master Volume" class="settings-label" />
-                            <Label name="settings-volume-value-label" text="100%" class="settings-value-label" />
+                            <Label text="Master Volume" class="settings-label"/>
+                            <Label name="settings-volume-value-label" text="100%" class="settings-value-label"/>
                         </VisualElement>
-                        <Slider name="settings-volume-slider" low-value="0" high-value="1" value="1" class="settings-slider" />
-                    </VisualElement>
-                    <VisualElement class="settings-section">
-                        <Label text="Resolution" class="settings-label" />
-                        <DropdownField name="settings-resolution-dropdown" class="settings-dropdown" />
-                        <Label name="settings-resolution-hint-label" text="Current Resolution: 1080 x 1920" class="settings-hint" />
+                        <Slider name="settings-volume-slider" low-value="0" high-value="1" value="1" class="settings-slider"/>
                     </VisualElement>
                     <VisualElement class="settings-actions">
-                        <Button name="settings-apply-button" text="Save Changes" class="menu-button" />
-                        <Button name="settings-mainmenu-button" text="Return to Main Menu" class="menu-button" />
-                        <Button name="settings-close-button" text="Cancel" class="menu-button menu-button-secondary" />
+                        <Button name="settings-apply-button" text="Apply and Close" class="menu-button"/>
+                        <Button name="settings-mainmenu-button" text="Return to Main Menu" class="menu-button"/>
+                        <Button name="settings-close-button" text="Cancel" class="menu-button menu-button-secondary"/>
                     </VisualElement>
                 </VisualElement>
             </VisualElement>
             <VisualElement name="codex-panel" class="overlay overlay-codex">
                 <VisualElement class="overlay-card overlay-card-wide codex-card">
-                    <Label text="Codex" class="overlay-title" />
-                    <Label name="codex-progress-label" text="Unlocked 0/0" class="codex-progress" />
+                    <Label text="Manual" class="overlay-title"/>
+                    <Label name="codex-progress-label" text="Unlocked 0/0" class="codex-progress"/>
                     <VisualElement class="manual-tabs">
-                        <Button name="codex-tab-creatures" text="Creatures" class="manual-tab-button" />
-                        <Button name="codex-tab-obstacles" text="Obstacles" class="manual-tab-button" />
-                        <Button name="codex-tab-collections" text="Collections" class="manual-tab-button" />
+                        <Button name="codex-tab-creatures" text="Creatures" class="manual-tab-button"/>
+                        <Button name="codex-tab-collections" text="Collections" class="manual-tab-button"/>
                     </VisualElement>
                     <ScrollView name="codex-scroll" class="codex-scroll">
-                        <VisualElement name="codex-list" class="codex-list" />
+                        <VisualElement name="codex-list" class="codex-list"/>
                     </ScrollView>
                     <VisualElement class="codex-actions">
-                        <Button name="codex-close-button" text="Back to Pause Menu" class="menu-button" />
+                        <Button name="codex-close-button" text="Back to Pause Menu" class="menu-button"/>
                     </VisualElement>
                 </VisualElement>
             </VisualElement>
             <VisualElement name="gameover-panel" class="overlay overlay-gameover">
                 <VisualElement class="overlay-card overlay-card-wide">
-                    <Label text="Game Over" class="overlay-text overlay-gameover-text" />
+                    <Label text="Game Over" class="overlay-text overlay-gameover-text"/>
                     <VisualElement class="menu-list">
-                        <Button name="gameover-restart-button" text="Restart" class="menu-button" />
-                        <Button name="gameover-mainmenu-button" text="Return to Main Menu" class="menu-button" />
-                        <Button name="gameover-exit-button" text="Exit Game" class="menu-button menu-button-exit" />
-                    </VisualElement>
-                </VisualElement>
-            </VisualElement>
-            <VisualElement name="ability-panel" class="overlay overlay-ability">
-                <VisualElement class="overlay-card overlay-card-wide">
-                    <Label text="Acquire Ability" class="overlay-title" />
-                    <VisualElement name="ability-choices" class="choice-list">
-                        <Button name="ability-choice-0" text="Ability 1" class="choice-button" />
-                        <Button name="ability-choice-1" text="Ability 2" class="choice-button" />
-                        <Button name="ability-choice-2" text="Ability 3" class="choice-button" />
-                        <Button name="ability-mainmenu-button" text="Return to Main Menu" class="choice-button" />
+                        <Button name="gameover-restart-button" text="Restart" class="menu-button"/>
+                        <Button name="gameover-mainmenu-button" text="Return to Main Menu" class="menu-button"/>
+                        <Button name="gameover-exit-button" text="Exit Game" class="menu-button menu-button-exit"/>
                     </VisualElement>
                 </VisualElement>
             </VisualElement>
             <VisualElement name="ability-acquired-panel" class="overlay overlay-ability-acquired">
-                <VisualElement class="overlay-card overlay-card-wide">
-                    <Label name="ability-acquired-subtitle" text="Ability Manual Updated" class="ability-acquired-subtitle" />
-                    <Label name="ability-acquired-title" text="Ability Acquired" class="overlay-title" />
-                    <Label name="ability-acquired-desc" text="A new power surges within you." class="ability-acquired-desc" />
-                    <Label name="ability-acquired-meta" text="Passive ability recorded." class="ability-acquired-meta" />
-                    <Label name="ability-acquired-hint" text="Tap to resume the run." class="ability-acquired-hint" />
+                <VisualElement name="ability-acquired-card" class="overlay-card overlay-card-wide">
+                    <Label name="ability-acquired-subtitle" text="Ability Manual Updated" class="ability-acquired-subtitle"/>
+                    <Label name="ability-acquired-title" text="Ability Acquired" class="overlay-title"/>
+                    <Label name="ability-acquired-desc" text="A new power surges within you." class="ability-acquired-desc"/>
+                    <Label name="ability-acquired-meta" text="Passive ability recorded." class="ability-acquired-meta"/>
+                    <Label name="ability-acquired-hint" text="Tap anywhere to continue." class="ability-acquired-hint"/>
                 </VisualElement>
+            </VisualElement>
+            <VisualElement name="tutorial-panel" class="overlay overlay-tutorial">
+                <VisualElement name="tutorial-card" class="overlay-card overlay-card-wide tutorial-card">
+                    <Label name="tutorial-step-label" text="Step 1/3" class="tutorial-step-label"/>
+                    <Label name="tutorial-title" text="Movement" class="overlay-title tutorial-title"/>
+                    <Label name="tutorial-body" text="Swipe or drag left and right to move horizontally." class="tutorial-body"/>
+                    <Label name="tutorial-hint" text="Tap to continue" class="tutorial-hint"/>
+                </VisualElement>
+            </VisualElement>
+            <VisualElement name="achievement-toast" class="achievement-toast">
+                <Label name="achievement-toast-title" text="" class="achievement-toast-title"/>
+                <Label name="achievement-toast-desc" text="" class="achievement-toast-desc"/>
             </VisualElement>
         </VisualElement>
     </VisualElement>

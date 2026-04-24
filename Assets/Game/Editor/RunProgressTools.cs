@@ -12,7 +12,7 @@ namespace EndlessRunner.EditorTools
             string savePath = RunProgressStore.GetSavePathForDebug();
             if (!EditorUtility.DisplayDialog(
                     "Clear Codex Progress",
-                    $"Clear creature, obstacle, and collectible unlock history?\n\nSave file:\n{savePath}\n\nScore, run count, mode unlocks, and leaderboard will be kept.",
+                    $"Clear creature and collectible unlock history?\n\nSave file:\n{savePath}\n\nScore, run count, mode unlocks, and leaderboard will be kept.",
                     "Clear Codex",
                     "Cancel"))
             {

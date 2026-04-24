@@ -67,17 +67,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 562bb44b0f43fb746804bdc34ccd7afe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.SegmentContent
-  obstaclePrefabs:
-  - {fileID: 2502620808136540795, guid: e5a64660f7461024db4d895df39b72ca, type: 3}
-  - {fileID: 2502620808136540795, guid: 2399cade8aa340ecafb49241662e2f07, type: 3}
-  - {fileID: 2502620808136540795, guid: 99dcd27aef5646298022a1f6f7875603, type: 3}
-  - {fileID: 2502620808136540795, guid: 24349cce829c4bc6b439e1a8b7cffa1d, type: 3}
-  - {fileID: 2502620808136540795, guid: e775fe40d85a411f92ee7f6d1adc94c6, type: 3}
-  - {fileID: 2502620808136540795, guid: b9a3d5e7f1c2460b8d9e0a1b2c3d4e5f, type: 3}
-  enemyPrefabs:
-  - {fileID: 8270579165458065032, guid: aeaa6992938f8dd4eae556bc69787b8e, type: 3}
-  chestPrefabs:
-  - {fileID: 9150000000000000001, guid: f4e3d2c1b0a9f8e7d6c5b4a39281706f, type: 3}
+  creaturePrefabs:
+  - {fileID: 8270579165458065032, guid: 63c3fd5786474299805de3743e9b87b4, type: 3}
+  - {fileID: 8270579165458065032, guid: 09b50c601de84fb5bc5c4325025d8db4, type: 3}
+  - {fileID: 8270579165458065032, guid: 4f68fcef4f13440cbe71665747d50d67, type: 3}
+  - {fileID: 8270579165458065032, guid: d70677566bde4693b57b1e01345d9a05, type: 3}
+  - {fileID: 8270579165458065032, guid: f6106130e85b4ce5ac34d98c0b23787c, type: 3}
+  - {fileID: 8270579165458065032, guid: 1a09b6fc2cac4e2890eaa1baa3f391be, type: 3}
+  - {fileID: 8270579165458065032, guid: 6f1dad02199c49cf936ea8fe85016ce8, type: 3}
   collectiblePrefabs:
   - {fileID: 9200000000000000001, guid: 9a4f61d3575b47d2b93e12f0a6c8d4e1, type: 3}
   spawnPoints:
@@ -87,13 +84,14 @@ MonoBehaviour:
   runner: {fileID: 0}
   autoFitSpawnPointsToBounds: 1
   spawnInset: 0.4
+  skipSpawnInsideCamera: 1
+  cameraSpawnPadding: 0.5
   progressScoreScale: 180
-  hostileBaseCount: 1
-  hostileGrowth: 1.1
-  enemyRatioBase: 0.25
-  enemyRatioGrowth: 0.4
-  chestBaseCount: 0
-  chestGrowth: 0
+  creatureBaseCount: 2
+  creatureGrowth: 1.1
+  hazardRatioStart: 0.167
+  hazardRatioEnd: 0.667
+  hazardRatioScoreMax: 3000
   collectibleBaseCount: 0
   collectibleGrowth: 0
   collectibleYOffset: 0.45

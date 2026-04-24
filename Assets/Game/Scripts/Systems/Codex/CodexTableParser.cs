@@ -19,7 +19,6 @@ namespace EndlessRunner
 
             string root = GetDocsRoot();
             database.creatures = ParseTable(Path.Combine(root, "生物表.md"));
-            database.obstacles = ParseTable(Path.Combine(root, "障碍表.md"));
             database.collections = ParseTable(Path.Combine(root, "收藏品表.md"));
         }
 

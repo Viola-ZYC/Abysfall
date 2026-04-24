@@ -43,6 +43,8 @@ namespace EndlessRunner
                 ScoreManager.Instance?.AddCollectible(value);
             }
 
+            AudioManager.Instance?.PlayCollectible();
+
             if (newlyUnlocked)
             {
                 TryShowCollectiblePopup();

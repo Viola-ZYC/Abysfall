@@ -1,102 +1,99 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Game/Resources/UI/MainMenuUI.uss?fileID=7433441132597879392&amp;guid=00bb02529b4f0084e90aa51d7ebf8edc&amp;type=3#MainMenuUI"/>
     <ui:VisualElement name="mainmenu-root" class="mainmenu-root">
-        <ui:VisualElement class="mainmenu-atmosphere">
-            <ui:VisualElement class="mainmenu-atmosphere-core" />
-            <ui:VisualElement class="mainmenu-atmosphere-frame" />
-        </ui:VisualElement>
         <ui:VisualElement name="mainmenu-safe-area" class="mainmenu-safe-area">
-            <ui:VisualElement class="mainmenu-shell">
-                <ui:VisualElement name="mainmenu-card" class="mainmenu-card">
-                    <ui:VisualElement class="mainmenu-header">
-                        <ui:Label class="mainmenu-kicker" text="VERTICAL DESCENT ROGUELIKE" />
-                        <ui:Label name="mainmenu-title-label" class="mainmenu-title" text="ENDLESS ABYSS" />
-                        <ui:Label name="mainmenu-subtitle-label" class="mainmenu-subtitle" text="Descend. Adapt. Survive." />
+            <ui:VisualElement class="mainmenu-atmosphere">
+                <ui:VisualElement class="mainmenu-atmosphere-core"/>
+                <ui:VisualElement class="mainmenu-atmosphere-frame"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="mainmenu-card" class="mainmenu-card">
+                <ui:VisualElement class="mainmenu-shell">
+                    <ui:VisualElement class="mainmenu-hero">
+                        <ui:Label text="DESCENT PROTOCOL" class="mainmenu-kicker"/>
+                        <ui:Label name="mainmenu-title-label" text="ENDLESS ABYSS" class="mainmenu-title"/>
+                        <ui:Label name="mainmenu-subtitle-label" text="Launch your next descent from the command deck." class="mainmenu-subtitle"/>
                     </ui:VisualElement>
-                    <ui:VisualElement class="mainmenu-button-list">
-                        <ui:Button name="mainmenu-play-button" class="mainmenu-button mainmenu-button-primary" text="Play" />
-                        <ui:Button name="mainmenu-leaderboard-button" class="mainmenu-button" text="Leaderboard" />
-                        <ui:Button name="mainmenu-collection-button" class="mainmenu-button" text="Codex" />
-                        <ui:Button name="mainmenu-achievement-button" class="mainmenu-button" text="Achievements" />
-                        <ui:Button name="mainmenu-settings-button" class="mainmenu-button" text="Settings" />
-                        <ui:Button name="mainmenu-exit-button" class="mainmenu-button mainmenu-button-exit" text="Exit" />
+                    <ui:VisualElement class="mainmenu-primary-zone">
+                        <ui:Button name="mainmenu-play-button" text="Play" class="mainmenu-button mainmenu-home-button mainmenu-button-primary" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons8&quot;); background-size: 60px 60px;"/>
+                        <ui:Label text="Start immediately with the currently selected mode and enter the abyss." class="mainmenu-primary-caption"/>
                     </ui:VisualElement>
-                    <ui:Label name="mainmenu-hint-label" class="mainmenu-hint" text="" />
+                    <ui:VisualElement class="mainmenu-section-row">
+                        <ui:Label text="COMMAND PANEL" class="mainmenu-section-title"/>
+                        <ui:VisualElement class="mainmenu-section-rule"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="mainmenu-action-stack">
+                        <ui:Button name="mainmenu-leaderboard-button" text="Leaderboard" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons10&quot;); background-size: 50px 50px;"/>
+                        <ui:Button name="mainmenu-collection-button" text="Manual" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons13&quot;); background-size: 50px 50px;"/>
+                        <ui:Button name="mainmenu-achievement-button" text="Achievements" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons12&quot;); background-size: 50px 50px;"/>
+                        <ui:Button name="mainmenu-settings-button" text="Settings" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons1&quot;); background-size: 50px 50px;"/>
+                        <ui:Button name="mainmenu-tutorial-button" text="Tutorial" class="mainmenu-button mainmenu-home-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons17&quot;); background-size: 50px 50px;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="mainmenu-footer">
+                        <ui:Label name="mainmenu-hint-label" text="" class="mainmenu-hint"/>
+                        <ui:Button name="mainmenu-exit-button" text="Exit" class="mainmenu-button mainmenu-home-button mainmenu-button-exit" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons9&quot;); background-size: 50px 50px;"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-
             <ui:VisualElement name="mainmenu-collection-overlay" class="mainmenu-overlay">
                 <ui:VisualElement class="mainmenu-collection-card">
-                    <ui:Label class="mainmenu-collection-title" text="Codex" />
-                    <ui:Label name="mainmenu-collection-progress-label" class="mainmenu-collection-progress" text="Unlocked 0/0" />
+                    <ui:Label text="Manual" class="mainmenu-collection-title"/>
+                    <ui:Label name="mainmenu-collection-progress-label" text="Unlocked 0/0" class="mainmenu-collection-progress"/>
                     <ui:VisualElement class="manual-tabs">
-                        <ui:Button name="mainmenu-manual-tab-creatures" class="manual-tab-button" text="Creatures" />
-                        <ui:Button name="mainmenu-manual-tab-obstacles" class="manual-tab-button" text="Obstacles" />
-                        <ui:Button name="mainmenu-manual-tab-collections" class="manual-tab-button" text="Collections" />
+                        <ui:Button name="mainmenu-manual-tab-creatures" text="Creatures" class="manual-tab-button"/>
+                        <ui:Button name="mainmenu-manual-tab-collections" text="Collections" class="manual-tab-button"/>
                     </ui:VisualElement>
                     <ui:ScrollView name="mainmenu-collection-scroll" class="mainmenu-collection-scroll">
-                        <ui:VisualElement name="mainmenu-collection-list" class="mainmenu-collection-list" />
+                        <ui:VisualElement name="mainmenu-collection-list" class="mainmenu-collection-list"/>
                     </ui:ScrollView>
-                    <ui:Button name="mainmenu-collection-back-button" class="mainmenu-button" text="Back to Main Menu" />
-                    <ui:Button name="mainmenu-collection-close-button" class="mainmenu-button" text="Close" />
+                    <ui:Button name="mainmenu-collection-back-button" text="Back to Main Interface" class="mainmenu-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons16&quot;);"/>
+                    <ui:Button name="mainmenu-collection-close-button" text="Close" class="mainmenu-button" style="background-image: resource(&quot;Art/Sprite/Penusbmic Version1/The DARK Series/Pixel UI/UI - ICONS/UI - Icons9&quot;);"/>
                 </ui:VisualElement>
             </ui:VisualElement>
-
             <ui:VisualElement name="mainmenu-leaderboard-overlay" class="mainmenu-overlay">
                 <ui:VisualElement class="mainmenu-panel-card">
-                    <ui:Label class="mainmenu-panel-title" text="Leaderboard" />
+                    <ui:Label text="Leaderboard" class="mainmenu-panel-title"/>
                     <ui:VisualElement class="mainmenu-info-list">
-                        <ui:Label name="mainmenu-best-score-label" class="mainmenu-info-row" text="Best Score: 0" />
-                        <ui:Label name="mainmenu-last-score-label" class="mainmenu-info-row" text="Last Score: 0" />
-                        <ui:Label name="mainmenu-total-runs-label" class="mainmenu-info-row" text="Total Runs: 0" />
-                        <ui:Label name="mainmenu-average-score-label" class="mainmenu-info-row" text="Average Score: 0" />
-                        <ui:Label name="mainmenu-mode-progress-label" class="mainmenu-info-row" text="Modes: Classic (Unlocked), Hard (Locked), Abyss (Locked)" />
-                        <ui:Label name="mainmenu-top-scores-label" class="mainmenu-info-row mainmenu-info-row-small" text="Top Scores: 0, 0, 0" />
+                        <ui:Label name="mainmenu-best-score-label" text="Best Score: 0" class="mainmenu-info-row"/>
+                        <ui:Label name="mainmenu-last-score-label" text="Last Score: 0" class="mainmenu-info-row"/>
+                        <ui:Label name="mainmenu-total-runs-label" text="Total Runs: 0" class="mainmenu-info-row"/>
+                        <ui:Label name="mainmenu-average-score-label" text="Average Score: 0" class="mainmenu-info-row"/>
+                        <ui:Label name="mainmenu-mode-progress-label" text="Modes: Classic (Unlocked), Hard (Locked), Abyss (Locked)" class="mainmenu-info-row"/>
+                        <ui:Label name="mainmenu-top-scores-label" text="Top Scores: 0, 0, 0" class="mainmenu-info-row mainmenu-info-row-small"/>
                     </ui:VisualElement>
-                    <ui:Button name="mainmenu-leaderboard-back-button" class="mainmenu-button" text="Back to Main Menu" />
-                    <ui:Button name="mainmenu-leaderboard-close-button" class="mainmenu-button" text="Close" />
+                    <ui:Button name="mainmenu-leaderboard-back-button" text="Back to Main Interface" class="mainmenu-button"/>
+                    <ui:Button name="mainmenu-leaderboard-close-button" text="Close" class="mainmenu-button"/>
                 </ui:VisualElement>
             </ui:VisualElement>
-
             <ui:VisualElement name="mainmenu-achievement-overlay" class="mainmenu-overlay">
                 <ui:VisualElement class="mainmenu-collection-card">
-                    <ui:Label class="mainmenu-collection-title" text="Achievements" />
-                    <ui:Label name="mainmenu-achievement-progress-label" class="mainmenu-collection-progress" text="Completed 0/0" />
+                    <ui:Label text="Achievements" class="mainmenu-collection-title"/>
+                    <ui:Label name="mainmenu-achievement-progress-label" text="Completed 0/0" class="mainmenu-collection-progress"/>
                     <ui:ScrollView name="mainmenu-achievement-scroll" class="mainmenu-collection-scroll">
-                        <ui:VisualElement name="mainmenu-achievement-list" class="mainmenu-collection-list" />
+                        <ui:VisualElement name="mainmenu-achievement-list" class="mainmenu-collection-list"/>
                     </ui:ScrollView>
-                    <ui:Button name="mainmenu-achievement-back-button" class="mainmenu-button" text="Back to Main Menu" />
-                    <ui:Button name="mainmenu-achievement-close-button" class="mainmenu-button" text="Close" />
+                    <ui:Button name="mainmenu-achievement-back-button" text="Back to Main Interface" class="mainmenu-button"/>
+                    <ui:Button name="mainmenu-achievement-close-button" text="Close" class="mainmenu-button"/>
                 </ui:VisualElement>
             </ui:VisualElement>
-
             <ui:VisualElement name="mainmenu-settings-overlay" class="mainmenu-overlay">
                 <ui:VisualElement class="mainmenu-panel-card">
-                    <ui:Label class="mainmenu-panel-title" text="Settings" />
-
+                    <ui:Label text="Settings" class="mainmenu-panel-title"/>
                     <ui:VisualElement class="mainmenu-settings-section">
                         <ui:VisualElement class="mainmenu-settings-row">
-                            <ui:Label class="mainmenu-settings-label" text="Master Volume" />
-                            <ui:Label name="mainmenu-settings-volume-value-label" class="mainmenu-settings-value" text="100%" />
+                            <ui:Label text="Master Volume" class="mainmenu-settings-label"/>
+                            <ui:Label name="mainmenu-settings-volume-value-label" text="100%" class="mainmenu-settings-value"/>
                         </ui:VisualElement>
-                        <ui:Slider name="mainmenu-settings-volume-slider" class="mainmenu-settings-slider" low-value="0" high-value="1" value="1" />
+                        <ui:Slider name="mainmenu-settings-volume-slider" low-value="0" high-value="1" value="1" class="mainmenu-settings-slider"/>
                     </ui:VisualElement>
-
                     <ui:VisualElement class="mainmenu-settings-section">
-                        <ui:Label class="mainmenu-settings-label" text="Resolution" />
-                        <ui:DropdownField name="mainmenu-settings-resolution-dropdown" class="mainmenu-settings-dropdown" />
-                        <ui:Label name="mainmenu-settings-resolution-hint-label" class="mainmenu-settings-hint" text="Current Resolution: 0 x 0" />
+                        <ui:Label text="Game Mode" class="mainmenu-settings-label"/>
+                        <ui:DropdownField name="mainmenu-game-mode-dropdown" class="mainmenu-settings-dropdown"/>
+                        <ui:Label name="mainmenu-game-mode-hint-label" text="Select a mode." class="mainmenu-settings-hint"/>
                     </ui:VisualElement>
-
-                    <ui:VisualElement class="mainmenu-settings-section">
-                        <ui:Label class="mainmenu-settings-label" text="Game Mode" />
-                        <ui:DropdownField name="mainmenu-game-mode-dropdown" class="mainmenu-settings-dropdown" />
-                        <ui:Label name="mainmenu-game-mode-hint-label" class="mainmenu-settings-hint" text="Select a mode." />
-                    </ui:VisualElement>
-
                     <ui:VisualElement class="mainmenu-settings-actions">
-                        <ui:Button name="mainmenu-settings-apply-button" class="mainmenu-button" text="Save Changes" />
-                        <ui:Button name="mainmenu-settings-back-button" class="mainmenu-button" text="Back to Main Menu" />
-                        <ui:Button name="mainmenu-settings-close-button" class="mainmenu-button" text="Cancel" />
+                        <ui:Button name="mainmenu-settings-apply-button" text="Apply and Close" class="mainmenu-button"/>
+                        <ui:Button name="mainmenu-settings-back-button" text="Back to Main Interface" class="mainmenu-button"/>
+                        <ui:Button name="mainmenu-settings-close-button" text="Cancel" class="mainmenu-button"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>

@@ -11,6 +11,9 @@ namespace EndlessRunner
         [SerializeField] private bool followY = true;
         [SerializeField] private bool onlyFollowDown = true;
         [SerializeField, Min(0f)] private float smoothTime = 0f;
+        [Header("Run Start Follow")]
+        [SerializeField] private bool delayInitialYFollow = true;
+        [SerializeField, Range(0f, 1f)] private float beginYFollowViewportY = 0.6666667f;
 
         [Header("Screen Side Boundaries")]
         [SerializeField] private bool autoFitSideWalls = true;
@@ -24,6 +27,7 @@ namespace EndlessRunner
         [SerializeField, Min(0f)] private float wallVerticalPadding = 2f;
         [SerializeField, Min(0f)] private float backgroundVerticalPadding = 2f;
         [SerializeField, Min(0f)] private float horizontalInset = 0f;
+        [SerializeField, Min(0f)] private float horizontalInsetPixels = 0f;
 
         [Header("Portrait Resolution Adaptation")]
         [SerializeField] private bool adaptOrthographicSizeForAspect = true;
@@ -41,19 +45,28 @@ namespace EndlessRunner
         private float cachedOrthoSize = -1f;
         private float cachedAspect = -1f;
         private float referenceOrthographicSize = 5f;
+        private Vector3 initialCameraPosition;
+        private Vector3 initialFollowOffset;
+        private bool hasUnlockedInitialYFollow;
+
+        public Vector3 RunStartPosition => initialCameraPosition;
 
         private void Awake()
         {
             targetCamera = GetComponent<Camera>();
+            initialCameraPosition = transform.position;
             InitializeReferenceOrthographicSize();
             ApplyAdaptiveOrthographicSizeIfNeeded(force: true);
             CacheBoundaryReferences();
-            UpdateSideBoundariesIfNeeded();
 
             if (target != null && useInitialOffset)
             {
                 offset = transform.position - target.position;
             }
+
+            initialFollowOffset = offset;
+            ResetFollowState();
+            UpdateSideBoundariesIfNeeded();
         }
 
         private void LateUpdate()
@@ -73,7 +86,14 @@ namespace EndlessRunner
                 desired.x = current.x;
             }
 
-            if (!followY)
+            bool allowYFollow = followY;
+            if (allowYFollow && !hasUnlockedInitialYFollow)
+            {
+                TryUnlockInitialYFollow(current);
+                allowYFollow = hasUnlockedInitialYFollow;
+            }
+
+            if (!allowYFollow)
             {
                 desired.y = current.y;
             }
@@ -94,6 +114,42 @@ namespace EndlessRunner
             }
 
             UpdateSideBoundariesIfNeeded();
+        }
+
+        private void ResetFollowState()
+        {
+            velocity = Vector3.zero;
+            hasUnlockedInitialYFollow = !followY || !delayInitialYFollow;
+        }
+
+        private void TryUnlockInitialYFollow(Vector3 currentPosition)
+        {
+            if (hasUnlockedInitialYFollow || target == null)
+            {
+                return;
+            }
+
+            if (targetCamera == null)
+            {
+                targetCamera = GetComponent<Camera>();
+            }
+
+            if (targetCamera == null)
+            {
+                hasUnlockedInitialYFollow = true;
+                return;
+            }
+
+            Vector3 viewport = targetCamera.WorldToViewportPoint(target.position);
+            if (viewport.y > beginYFollowViewportY)
+            {
+                return;
+            }
+
+            hasUnlockedInitialYFollow = true;
+            offset = currentPosition - target.position;
+            offset.z = initialFollowOffset.z;
+            velocity = Vector3.zero;
         }
 
         private void InitializeReferenceOrthographicSize()
@@ -234,24 +290,29 @@ namespace EndlessRunner
                 return;
             }
 
+            float worldUnitsPerPixelX = halfWidth * 2f / Mathf.Max(1f, screenSize.x);
+            float totalHorizontalInset = horizontalInset + Mathf.Max(0f, horizontalInsetPixels) * worldUnitsPerPixelX;
             float normalizedLeft = Mathf.Clamp01(safeArea.xMin / Mathf.Max(1f, screenSize.x));
             float normalizedRight = Mathf.Clamp01(safeArea.xMax / Mathf.Max(1f, screenSize.x));
-            float leftEdge = Mathf.Lerp(-halfWidth, halfWidth, normalizedLeft) + horizontalInset;
-            float rightEdge = Mathf.Lerp(-halfWidth, halfWidth, normalizedRight) - horizontalInset;
+            float leftEdge = Mathf.Lerp(-halfWidth, halfWidth, normalizedLeft) + totalHorizontalInset;
+            float rightEdge = Mathf.Lerp(-halfWidth, halfWidth, normalizedRight) - totalHorizontalInset;
 
             if (leftEdge >= rightEdge)
             {
                 return;
             }
 
-            PositionWall(leftWall, leftEdge, true);
-            PositionWall(rightWall, rightEdge, false);
+            float worldLeftEdge = transform.position.x + leftEdge;
+            float worldRightEdge = transform.position.x + rightEdge;
+
+            PositionWall(leftWall, worldLeftEdge, true);
+            PositionWall(rightWall, worldRightEdge, false);
             if (runner != null)
             {
-                runner.SetHorizontalBounds(leftEdge, rightEdge);
+                runner.SetHorizontalBounds(worldLeftEdge, worldRightEdge);
             }
 
-            FitBackgroundToBounds(leftEdge, rightEdge);
+            UpdateGameplayBackgroundBounds(worldLeftEdge, worldRightEdge);
 
             cachedScreenSize = screenSize;
             cachedSafeArea = safeArea;
@@ -259,15 +320,15 @@ namespace EndlessRunner
             cachedAspect = targetCamera.aspect;
         }
 
-        private void PositionWall(Transform wall, float edgeX, bool isLeftWall)
+        private void PositionWall(Transform wall, float edgeWorldX, bool isLeftWall)
         {
             if (wall == null)
             {
                 return;
             }
 
-            float halfThickness = GetHalfThickness(wall);
-            float worldX = transform.position.x + (isLeftWall ? edgeX - halfThickness : edgeX + halfThickness);
+            float offsetToInnerEdge = wall.position.x - GetInnerEdgeWorldX(wall, isLeftWall);
+            float worldX = edgeWorldX + offsetToInnerEdge;
 
             Vector3 position = wall.position;
             position.x = worldX;
@@ -281,7 +342,21 @@ namespace EndlessRunner
             }
         }
 
-        private void FitBackgroundToBounds(float leftEdge, float rightEdge)
+        private void UpdateGameplayBackgroundBounds(float leftWorldEdge, float rightWorldEdge)
+        {
+            if (gameplayBackground != null)
+            {
+                InfiniteVerticalTilemap tilemap = gameplayBackground.GetComponent<InfiniteVerticalTilemap>();
+                if (tilemap != null)
+                {
+                    tilemap.SetWallBounds(leftWorldEdge, rightWorldEdge);
+                }
+            }
+
+            FitBackgroundToBounds(leftWorldEdge, rightWorldEdge);
+        }
+
+        private void FitBackgroundToBounds(float leftWorldEdge, float rightWorldEdge)
         {
             if (!autoFitBackgroundToBounds || gameplayBackground == null || targetCamera == null)
             {
@@ -289,9 +364,9 @@ namespace EndlessRunner
             }
 
             float halfHeight = targetCamera.orthographicSize;
-            float centerX = transform.position.x + (leftEdge + rightEdge) * 0.5f;
+            float centerX = (leftWorldEdge + rightWorldEdge) * 0.5f;
             float centerY = transform.position.y;
-            float width = Mathf.Max(0.01f, rightEdge - leftEdge);
+            float width = Mathf.Max(0.01f, rightWorldEdge - leftWorldEdge);
             float height = Mathf.Max(0.01f, halfHeight * 2f + backgroundVerticalPadding);
 
             Vector3 position = gameplayBackground.position;
@@ -312,26 +387,26 @@ namespace EndlessRunner
             gameplayBackground.localScale = scale;
         }
 
-        private static float GetHalfThickness(Transform wall)
+        private static float GetInnerEdgeWorldX(Transform wall, bool isLeftWall)
         {
             if (wall == null)
             {
-                return 0.25f;
+                return 0f;
             }
 
             Collider2D collider = wall.GetComponent<Collider2D>();
             if (collider != null)
             {
-                return Mathf.Max(0.01f, collider.bounds.extents.x);
+                return isLeftWall ? collider.bounds.max.x : collider.bounds.min.x;
             }
 
             Renderer renderer = wall.GetComponent<Renderer>();
             if (renderer != null)
             {
-                return Mathf.Max(0.01f, renderer.bounds.extents.x);
+                return isLeftWall ? renderer.bounds.max.x : renderer.bounds.min.x;
             }
 
-            return Mathf.Max(0.01f, Mathf.Abs(wall.lossyScale.x) * 0.5f);
+            return wall.position.x;
         }
 
         /// <summary>
@@ -351,6 +426,19 @@ namespace EndlessRunner
             }
 
             ApplyAdaptiveOrthographicSizeIfNeeded(force: true);
+            UpdateSideBoundariesIfNeeded();
+        }
+
+        public void ResetToRunStart()
+        {
+            transform.position = initialCameraPosition;
+            offset = initialFollowOffset;
+            cachedScreenSize = Vector2Int.zero;
+            cachedSafeArea = Rect.zero;
+            cachedOrthoSize = -1f;
+            cachedAspect = -1f;
+            ApplyAdaptiveOrthographicSizeIfNeeded(force: true);
+            ResetFollowState();
             UpdateSideBoundariesIfNeeded();
         }
     }

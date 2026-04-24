@@ -20,7 +20,6 @@ namespace EndlessRunner
         [SerializeField] private string refreshTag = "Block";
         [SerializeField] private bool useLayerRefresh = false;
         [SerializeField] private LayerMask refreshLayers;
-        [SerializeField] private bool allowObstacleComponentAsRefresh = true;
         [SerializeField, Range(0f, 1f)] private float minGroundNormalY = 0.2f;
 
         private Rigidbody2D body;
@@ -184,11 +183,6 @@ namespace EndlessRunner
             }
 
             if (useLayerRefresh && ((1 << collider.gameObject.layer) & refreshLayers.value) != 0)
-            {
-                return true;
-            }
-
-            if (allowObstacleComponentAsRefresh && collider.GetComponent<Obstacle>() != null)
             {
                 return true;
             }

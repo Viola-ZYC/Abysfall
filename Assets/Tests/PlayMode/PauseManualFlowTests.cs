@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Reflection;
 using NUnit.Framework;
@@ -44,7 +45,7 @@ public class PauseManualFlowTests
     {
         GameManager gameManager = Object.FindAnyObjectByType<GameManager>();
         HUDController hudController = Object.FindAnyObjectByType<HUDController>();
-        UIDocument uiDocument = Object.FindAnyObjectByType<UIDocument>();
+        UIDocument uiDocument = UIDocumentLocator.FindGameplayDocument();
 
         Assert.IsNotNull(gameManager, "SampleScene should contain GameManager.");
         Assert.IsNotNull(hudController, "SampleScene should contain HUDController.");
@@ -104,7 +105,7 @@ public class PauseManualFlowTests
     {
         GameManager gameManager = Object.FindAnyObjectByType<GameManager>();
         AbilityAcquiredUI popup = Object.FindAnyObjectByType<AbilityAcquiredUI>();
-        UIDocument uiDocument = Object.FindAnyObjectByType<UIDocument>();
+        UIDocument uiDocument = UIDocumentLocator.FindGameplayDocument();
 
         Assert.IsNotNull(gameManager, "SampleScene should contain GameManager.");
         Assert.IsNotNull(popup, "SampleScene should contain AbilityAcquiredUI.");
@@ -143,7 +144,20 @@ public class PauseManualFlowTests
         AssertDisplay(menuPanel, DisplayStyle.None, "Pause menu should not open when discovery popup pauses the game.");
 
         InvokePrivate(popup, "Hide");
-        yield return null;
+        yield return WaitUntil(
+            () =>
+            {
+                VisualElement currentPanel = uiDocument.rootVisualElement.Q<VisualElement>(AbilityPanelName);
+                Label currentTitleLabel = uiDocument.rootVisualElement.Q<Label>(AbilityTitleName);
+                return currentPanel != null &&
+                       currentTitleLabel != null &&
+                       string.Equals(currentTitleLabel.text, "Test Collection B");
+            },
+            2f,
+            "Second queued popup should replace the first after dismissal.");
+
+        abilityPanel = uiDocument.rootVisualElement.Q<VisualElement>(AbilityPanelName);
+        titleLabel = uiDocument.rootVisualElement.Q<Label>(AbilityTitleName);
 
         Assert.IsTrue(abilityPanel.ClassListContains("is-visible"), "Second queued popup should appear immediately.");
         Assert.AreEqual("Test Collection B", titleLabel.text, "Second queued popup should replace the first after dismissal.");
@@ -151,7 +165,19 @@ public class PauseManualFlowTests
         Assert.AreEqual(0f, Time.timeScale, "Queued popup handoff should keep timescale at zero.");
 
         InvokePrivate(popup, "Hide");
-        yield return null;
+        yield return WaitUntil(
+            () =>
+            {
+                VisualElement currentPanel = uiDocument.rootVisualElement.Q<VisualElement>(AbilityPanelName);
+                bool isVisible = currentPanel != null && currentPanel.ClassListContains("is-visible");
+                return !isVisible &&
+                       gameManager.State == GameState.Running &&
+                       Mathf.Approximately(Time.timeScale, 1f);
+            },
+            2f,
+            "Popup should fully dismiss and resume gameplay after the last queued entry closes.");
+
+        abilityPanel = uiDocument.rootVisualElement.Q<VisualElement>(AbilityPanelName);
 
         Assert.IsFalse(abilityPanel.ClassListContains("is-visible"), "Popup should be hidden after the last dismissal.");
         Assert.AreEqual(GameState.Running, gameManager.State, "Gameplay should resume only after the last popup closes.");
@@ -164,7 +190,7 @@ public class PauseManualFlowTests
         GameManager gameManager = Object.FindAnyObjectByType<GameManager>();
         HUDController hudController = Object.FindAnyObjectByType<HUDController>();
         InputRouter inputRouter = Object.FindAnyObjectByType<InputRouter>();
-        UIDocument uiDocument = Object.FindAnyObjectByType<UIDocument>();
+        UIDocument uiDocument = UIDocumentLocator.FindGameplayDocument();
 
         Assert.IsNotNull(gameManager, "SampleScene should contain GameManager.");
         Assert.IsNotNull(hudController, "SampleScene should contain HUDController.");
@@ -201,7 +227,7 @@ public class PauseManualFlowTests
         GameManager gameManager = Object.FindAnyObjectByType<GameManager>();
         HUDController hudController = Object.FindAnyObjectByType<HUDController>();
         InputRouter inputRouter = Object.FindAnyObjectByType<InputRouter>();
-        UIDocument uiDocument = Object.FindAnyObjectByType<UIDocument>();
+        UIDocument uiDocument = UIDocumentLocator.FindGameplayDocument();
 
         Assert.IsNotNull(gameManager, "SampleScene should contain GameManager.");
         Assert.IsNotNull(hudController, "SampleScene should contain HUDController.");
@@ -277,5 +303,23 @@ public class PauseManualFlowTests
         Assert.IsNotNull(method, $"Expected private method {methodName} on {target.GetType().Name}.");
         object result = method.Invoke(target, arguments);
         return result is T typedResult ? typedResult : default;
+    }
+
+    private static IEnumerator WaitUntil(Func<bool> predicate, float timeoutSeconds, string failureMessage)
+    {
+        Assert.IsNotNull(predicate, "WaitUntil requires a predicate.");
+        float deadline = Time.realtimeSinceStartup + Mathf.Max(0.01f, timeoutSeconds);
+
+        while (Time.realtimeSinceStartup < deadline)
+        {
+            if (predicate())
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        Assert.IsTrue(predicate(), failureMessage);
     }
 }

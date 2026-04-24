@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EndlessRunner.RunnerAbilityEffect
   modifiers:
     speedMultiplier: 1
-    gravityMultiplier: 0.9
+    gravityMultiplier: 0.7
     maxHealthBonus: 0
     brakeImpulseBonus: 0
     hitStopBonus: 0

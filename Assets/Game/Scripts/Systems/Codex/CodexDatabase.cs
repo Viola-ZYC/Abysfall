@@ -7,7 +7,6 @@ namespace EndlessRunner
     public class CodexDatabase : ScriptableObject
     {
         public List<CodexEntry> creatures = new();
-        public List<CodexEntry> obstacles = new();
         public List<CodexEntry> collections = new();
 
         public static CodexDatabase Load()
@@ -27,7 +26,6 @@ namespace EndlessRunner
             return category switch
             {
                 CodexCategory.Creature => creatures,
-                CodexCategory.Obstacle => obstacles,
                 CodexCategory.Collection => collections,
                 _ => creatures
             };

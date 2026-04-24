@@ -16,11 +16,14 @@ namespace EndlessRunner
         [SerializeField] private float boundaryPadding = 0f;
         [SerializeField] private bool useVisualBoundsForClamp = true;
         [SerializeField] private bool resetTransformOnReset = true;
+        [SerializeField] private bool spawnAboveCameraOnReset = true;
+        [SerializeField, Min(0f)] private float spawnAboveCameraPadding = 0.5f;
 
         private Rigidbody2D body;
         private Collider2D runnerCollider;
         private Renderer runnerRenderer;
         private CharacterAbilityController abilityController;
+        private CameraFollow2D cameraFollow;
         private Vector3 initialWorldPosition;
         private Quaternion initialWorldRotation;
         private float currentGravityScale;
@@ -36,12 +39,14 @@ namespace EndlessRunner
         private Vector2 currentAcceleration;
         private Vector2 lastVelocitySample;
         private bool hasVelocitySample;
+        private int impulsePreserveFrames;
 
         public int CurrentHealth => currentHealth;
         public int MaxHealth => config != null ? Mathf.Max(1, config.maxHealth + abilityMaxHealthBonus) : Mathf.Max(1, currentHealth);
         public Vector2 CurrentVelocity => body != null ? body.linearVelocity : Vector2.zero;
         public Vector2 CurrentAcceleration => currentAcceleration;
         public event Action<int, int> HealthChanged;
+        public event Action<CreatureBase> CreatureStomped;
 
         private void Awake()
         {
@@ -49,6 +54,7 @@ namespace EndlessRunner
             runnerCollider = GetComponent<Collider2D>();
             runnerRenderer = GetComponent<Renderer>();
             abilityController = GetComponent<CharacterAbilityController>();
+            cameraFollow = FindAnyObjectByType<CameraFollow2D>();
             if (body != null)
             {
                 body.constraints |= RigidbodyConstraints2D.FreezeRotation;
@@ -93,7 +99,10 @@ namespace EndlessRunner
             }
 
             SetSimulation(true);
-            UpdateGravity();
+            if (impulsePreserveFrames <= 0)
+            {
+                UpdateGravity();
+            }
             UpdateSlowTimer();
         }
 
@@ -108,7 +117,7 @@ namespace EndlessRunner
             UpdateHorizontalMovement();
             ClampHorizontalPosition();
             ClampFallSpeed();
-            SweepForObstacles();
+            SweepForHazards();
             UpdateKinematicsSample();
         }
 
@@ -121,30 +130,75 @@ namespace EndlessRunner
 
             currentGravityScale = config.baseGravityScale;
             body.gravityScale = currentGravityScale;
+            Vector3 resetPosition = GetResetWorldPosition();
             if (resetTransformOnReset)
             {
-                transform.position = initialWorldPosition;
+                transform.position = resetPosition;
                 transform.rotation = initialWorldRotation;
-                body.position = initialWorldPosition;
+                body.position = resetPosition;
                 body.rotation = initialWorldRotation.eulerAngles.z;
             }
             body.linearVelocity = Vector2.zero;
             ResetKinematicsSample();
             slowTimer = 0f;
             speedMultiplier = 1f;
+            impulsePreserveFrames = 0;
             currentHealth = MaxHealth;
             HealthChanged?.Invoke(currentHealth, MaxHealth);
         }
 
-        public void OnAttackHit(Enemy enemy)
+        private Vector3 GetResetWorldPosition()
         {
-            if (enemy == null || !enemy.IsAlive)
+            Vector3 position = initialWorldPosition;
+            if (!spawnAboveCameraOnReset)
+            {
+                return position;
+            }
+
+            if (cameraFollow == null)
+            {
+                cameraFollow = FindAnyObjectByType<CameraFollow2D>();
+            }
+
+            Camera targetCamera = Camera.main;
+            if (targetCamera == null)
+            {
+                targetCamera = FindAnyObjectByType<Camera>();
+            }
+
+            if (targetCamera == null)
+            {
+                return position;
+            }
+
+            float cameraY = cameraFollow != null ? cameraFollow.RunStartPosition.y : targetCamera.transform.position.y;
+            float topY;
+            if (targetCamera.orthographic)
+            {
+                topY = cameraY + targetCamera.orthographicSize;
+            }
+            else
+            {
+                float distance = Mathf.Abs(targetCamera.transform.position.z);
+                Vector3 viewport = new Vector3(0.5f, 1f, distance);
+                topY = targetCamera.ViewportToWorldPoint(viewport).y;
+            }
+
+            position.y = topY + GetVerticalHalfExtent() + Mathf.Max(0f, spawnAboveCameraPadding);
+            return position;
+        }
+
+        public void OnAttackHit(CreatureBase creature)
+        {
+            if (creature == null || !creature.IsAlive)
             {
                 return;
             }
 
-            ApplyBrake();
-            enemy.OnHitByAttack();
+            ApplyContactSlow();
+            creature.OnHitByAttack();
+            AudioManager.Instance?.PlayStomp();
+            CreatureStomped?.Invoke(creature);
         }
 
         private bool IsRunning()
@@ -214,9 +268,20 @@ namespace EndlessRunner
 
         private void UpdateHorizontalMovement()
         {
-            float horizontal = input != null ? input.Horizontal : 0f;
-            float speed = config.horizontalSpeed * speedMultiplier * Mathf.Max(0.1f, abilitySpeedMultiplier);
-            float desiredX = horizontal * speed;
+            if (impulsePreserveFrames > 0)
+            {
+                impulsePreserveFrames--;
+                return;
+            }
+
+            float maxHorizontalSpeed = GetEffectiveHorizontalSpeed();
+            float desiredX = 0f;
+
+            if (!TryGetPointerFollowVelocity(maxHorizontalSpeed, out desiredX))
+            {
+                float horizontal = input != null ? input.Horizontal : 0f;
+                desiredX = horizontal * maxHorizontalSpeed;
+            }
 
             if (clampHorizontal && body != null)
             {
@@ -234,6 +299,60 @@ namespace EndlessRunner
             Vector2 velocity = body.linearVelocity;
             velocity.x = desiredX;
             body.linearVelocity = velocity;
+        }
+
+        private float GetEffectiveHorizontalSpeed()
+        {
+            if (config == null)
+            {
+                return 0f;
+            }
+
+            return Mathf.Max(0f, config.horizontalSpeed * speedMultiplier * Mathf.Max(0.1f, abilitySpeedMultiplier));
+        }
+
+        private bool TryGetPointerFollowVelocity(float maxHorizontalSpeed, out float desiredVelocityX)
+        {
+            desiredVelocityX = 0f;
+
+            if (body == null || input == null || !input.HasMovementPointer || maxHorizontalSpeed <= 0f)
+            {
+                return false;
+            }
+
+            GetEffectiveHorizontalBounds(out float effectiveMinX, out float effectiveMaxX);
+            float targetX = GetPointerTargetX(input.MovementPointerScreenPosition.x, effectiveMinX, effectiveMaxX);
+            float deltaX = targetX - body.position.x;
+            if (Mathf.Abs(deltaX) <= 0.01f)
+            {
+                desiredVelocityX = 0f;
+                return true;
+            }
+
+            float responsiveness = Mathf.Max(0f, config.horizontalFollowResponsiveness) *
+                                   speedMultiplier *
+                                   Mathf.Max(0.1f, abilitySpeedMultiplier);
+
+            if (responsiveness <= 0f)
+            {
+                desiredVelocityX = Mathf.Sign(deltaX) * maxHorizontalSpeed;
+                return true;
+            }
+
+            desiredVelocityX = Mathf.Clamp(deltaX * responsiveness, -maxHorizontalSpeed, maxHorizontalSpeed);
+            return true;
+        }
+
+        private static float GetPointerTargetX(float screenX, float minWorldX, float maxWorldX)
+        {
+            Rect safeArea = Screen.safeArea;
+            if (safeArea.width <= 0f)
+            {
+                safeArea = new Rect(0f, 0f, Mathf.Max(1f, Screen.width), Mathf.Max(1f, Screen.height));
+            }
+
+            float normalizedX = Mathf.InverseLerp(safeArea.xMin, safeArea.xMax, screenX);
+            return Mathf.Lerp(minWorldX, maxWorldX, Mathf.Clamp01(normalizedX));
         }
 
         private void ClampFallSpeed()
@@ -305,6 +424,36 @@ namespace EndlessRunner
             return halfWidth;
         }
 
+        private float GetVerticalHalfExtent()
+        {
+            float halfHeight = 0f;
+
+            if (runnerCollider == null)
+            {
+                runnerCollider = GetComponent<Collider2D>();
+            }
+
+            if (runnerCollider != null)
+            {
+                halfHeight = runnerCollider.bounds.extents.y;
+            }
+
+            if (useVisualBoundsForClamp)
+            {
+                if (runnerRenderer == null)
+                {
+                    runnerRenderer = GetComponent<Renderer>();
+                }
+
+                if (runnerRenderer != null)
+                {
+                    halfHeight = Mathf.Max(halfHeight, runnerRenderer.bounds.extents.y);
+                }
+            }
+
+            return halfHeight;
+        }
+
         private void GetEffectiveHorizontalBounds(out float effectiveMinX, out float effectiveMaxX)
         {
             float halfWidth = GetHorizontalHalfWidth();
@@ -334,20 +483,20 @@ namespace EndlessRunner
             }
         }
 
-        private void ApplyObstacleSlow()
+        private void ApplyContactSlow()
         {
             if (config == null)
             {
                 return;
             }
 
-            float multiplier = Mathf.Clamp(config.obstacleSlowMultiplier, 0.1f, 1f);
+            float multiplier = Mathf.Clamp(config.contactSlowMultiplier, 0.1f, 1f);
             speedMultiplier = Mathf.Min(speedMultiplier, multiplier);
-            slowTimer = Mathf.Max(slowTimer, Mathf.Max(0f, config.obstacleSlowDuration));
+            slowTimer = Mathf.Max(slowTimer, Mathf.Max(0f, config.contactSlowDuration));
 
             if (body != null)
             {
-                float damp = Mathf.Clamp(config.obstacleVelocityDamp, 0.1f, 1f);
+                float damp = Mathf.Clamp(config.contactVelocityDamp, 0.1f, 1f);
                 Vector2 velocity = body.linearVelocity;
                 velocity.x *= multiplier;
                 velocity.y *= damp;
@@ -355,7 +504,23 @@ namespace EndlessRunner
             }
         }
 
-        private void SweepForObstacles()
+        private void ResetAccelerationState()
+        {
+            if (config == null)
+            {
+                return;
+            }
+
+            currentGravityScale = config.baseGravityScale;
+            if (body != null)
+            {
+                body.gravityScale = currentGravityScale * Mathf.Max(0.1f, abilityGravityMultiplier);
+            }
+
+            ResetKinematicsSample();
+        }
+
+        private void SweepForHazards()
         {
             if (body == null)
             {
@@ -382,32 +547,10 @@ namespace EndlessRunner
                     continue;
                 }
 
-                Obstacle obstacle = hit.GetComponent<Obstacle>();
-                if (obstacle == null || !obstacle.Consume())
+                if (!TryHandleHazardContact(hit))
                 {
                     continue;
                 }
-
-                ApplyDamage(1);
-                ApplyObstacleSlow();
-                DespawnObstacle(obstacle.gameObject);
-            }
-        }
-
-        private void DespawnObstacle(GameObject obstacleObject)
-        {
-            if (obstacleObject == null)
-            {
-                return;
-            }
-
-            if (ObjectPool.Instance != null && ObjectPool.Instance.IsPooled(obstacleObject))
-            {
-                ObjectPool.Instance.Release(obstacleObject);
-            }
-            else
-            {
-                Destroy(obstacleObject);
             }
         }
 
@@ -471,6 +614,7 @@ namespace EndlessRunner
             }
 
             currentHealth = Mathf.Max(0, currentHealth - amount);
+            AudioManager.Instance?.PlayDamage();
             HealthChanged?.Invoke(currentHealth, MaxHealth);
 
             if (currentHealth <= 0)
@@ -555,6 +699,19 @@ namespace EndlessRunner
             body.linearVelocity = Vector2.zero;
         }
 
+        public void ApplyHorizontalImpulse(float impulse)
+        {
+            if (body == null)
+            {
+                return;
+            }
+
+            Vector2 velocity = body.linearVelocity;
+            velocity.x = impulse;
+            body.linearVelocity = velocity;
+            impulsePreserveFrames = 2;
+        }
+
         public void ApplyCharacter(RunnerConfig newConfig, Sprite characterSprite)
         {
             bool configChanged = false;
@@ -624,33 +781,72 @@ namespace EndlessRunner
                 return;
             }
 
-            Obstacle obstacle = collider.GetComponent<Obstacle>();
-            if (obstacle != null)
+            if (TryHandleHazardContact(collider))
             {
-                if (!obstacle.Consume())
-                {
-                    return;
-                }
-
-                ApplyDamage(1);
-                ApplyObstacleSlow();
-                DespawnObstacle(obstacle.gameObject);
                 return;
             }
 
-            Enemy enemy = collider.GetComponent<Enemy>();
-            if (enemy == null)
+            CreatureBase creature = collider.GetComponent<CreatureBase>();
+            if (creature == null)
             {
                 return;
             }
 
             if (IsFalling())
             {
-                OnAttackHit(enemy);
+                OnAttackHit(creature);
                 return;
             }
 
             GameManager.Instance?.GameOver();
+        }
+
+        private bool TryHandleHazardContact(Collider2D collider)
+        {
+            if (collider == null)
+            {
+                return false;
+            }
+
+            CreatureBase creature = collider.GetComponent<CreatureBase>();
+            if (!IsHazardCreature(creature))
+            {
+                return false;
+            }
+
+            if (creature == null || !creature.IsAlive)
+            {
+                return true;
+            }
+
+            ApplyDamage(1);
+            ApplyContactSlow();
+            creature.OnHitByAttack();
+            return true;
+        }
+
+        private void ResetToInitialMotionState()
+        {
+            slowTimer = 0f;
+            speedMultiplier = 1f;
+
+            if (body != null)
+            {
+                body.linearVelocity = Vector2.zero;
+            }
+
+            ResetAccelerationState();
+            impulsePreserveFrames = 1;
+            if (body != null)
+            {
+                body.gravityScale = 0f;
+            }
+        }
+
+        private static bool IsHazardCreature(CreatureBase creatureBase)
+        {
+            SpecialCreature creature = creatureBase as SpecialCreature;
+            return creature != null && creature.IsHazard();
         }
 
         private void OnTouchReleased()

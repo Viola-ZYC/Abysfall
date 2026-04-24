@@ -22,6 +22,7 @@ namespace EndlessRunner
         [SerializeField] private TrackManager trackManager;
         [SerializeField] private ScoreManager scoreManager;
         [SerializeField] private AbilityManager abilityManager;
+        [SerializeField] private CameraFollow2D cameraFollow;
 
         public GameState State { get; private set; }
         public event Action<GameState> StateChanged;
@@ -42,6 +43,7 @@ namespace EndlessRunner
 
             Instance = this;
             SceneTransitionOverlay.EnsureExists();
+            EnsureAudioManager();
         }
 
         private void Start()
@@ -103,6 +105,12 @@ namespace EndlessRunner
             {
                 abilityManager.ResetRun();
             }
+            if (cameraFollow == null)
+            {
+                cameraFollow = FindAnyObjectByType<CameraFollow2D>();
+            }
+
+            cameraFollow?.ResetToRunStart();
             if (runner != null)
             {
                 runner.ResetRunner();
@@ -119,6 +127,20 @@ namespace EndlessRunner
             }
 
             SetState(GameState.Running);
+
+            EnsureAchievementManager();
+
+            if (TutorialOverlayController.ShouldShowTutorial())
+            {
+                TutorialOverlayController tutorial = FindAnyObjectByType<TutorialOverlayController>();
+                if (tutorial == null)
+                {
+                    GameObject tutorialObject = new GameObject("TutorialOverlay");
+                    tutorial = tutorialObject.AddComponent<TutorialOverlayController>();
+                }
+
+                tutorial.StartTutorial();
+            }
         }
 
         public void Pause()
@@ -319,6 +341,29 @@ namespace EndlessRunner
             Screen.autorotateToPortraitUpsideDown = false;
             Screen.autorotateToLandscapeLeft = false;
             Screen.autorotateToLandscapeRight = false;
+        }
+
+        private void EnsureAudioManager()
+        {
+            if (FindAnyObjectByType<AudioManager>() != null)
+            {
+                return;
+            }
+
+            GameObject go = new GameObject("AudioManager");
+            go.AddComponent<AudioManager>();
+        }
+
+        private void EnsureAchievementManager()
+        {
+            if (FindAnyObjectByType<AchievementManager>() != null)
+            {
+                return;
+            }
+
+            GameObject go = new GameObject("AchievementManager");
+            go.AddComponent<AchievementManager>();
+            go.AddComponent<AchievementToastUI>();
         }
     }
 }

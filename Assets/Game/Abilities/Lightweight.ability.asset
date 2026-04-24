@@ -16,6 +16,9 @@ MonoBehaviour:
   displayName: Lightweight
   description: Gravity effect reduces slightly.
   icon: {fileID: 0}
+  isPassive: 1
+  activeEffect: {fileID: 0}
+  activeCooldown: 0
   maxStacks: 3
   weight: 1
   effects:

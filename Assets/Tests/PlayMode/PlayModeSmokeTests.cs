@@ -57,24 +57,24 @@ public class PlayModeSmokeTests
 
         yield return null;
 
-        var camera = Object.FindObjectOfType<Camera>();
+        var camera = Object.FindAnyObjectByType<Camera>();
         Assert.IsNotNull(camera, "SampleScene should contain a Camera.");
 
-        var gameManager = Object.FindObjectOfType<GameManager>();
+        var gameManager = Object.FindAnyObjectByType<GameManager>();
         Assert.IsNotNull(gameManager, "SampleScene should contain GameManager.");
 
-        var runner = Object.FindObjectOfType<RunnerController>();
+        var runner = Object.FindAnyObjectByType<RunnerController>();
         Assert.IsNotNull(runner, "SampleScene should contain RunnerController.");
         Assert.IsNotNull(runner.GetComponent<Rigidbody2D>(), "Runner should have Rigidbody2D.");
         Assert.IsNotNull(runner.GetComponent<Collider2D>(), "Runner should have Collider2D.");
 
-        var scoreManager = Object.FindObjectOfType<ScoreManager>();
+        var scoreManager = Object.FindAnyObjectByType<ScoreManager>();
         Assert.IsNotNull(scoreManager, "SampleScene should contain ScoreManager.");
 
-        var trackManager = Object.FindObjectOfType<TrackManager>();
+        var trackManager = Object.FindAnyObjectByType<TrackManager>();
         Assert.IsNotNull(trackManager, "SampleScene should contain TrackManager.");
 
-        var abilityManager = Object.FindObjectOfType<AbilityManager>();
+        var abilityManager = Object.FindAnyObjectByType<AbilityManager>();
         Assert.IsNotNull(abilityManager, "SampleScene should contain AbilityManager.");
 
         gameManager.BeginRun();
@@ -87,13 +87,15 @@ public class PlayModeSmokeTests
             yield return null;
         }
 
-        var segments = Object.FindObjectsOfType<TrackSegment>();
+        var segments = Object.FindObjectsByType<TrackSegment>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         Assert.Greater(segments.Length, 0, "Track should spawn at least one segment.");
 
-        var background = Object.FindObjectOfType<InfiniteVerticalTilemap>();
+        var background = Object.FindAnyObjectByType<InfiniteVerticalTilemap>();
         Assert.IsNotNull(background, "SampleScene should contain InfiniteVerticalTilemap.");
-        var tilemap = background != null ? background.GetComponentInChildren<UnityEngine.Tilemaps.Tilemap>() : null;
-        Assert.IsNotNull(tilemap, "Background should include a Tilemap child.");
+        var backgroundRenderer = background != null ? background.GetComponentInChildren<Renderer>(true) : null;
+        Assert.IsNotNull(backgroundRenderer, "Background should include at least one renderable layer.");
+        Assert.IsNotNull(background.transform.Find("BaseRoot"), "Background should expose the grouped BaseRoot container.");
+        Assert.IsNotNull(background.transform.Find("WallRoot"), "Background should expose the grouped WallRoot container.");
     }
 
     private static IEnumerator RunWithLogging(string testName, Func<IEnumerator> body)

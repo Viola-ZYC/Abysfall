@@ -169,6 +169,7 @@ namespace EndlessRunner
             bool activated = currentAbility.activeEffect.Activate(context);
             if (activated)
             {
+                AudioManager.Instance?.PlayAbilityActivate();
                 float cooldown = Mathf.Max(0f, currentAbility.activeCooldown);
                 nextActiveTime = cooldown > 0f ? Time.time + cooldown : Time.time;
             }
@@ -277,6 +278,7 @@ namespace EndlessRunner
             int newStacks = currentStacks + 1;
             SetStacks(ability, newStacks);
             AbilityAcquired?.Invoke(ability, newStacks);
+            AudioManager.Instance?.PlayAbilityAcquired();
             if (notifyChange)
             {
                 AbilityChanged?.Invoke(ability, AbilityChangeType.Acquired, newStacks);
